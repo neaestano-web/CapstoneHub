@@ -32,16 +32,34 @@ class AIService
 
         $cacheKey = 'emb_' . md5($text);
 
-        return Cache::remember($cacheKey, 86400, function () use ($text) {
-            $response = Http::timeout(15)->post(
+        // Check cache, but ONLY use cached value if it actually contains valid embedding data
+        if ($cached = Cache::get($cacheKey)) {
+            if (is_array($cached) && !empty($cached['embedding'])) {
+                return $cached;
+            }
+        }
+
+        try {
+            // Render free-tier cold starts may take up to 35-40s if inactive
+            $response = Http::timeout(45)->post(
                 $this->url.'/embedding',
                 [
                     'text' => $text
                 ]
             );
 
-            return $response->json() ?? [];
-        });
+            $data = $response->json();
+            if (is_array($data) && !empty($data['embedding'])) {
+                Cache::put($cacheKey, $data, 86400);
+                return $data;
+            }
+
+            \Log::warning("AI Service returned empty embedding. Status: {$response->status()}, Body: " . substr($response->body(), 0, 200));
+            return is_array($data) ? $data : [];
+        } catch (\Throwable $e) {
+            \Log::warning('AI Service call failed: ' . $e->getMessage());
+            return [];
+        }
     }
 
     /**
