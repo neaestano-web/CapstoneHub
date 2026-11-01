@@ -569,18 +569,18 @@
 
                 {{-- Examples Bar --}}
                 <div class="sim-examples-bar">
-                    <span class="sim-examples-caption">💡 Try sample:</span>
-                    <button type="button" class="sim-example-chip" onclick="fillExample('Web-Based Capstone Repository and AI Classification System')">
-                        💻 AI Repository
+                    <span class="sim-examples-caption">💡 Try sample (≥60% match):</span>
+                    <button type="button" class="sim-example-chip" onclick="fillExample('Research Repository System for Capstone Projects')">
+                        💻 Research Repository
                     </button>
-                    <button type="button" class="sim-example-chip" onclick="fillExample('IoT-Based Flood Early Warning and Monitoring System with SMS Notification')">
-                        🌊 IoT Flood Warning
+                    <button type="button" class="sim-example-chip" onclick="fillExample('Arduino-Based Flood Warning with SMS Notification')">
+                        🌊 Flood Warning Alert
                     </button>
-                    <button type="button" class="sim-example-chip" onclick="fillExample('The study focuses on automated inventory management and record keeping in the municipal health center.')">
-                        🏥 Health Record Context
+                    <button type="button" class="sim-example-chip" onclick="fillExample('Decision Support System for Freshmen College Sectioning')">
+                        📊 Freshmen Sectioning DSS
                     </button>
-                    <button type="button" class="sim-example-chip" onclick="fillExample('1. To design and deploy a centralized web repository. 2. To analyze topic originality using semantic similarity vectors.')">
-                        🎯 Specific Objectives
+                    <button type="button" class="sim-example-chip" onclick="fillExample('Mobile Vehicle Booking and Reservation System')">
+                        🚗 Vehicle Booking System
                     </button>
                 </div>
             </div>
@@ -593,7 +593,7 @@
                         <line x1="12" y1="16" x2="12" y2="12"></line>
                         <line x1="12" y1="8" x2="12.01" y2="8"></line>
                     </svg>
-                    <span>Recommended: at least 5 words for accurate semantic vector matching</span>
+                    <span>Strict filtering: Only studies with ≥60% semantic similarity are flagged</span>
                 </div>
                 <button type="submit" class="sim-submit-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -614,7 +614,7 @@
                     <span>📊</span> Analysis Results
                 </h3>
                 <span style="background: var(--sim-banner-bg); color: var(--sim-accent); border: 1px solid var(--sim-banner-border); font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; font-weight: 700; padding: 4px 12px; border-radius: 9999px;">
-                    Found {{ $results->count() }} Similar {{ Str::plural('Study', $results->count()) }}
+                    Found {{ $results->count() }} Similar {{ Str::plural('Study', $results->count()) }} (≥60%)
                 </span>
             </div>
 
@@ -623,7 +623,6 @@
                     @php
                         $score = isset($item['overall_similarity']) ? round($item['overall_similarity'], 1) : 0;
                         $isHigh = $score >= 75;
-                        $isMed = $score >= 60 && $score < 75;
                     @endphp
 
                     <div class="sim-results-card">
@@ -636,8 +635,8 @@
                                 </h4>
 
                                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-                                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800; {{ $isHigh ? 'background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);' : ($isMed ? 'background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);' : 'background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);') }}">
-                                        {{ $isHigh ? '⚠️ High Potential Match' : ($isMed ? '⚡ Moderate Match' : '✓ Related Study Found') }}
+                                    <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800; {{ $isHigh ? 'background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);' : 'background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);' }}">
+                                        {{ $isHigh ? '⚠️ High Potential Match' : '⚡ Moderate Match (≥60%)' }}
                                         ({{ $score }}%)
                                     </span>
 
