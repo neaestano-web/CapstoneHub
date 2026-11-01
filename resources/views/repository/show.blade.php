@@ -1,0 +1,1006 @@
+@extends(auth()->check() ? (auth()->user()->role === 'admin' ? 'layouts.admin' : 'layouts.app') : 'layouts.public')
+@section('title', $research->title . ' — JHCSC Capstone Repository')
+
+@section('content')
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+        --view-bg-surface: var(--guest-bg-surface, #0f172a);
+        --view-bg-subtle: var(--guest-bg-input, #1e293b);
+        --view-border: var(--guest-border, rgba(148, 163, 184, 0.16));
+        --view-text-headings: var(--guest-text-headings, #f8fafc);
+        --view-text-main: var(--guest-text-main, #cbd5e1);
+        --view-text-muted: var(--guest-text-muted, #94a3b8);
+        --view-accent: #10b981;
+        --view-accent-soft: #34d399;
+        --view-accent-subtle: rgba(16, 185, 129, 0.1);
+        --view-accent-border: rgba(16, 185, 129, 0.28);
+        --view-accent-glow: rgba(16, 185, 129, 0.2);
+        --view-card-border-grad: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(56, 189, 248, 0.12) 50%, rgba(16, 185, 129, 0.22) 100%);
+        --view-card-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .public-detail-body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        color: var(--view-text-main);
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1.25rem 1.5rem 5rem;
+    }
+
+    /* ===== TOP ACTION BAR ===== */
+    .detail-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.4rem;
+        flex-wrap: wrap;
+    }
+
+    .back-btn-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.52rem 1.25rem;
+        background: var(--view-bg-surface);
+        color: var(--view-text-main);
+        border: 1px solid var(--view-border);
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.22s ease;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .back-btn-pill:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--view-accent-soft);
+        border-color: rgba(16, 185, 129, 0.4);
+        transform: translateX(-3px);
+    }
+
+    .detail-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .view-count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.46rem 1.1rem;
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: var(--view-accent-soft);
+        font-size: 0.78rem;
+        font-weight: 700;
+        border-radius: 9999px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .action-pill-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.46rem 1.1rem;
+        background: var(--view-bg-surface);
+        border: 1px solid var(--view-border);
+        color: var(--view-text-headings);
+        font-size: 0.78rem;
+        font-weight: 700;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .action-pill-btn:hover {
+        border-color: rgba(16, 185, 129, 0.4);
+        color: var(--view-accent-soft);
+        transform: translateY(-1px);
+    }
+
+    /* ===== MAIN CYBER GLASSMORPHISM CARD ===== */
+    .detail-card-cyber {
+        background: linear-gradient(var(--view-bg-surface), var(--view-bg-surface)) padding-box,
+                    var(--view-card-border-grad) border-box;
+        border: 1.5px solid transparent;
+        border-radius: 24px;
+        box-shadow: var(--view-card-shadow);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        padding: 2.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.8rem;
+    }
+
+    @media (max-width: 640px) {
+        .detail-card-cyber {
+            padding: 1.5rem;
+            gap: 1.4rem;
+            border-radius: 20px;
+        }
+    }
+
+    /* Badge Pills Row */
+    .badge-pills-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.34rem 0.95rem;
+        border-radius: 9999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+
+    .badge-category {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--view-accent-soft);
+        transition: all 0.2s ease;
+    }
+
+    .badge-category:hover {
+        filter: brightness(1.15);
+        transform: translateY(-1px);
+    }
+
+    .badge-year {
+        background: rgba(148, 163, 184, 0.08);
+        border: 1px solid var(--view-border);
+        color: var(--view-text-muted);
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Title */
+    .detail-title {
+        font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+        font-weight: 800;
+        color: var(--view-text-headings);
+        letter-spacing: -0.025em;
+        line-height: 1.28;
+        margin-top: 0.35rem;
+    }
+
+    /* Meta Cards 2-Col Grid: Authors & Adviser */
+    .meta-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+
+    .meta-card {
+        background: var(--view-bg-subtle);
+        border: 1px solid var(--view-border);
+        border-radius: 18px;
+        padding: 1.2rem 1.4rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        transition: border-color 0.2s ease;
+    }
+
+    .meta-card:hover {
+        border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    .meta-card-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: var(--view-accent-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .meta-card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .meta-card-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--view-accent-soft);
+    }
+
+    .meta-card-value {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--view-text-headings);
+        word-break: break-word;
+        line-height: 1.4;
+    }
+
+    .meta-card-sub {
+        font-size: 0.78rem;
+        color: var(--view-text-muted);
+    }
+
+    /* Section Panels: Keywords & Information */
+    .detail-section-panel {
+        background: var(--view-bg-subtle);
+        border: 1px solid var(--view-border);
+        border-radius: 18px;
+        padding: 1.5rem 1.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .section-header-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--view-accent-soft);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-body-text {
+        color: var(--view-text-main);
+        font-size: 0.92rem;
+        line-height: 1.78;
+        font-weight: 400;
+    }
+
+    /* Keyword Tags */
+    .keywords-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .keyword-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0.34rem 0.95rem;
+        border-radius: 9999px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: var(--view-accent-soft);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .keyword-pill:hover {
+        background: #10b981;
+        border-color: #10b981;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    }
+
+    /* View Full Project Action Box (For Guest Users) */
+    .view-full-project-box {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 20px;
+        padding: 1.6rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.3rem;
+        margin-top: 0.4rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    @media (min-width: 680px) {
+        .view-full-project-box {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+
+    .view-full-project-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .lock-icon-wrap {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.14);
+        border: 1.5px solid rgba(16, 185, 129, 0.35);
+        color: var(--view-accent-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+    }
+
+    .view-full-project-heading {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--view-text-headings);
+    }
+
+    .view-full-project-desc {
+        font-size: 0.82rem;
+        color: var(--view-text-muted);
+        line-height: 1.55;
+        margin-top: 3px;
+        max-width: 580px;
+    }
+
+    .guest-action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+    }
+
+    .btn-view-full-project {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0.72rem 1.65rem;
+        background: #10b981;
+        color: #ffffff;
+        border-radius: 9999px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.22s ease;
+        white-space: nowrap;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-view-full-project:hover {
+        transform: translateY(-2px);
+        background: #059669;
+        color: #ffffff;
+    }
+
+    .btn-register-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0.72rem 1.4rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--view-border);
+        color: var(--view-text-headings);
+        border-radius: 9999px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-register-secondary:hover {
+        border-color: rgba(16, 185, 129, 0.4);
+        color: var(--view-accent-soft);
+    }
+
+    /* ===== CITATION MODAL ===== */
+    .modal-backdrop-custom {
+        position: fixed;
+        inset: 0;
+        background: rgba(8, 14, 22, 0.82);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem;
+    }
+
+    .modal-backdrop-custom.active {
+        display: flex;
+    }
+
+    .citation-modal-card {
+        background: var(--view-bg-surface);
+        border: 1px solid var(--view-border);
+        border-radius: 24px;
+        width: 100%;
+        max-width: 580px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+        color: var(--view-text-headings);
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .citation-modal-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .citation-header-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .citation-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--view-accent-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .citation-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--view-text-headings);
+    }
+
+    .citation-subtitle {
+        font-size: 0.78rem;
+        color: var(--view-text-muted);
+    }
+
+    .citation-close-btn {
+        background: none;
+        border: none;
+        color: var(--view-text-muted);
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s ease;
+    }
+
+    .citation-close-btn:hover {
+        color: var(--view-text-headings);
+    }
+
+    .citation-tabs-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border-bottom: 1px solid var(--view-border);
+        padding-bottom: 8px;
+    }
+
+    .cite-tab-btn {
+        background: transparent;
+        border: none;
+        padding: 0.4rem 1rem;
+        border-radius: 9999px;
+        color: var(--view-text-muted);
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .cite-tab-btn.active {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--view-accent-soft);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .citation-text-box {
+        background: var(--view-bg-subtle);
+        border: 1px solid var(--view-border);
+        border-radius: 14px;
+        padding: 1.1rem 1.25rem;
+        font-size: 0.85rem;
+        line-height: 1.65;
+        color: var(--view-text-main);
+        user-select: all;
+    }
+
+    .btn-copy-cite {
+        background: #10b981;
+        color: #ffffff;
+        border: none;
+        border-radius: 9999px;
+        padding: 0.65rem 1.4rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        align-self: flex-end;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-copy-cite:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    /* ===== FLOATING TOAST NOTIFICATION ===== */
+    .detail-toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: var(--view-bg-surface);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: var(--view-text-headings);
+        padding: 0.75rem 1.4rem;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 16px var(--view-accent-glow);
+        z-index: 2000;
+        transform: translateY(100px);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .detail-toast.show {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .toast-icon {
+        color: var(--view-accent-soft);
+        font-weight: 900;
+    }
+</style>
+
+<div class="public-detail-body space-y-6">
+
+    {{-- TOP ACTION BAR --}}
+    <div class="detail-top-bar">
+        <a href="{{ route('repository.index') }}" class="back-btn-pill">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back</span>
+        </a>
+
+        <div class="detail-actions-group">
+            <span class="view-count-pill" title="Total Views">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>{{ number_format($research->views_count) }} Views</span>
+            </span>
+
+            <button type="button" class="action-pill-btn" onclick="openCitationModal()" title="Cite this research paper">
+                <span>❝ Cite</span>
+            </button>
+
+            @guest
+                <a href="{{ route('repository.full', $research->id) }}" class="btn-view-full-project" style="padding: 0.46rem 1.25rem; font-size: 0.78rem;">
+                    View Full Project
+                </a>
+            @endguest
+        </div>
+    </div>
+
+    {{-- FLASH MESSAGES --}}
+    @if(session('success'))
+        <div class="p-4 bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 rounded-2xl text-xs font-bold flex items-center justify-between shadow-lg">
+            <span>✅ {{ session('success') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 font-black cursor-pointer">✕</button>
+        </div>
+    @endif
+
+    {{-- MAIN MANUSCRIPT DETAIL CARD --}}
+    <article class="detail-card-cyber">
+
+        <!-- Top Header: Badges & Title -->
+        <div class="space-y-3">
+            <div class="badge-pills-row">
+                @if($research->category)
+                    <a href="{{ route('repository.index', ['categories' => [$research->category->id]]) }}" class="badge-pill badge-category">
+                        📂 {{ $research->category->name }}
+                    </a>
+                @endif
+                <span class="badge-pill badge-year">
+                    🗓 Year {{ $research->year ?: ($research->approved_at ? $research->approved_at->format('Y') : ($research->created_at ? $research->created_at->format('Y') : '2026')) }}
+                </span>
+            </div>
+
+            <h1 class="detail-title">
+                {{ $research->title }}
+            </h1>
+        </div>
+
+        <!-- Meta Cards Grid: Authors & Adviser -->
+        <div class="meta-cards-grid">
+            <div class="meta-card">
+                <div class="meta-card-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <div class="meta-card-content">
+                    <span class="meta-card-label">Researchers / Authors</span>
+                    <span class="meta-card-value">{{ $research->authors ?? 'SCS Researchers' }}</span>
+                    <span class="meta-card-sub">Student Researchers, School of Computing Studies</span>
+                </div>
+            </div>
+
+            <div class="meta-card">
+                <div class="meta-card-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                    </svg>
+                </div>
+                <div class="meta-card-content">
+                    <span class="meta-card-label">Faculty Adviser</span>
+                    <span class="meta-card-value">{{ $research->adviser ?? 'School of Computing Studies Faculty' }}</span>
+                    <span class="meta-card-sub">Capstone Project Adviser</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- KEYWORDS --}}
+        @if($research->keywords)
+            <div class="detail-section-panel">
+                <h3 class="section-header-title">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                    Keywords & Classifications
+                </h3>
+                <div class="keywords-row">
+                    @foreach(array_map('trim', explode(',', $research->keywords)) as $kw)
+                        @if(!empty($kw))
+                            <a href="{{ route('search.index', ['q' => $kw]) }}" class="keyword-pill" title="Search capstones tagged #{{ $kw }}">
+                                #{{ $kw }}
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- VIEW FULL PROJECT ACTION BOX (FOR GUEST USERS) --}}
+        @guest
+            <div class="view-full-project-box">
+                <div class="view-full-project-info">
+                    <div class="lock-icon-wrap">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="view-full-project-heading">Complete Research Manuscript Available</div>
+                        <p class="view-full-project-desc">
+                            This capstone project is available in the SCS Repository. Sign in with your student account to view full chapters, methodology, and attached documents.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="guest-action-buttons">
+                    <a href="{{ route('repository.full', $research->id) }}" class="btn-view-full-project">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        <span>Sign In to Read Full PDF</span>
+                    </a>
+                    <a href="{{ route('register') }}" class="btn-register-secondary">
+                        Create Account
+                    </a>
+                </div>
+            </div>
+        @endguest
+
+    </article>
+
+    {{-- AUTHENTICATED USERS ONLY: MANUSCRIPT PDF READER CONTAINER --}}
+    @auth
+        @if($research->pdf_path || ($research->files && $research->files->count() > 0))
+            @php
+                $allFiles = $research->files ? $research->files->sortBy('sort_order')->values() : collect();
+                $isMultiFile = $allFiles->count() > 1;
+                $userDownloadApproved = auth()->check() && (
+                    auth()->user()->role === 'admin' ||
+                    (int)auth()->id() === (int)$research->user_id ||
+                    \App\Models\DownloadRequest::where('user_id', auth()->id())
+                        ->where('research_id', $research->id)
+                        ->where('status', 'approved')
+                        ->exists()
+                );
+            @endphp
+            <div class="detail-card-cyber p-6 space-y-4">
+                {{-- Multi-file Tab Bar (If more than 1 file) --}}
+                @if($isMultiFile)
+                    <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-700/60">
+                        <div class="flex items-center gap-2 text-xs text-slate-300">
+                            <span class="text-base">📚</span>
+                            <span class="font-extrabold text-white">Attached Files ({{ $allFiles->count() }}):</span>
+                            <span class="text-[11px] text-emerald-400 font-semibold bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                                🥇 First file viewed first
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            @foreach($allFiles as $idx => $f)
+                                <button type="button" 
+                                        id="tab-file-{{ $f->id }}"
+                                        onclick="switchViewerFile('{{ route('document.pdf', $research->id) }}?file_id={{ $f->id }}', 'tab-file-{{ $f->id }}')" 
+                                        class="viewer-tab-btn px-3 py-1 text-xs font-bold rounded-lg transition border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700">
+                                    {{ $idx === 0 ? '🥇 #1 ' : '#' . ($idx + 1) . ' ' }}{{ Str::limit($f->original_name, 22) }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <div class="relative w-full rounded-2xl overflow-hidden border border-slate-700/80 shadow-inner bg-slate-900 select-none"
+                     style="height: 780px;"
+                     oncontextmenu="return false;">
+                    
+                    {{-- Protective Shield Bar --}}
+                    <div class="absolute top-0 left-0 right-0 h-11 bg-slate-900/95 backdrop-blur-md z-20 flex items-center justify-between px-5 border-b border-slate-700/80 text-white text-xs font-semibold">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="truncate max-w-md font-bold" id="viewerTitleLabel">
+                                {{ $isMultiFile ? 'Manuscript Reader (Sequential Combined View)' : 'Manuscript Reader' }}
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-slate-300 flex items-center gap-3">
+                            @if(auth()->user()->role === 'admin')
+                                <span class="hidden sm:inline-block">👑 Admin Authorized</span>
+                                <a href="{{ route('repository.download', $research->id) }}" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold rounded-full transition shadow-xs inline-flex items-center gap-1.5">
+                                    <span>📥</span> Download Full PDF {{ $isMultiFile ? '(' . $allFiles->count() . ' Files Combined)' : '' }}
+                                </a>
+                            @elseif($userDownloadApproved)
+                                <span class="hidden sm:inline-block text-emerald-400 font-bold">✅ Download Approved</span>
+                                <a href="{{ route('repository.download', $research->id) }}" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold rounded-full transition shadow-xs inline-flex items-center gap-1.5">
+                                    <span>📥</span> Download Full PDF {{ $isMultiFile ? '(' . $allFiles->count() . ' Files Combined)' : '' }}
+                                </a>
+                            @else
+                                <span class="hidden sm:inline-block">🔒 Direct Download Restricted</span>
+                                <button type="button" onclick="openDownloadModal()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold rounded-full transition shadow-xs cursor-pointer">
+                                    Request Download
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+
+                    <iframe id="manuscriptIframe"
+                            src="{{ route('document.pdf', $research->id) }}?embedded=1#toolbar=0&navpanes=0&scrollbar=1" 
+                            class="w-full h-full border-none rounded-2xl bg-white pt-10" 
+                            title="Research Document Viewer"
+                            oncontextmenu="return false;">
+                    </iframe>
+                </div>
+            </div>
+
+            <script>
+            function switchViewerFile(url, activeTabId) {
+                const iframe = document.getElementById('manuscriptIframe');
+                if (iframe) {
+                    iframe.src = url + (url.includes('?') ? '&' : '?') + 'embedded=1#toolbar=0&navpanes=0&scrollbar=1';
+                }
+                document.querySelectorAll('.viewer-tab-btn').forEach(btn => {
+                    btn.classList.remove('active', 'border-emerald-400/40', 'bg-emerald-500/20', 'text-emerald-300');
+                    btn.classList.add('border-slate-700', 'bg-slate-800/80', 'text-slate-300');
+                });
+                const activeTab = document.getElementById(activeTabId);
+                if (activeTab) {
+                    activeTab.classList.remove('border-slate-700', 'bg-slate-800/80', 'text-slate-300');
+                    activeTab.classList.add('active', 'border-emerald-400/40', 'bg-emerald-500/20', 'text-emerald-300');
+                }
+            }
+            </script>
+        @endif
+    @endauth
+
+</div>
+
+{{-- CITATION MODAL --}}
+<div class="modal-backdrop-custom" id="citationModal" onclick="closeCitationModal(event)">
+    <div class="citation-modal-card" onclick="event.stopPropagation()">
+        <div class="citation-modal-header">
+            <div class="citation-header-title">
+                <span class="citation-icon">❝</span>
+                <div>
+                    <h3 class="citation-title">Cite This Research Paper</h3>
+                    <p class="citation-subtitle">Standard scholarly bibliographic formats</p>
+                </div>
+            </div>
+            <button type="button" class="citation-close-btn" onclick="closeCitationModal()" aria-label="Close Citation Modal">✕</button>
+        </div>
+
+        <!-- Citation Format Tab Buttons -->
+        <div class="citation-tabs-row">
+            <button type="button" class="cite-tab-btn active" onclick="switchCiteTab('apa', this)">APA 7th</button>
+            <button type="button" class="cite-tab-btn" onclick="switchCiteTab('ieee', this)">IEEE</button>
+            <button type="button" class="cite-tab-btn" onclick="switchCiteTab('mla', this)">MLA 9th</button>
+        </div>
+
+        @php
+            $pubYear = $research->year ?: ($research->approved_at ? $research->approved_at->format('Y') : ($research->created_at ? $research->created_at->format('Y') : '2026'));
+            $authorFormatted = $research->authors ?: 'School of Computing Studies Researchers';
+        @endphp
+
+        <!-- APA 7th Tab -->
+        <div class="citation-tab-panel" id="cite-tab-apa">
+            <div class="citation-text-box" id="citeTextApa">{{ $authorFormatted }} ({{ $pubYear }}). <em>{{ $research->title }}</em>. School of Computing Studies, J.H. Cerilles State College Capstone Repository.</div>
+            <div class="flex justify-end pt-2">
+                <button type="button" class="btn-copy-cite" onclick="copyCitation('citeTextApa', this)">
+                    <span>📋 Copy APA Citation</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- IEEE Tab -->
+        <div class="citation-tab-panel" id="cite-tab-ieee" style="display: none;">
+            <div class="citation-text-box" id="citeTextIeee">{{ $authorFormatted }}, "{{ $research->title }}," J.H. Cerilles State College Capstone Repository, {{ $pubYear }}.</div>
+            <div class="flex justify-end pt-2">
+                <button type="button" class="btn-copy-cite" onclick="copyCitation('citeTextIeee', this)">
+                    <span>📋 Copy IEEE Citation</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MLA 9th Tab -->
+        <div class="citation-tab-panel" id="cite-tab-mla" style="display: none;">
+            <div class="citation-text-box" id="citeTextMla">{{ $authorFormatted }}. "{{ $research->title }}." <em>JHCSC Capstone Repository</em>, {{ $pubYear }}.</div>
+            <div class="flex justify-end pt-2">
+                <button type="button" class="btn-copy-cite" onclick="copyCitation('citeTextMla', this)">
+                    <span>📋 Copy MLA Citation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- REQUEST DOWNLOAD MODAL (ONLY FOR LOGGED IN STUDENTS) --}}
+@auth
+    @if(auth()->user()->role !== 'admin' && ($research->pdf_path || ($research->files && $research->files->count() > 0)))
+    <div class="modal-backdrop-custom" id="downloadModal" onclick="closeDownloadModal(event)">
+        <div class="bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-700/80 text-center space-y-4 text-slate-100" onclick="event.stopPropagation()">
+            <div class="w-14 h-14 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-full flex items-center justify-center font-bold text-2xl mx-auto shadow-sm">
+                📥
+            </div>
+            <div>
+                <h3 class="text-base font-extrabold text-white">Request PDF Download</h3>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Submit a download request for <strong class="text-white">"{{ $research->title }}"</strong> for faculty approval.
+                </p>
+            </div>
+
+            <form action="{{ route('repository.request-download', $research->id) }}" method="POST" class="space-y-4">
+                @csrf
+                <div class="text-left">
+                    <label for="reason" class="block text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">
+                        Purpose / Reason for Download *
+                    </label>
+                    <textarea name="reason" id="reason" rows="3" required
+                              placeholder="e.g. Academic reference for capstone literature review..."
+                              class="w-full bg-slate-950/80 border border-slate-700 rounded-xl p-3 text-xs font-medium text-slate-100 outline-none focus:border-emerald-500 transition"></textarea>
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <button type="button" onclick="closeDownloadModal()" class="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-full transition cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-full transition shadow-sm cursor-pointer">
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openDownloadModal() {
+        const modal = document.getElementById('downloadModal');
+        if (modal) modal.classList.add('active');
+    }
+    function closeDownloadModal(e) {
+        const modal = document.getElementById('downloadModal');
+        if (modal && (!e || e.target === modal)) {
+            modal.classList.remove('active');
+        }
+    }
+    </script>
+    @endif
+@endauth
+
+{{-- FLOATING TOAST NOTIFICATION --}}
+<div id="projectDetailToast" class="detail-toast">
+    <span class="toast-icon">✓</span>
+    <span id="projectDetailToastMsg">Link copied to clipboard!</span>
+</div>
+
+<script>
+    function openCitationModal() {
+        const modal = document.getElementById('citationModal');
+        if (modal) modal.classList.add('active');
+    }
+
+    function closeCitationModal(e) {
+        const modal = document.getElementById('citationModal');
+        if (modal && (!e || e.target === modal)) {
+            modal.classList.remove('active');
+        }
+    }
+
+    function switchCiteTab(format, btn) {
+        document.querySelectorAll('.citation-tab-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.cite-tab-btn').forEach(b => b.classList.remove('active'));
+        const panel = document.getElementById('cite-tab-' + format);
+        if (panel) panel.style.display = 'block';
+        if (btn) btn.classList.add('active');
+    }
+
+    function copyCitation(textId, btn) {
+        const el = document.getElementById(textId);
+        if (el && navigator.clipboard) {
+            navigator.clipboard.writeText(el.innerText).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<span>✅ Copied to Clipboard!</span>';
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                }, 2000);
+            });
+        }
+    }
+
+    function showDetailToast(msg) {
+        const toast = document.getElementById('projectDetailToast');
+        const msgEl = document.getElementById('projectDetailToastMsg');
+        if (toast) {
+            if (msgEl) msgEl.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+    }
+</script>
+@endsection

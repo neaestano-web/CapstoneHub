@@ -1,0 +1,76 @@
+flowchart TB
+    Start([Start]) --> Login[Admin logs in]
+    Login --> Dashboard[Admin views dashboard]
+    Dashboard --> Menu{Admin selects a menu}
+
+    subgraph Researches[Researches]
+        direction TB
+        Menu --> ManageResearches[Admin manages researches]
+        ManageResearches --> ResearchAction{Admin chooses an action}
+        ResearchAction --> UploadResearch[Upload a research]
+        ResearchAction --> ReviewResearch[Review a research]
+        ReviewResearch --> ApproveResearch[Approve research]
+        ReviewResearch --> RejectResearch[Reject research]
+        ReviewResearch --> UpdateResearch[Edit research category]
+        ReviewResearch --> DeleteResearch[Delete research]
+    end
+
+    subgraph Categories[Categories]
+        direction TB
+        Menu --> ManageCategories[Admin manages categories]
+        ManageCategories --> CategoryAction{Admin chooses an action}
+        CategoryAction --> AddCategory[Add category or project type]
+        CategoryAction --> ViewCategory[View category details]
+        CategoryAction --> EditCategory[Edit category or project type]
+        CategoryAction --> DeleteCategory[Delete category]
+    end
+
+    subgraph Users[Users]
+        direction TB
+        Menu --> ManageUsers[Admin manages user accounts]
+        ManageUsers --> UserAction{Admin chooses an action}
+        UserAction --> AddUser[Add user account]
+        UserAction --> ViewUser[View user details]
+        UserAction --> EditUser[Edit user account]
+        UserAction --> DeleteUser[Delete user account]
+    end
+
+    subgraph Registrations[Pending Registrations]
+        direction TB
+        Menu --> ManageRegistrations[Admin reviews student registrations]
+        ManageRegistrations --> RegistrationAction{Admin chooses an action}
+        RegistrationAction --> ViewRegistration[View registration details]
+        RegistrationAction --> ApproveRegistration[Approve student registration]
+        RegistrationAction --> RejectRegistration[Reject student registration]
+    end
+
+    Menu --> ViewRepository[Admin views repository]
+    Menu --> EditProfile[Admin edits profile]
+    Menu --> Logout[Admin logs out]
+
+    UploadResearch --> Menu
+    ApproveResearch --> Menu
+    RejectResearch --> Menu
+    UpdateResearch --> Menu
+    DeleteResearch --> Menu
+    AddCategory --> Menu
+    ViewCategory --> Menu
+    EditCategory --> Menu
+    DeleteCategory --> Menu
+    AddUser --> Menu
+    ViewUser --> Menu
+    EditUser --> Menu
+    DeleteUser --> Menu
+    ViewRegistration --> Menu
+    ApproveRegistration --> Menu
+    RejectRegistration --> Menu
+    ViewRepository --> Menu
+    EditProfile --> Menu
+    Logout --> End([End])
+
+    classDef activity fill:#E8F1FF,stroke:#2563EB,color:#1E3A8A,stroke-width:1px;
+    classDef decision fill:#FFF7D6,stroke:#D97706,color:#78350F,stroke-width:1px;
+    classDef terminal fill:#DCFCE7,stroke:#16A34A,color:#14532D,stroke-width:1px;
+    class Login,Dashboard,ManageResearches,UploadResearch,ReviewResearch,ApproveResearch,RejectResearch,UpdateResearch,DeleteResearch,ManageCategories,AddCategory,ViewCategory,EditCategory,DeleteCategory,ManageUsers,AddUser,ViewUser,EditUser,DeleteUser,ManageRegistrations,ViewRegistration,ApproveRegistration,RejectRegistration,ViewRepository,EditProfile,Logout activity;
+    class Menu,ResearchAction,CategoryAction,UserAction,RegistrationAction decision;
+    class Start,End terminal;
