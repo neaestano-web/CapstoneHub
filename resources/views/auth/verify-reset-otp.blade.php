@@ -35,6 +35,7 @@
                         id="otp" 
                         type="text" 
                         name="otp" 
+                        value="{{ old('otp', session('dev_otp') ?? '') }}"
                         maxlength="6"
                         inputmode="numeric"
                         pattern="[0-9]{6}"

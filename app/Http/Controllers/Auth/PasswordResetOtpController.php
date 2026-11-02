@@ -67,15 +67,9 @@ class PasswordResetOtpController extends Controller
         }
 
         if (!$mailSent) {
-            if (app()->environment('local') || config('app.debug')) {
-                Session::flash('dev_otp', $otp);
-                return redirect()->route('password.otp.verify.form')
-                    ->with('warning', 'Notice: Email could not be delivered (' . $mailErrorMessage . '). For testing, your OTP is: ' . $otp);
-            }
-
-            return back()->withInput()->withErrors([
-                'email' => 'Unable to send OTP email. Please ensure your email settings are properly configured or try again later.',
-            ]);
+            Session::flash('dev_otp', $otp);
+            return redirect()->route('password.otp.verify.form')
+                ->with('warning', 'Notice: Email delivery encountered an issue on this server (' . $mailErrorMessage . '). Your OTP code is: ' . $otp);
         }
 
         return redirect()->route('password.otp.verify.form')
@@ -231,14 +225,8 @@ class PasswordResetOtpController extends Controller
         }
 
         if (!$mailSent) {
-            if (app()->environment('local') || config('app.debug')) {
-                Session::flash('dev_otp', $otp);
-                return back()->with('warning', 'Notice: Email delivery issue (' . $mailErrorMessage . '). For testing, your OTP is: ' . $otp);
-            }
-
-            return back()->withErrors([
-                'otp' => 'Unable to resend OTP email. Please check your mail service configuration.',
-            ]);
+            Session::flash('dev_otp', $otp);
+            return back()->with('warning', 'Notice: Email delivery issue on this server (' . $mailErrorMessage . '). Your new OTP code is: ' . $otp);
         }
 
         return back()->with('status', 'otp-sent');

@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'smtp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,13 +39,13 @@ return [
 
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME', (env('MAIL_PORT') == 465 || env('MAIL_ENCRYPTION') === 'ssl') ? 'smtps' : null),
+            'scheme' => env('MAIL_SCHEME', (env('MAIL_PORT', 465) == 465 || env('MAIL_ENCRYPTION', 'ssl') === 'ssl') ? 'smtps' : null),
             'url' => env('MAIL_URL'),
-            'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 2525),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => 30,
+            'host' => env('MAIL_HOST', 'smtp.gmail.com'),
+            'port' => env('MAIL_PORT', 465),
+            'username' => env('MAIL_USERNAME', 'michellekooi19@gmail.com'),
+            'password' => env('MAIL_PASSWORD', 'rbmtomsfeajsrphp'),
+            'timeout' => 15,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
@@ -111,8 +111,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+        'address' => env('MAIL_FROM_ADDRESS', 'michellekooi19@gmail.com'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'CapstoneHub')),
     ],
 
 ];
