@@ -99,32 +99,24 @@
             padding: 0 16px;
         }
 
-        /* docx-preview renders inside this container */
+        /* docx-preview container */
         #docx-container {
-            background: #fff;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
-            border-radius: 4px;
-            overflow: hidden;
+            background: #525659;
             min-height: 80vh;
         }
 
-        /* Override docx-preview wrapper styles for a cleaner look */
         #docx-container .docx-wrapper {
-            background: #fff !important;
-            padding: 0 !important;
+            background: transparent !important;
+            padding: 16px 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
         #docx-container .docx-wrapper > section.docx {
-            box-shadow: none !important;
-            margin-bottom: 0 !important;
-            padding: 72px 72px !important;
-            width: auto !important;
-            min-height: auto !important;
-        }
-        /* Add page separators between sections (pages) */
-        #docx-container .docx-wrapper > section.docx + section.docx {
-            border-top: 2px dashed #e2e8f0;
-            margin-top: 12px;
-            padding-top: 72px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2) !important;
+            margin-bottom: 20px !important;
+            background: #fff !important;
         }
 
         /* PDF embed */
@@ -139,22 +131,19 @@
 
         @if(request('embedded'))
         body {
-            background: #ffffff !important;
+            background: #525659 !important;
             padding: 0 !important;
             margin: 0 !important;
         }
         .doc-wrapper {
             max-width: 100% !important;
             margin: 0 auto !important;
-            padding: 10px 20px !important;
+            padding: 0 !important;
         }
         #docx-container {
             box-shadow: none !important;
             border: none !important;
             min-height: 100vh;
-        }
-        #docx-container .docx-wrapper > section.docx {
-            padding: 24px 32px !important;
         }
         @endif
 
