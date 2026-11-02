@@ -18,7 +18,7 @@
         <div>
             <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">User Accounts</h1>
             <p class="text-slate-500 text-xs font-medium mt-0.5">
-                Manage student researchers, faculty members, and institutional administrators.
+                Overview of active student accounts and institutional administrators.
             </p>
         </div>
 
@@ -58,51 +58,48 @@
         </div>
     @endif
 
+    {{-- PENDING REGISTRATIONS REMINDER BANNER --}}
+    @if(($pendingCount ?? 0) > 0)
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-amber-50/80 border border-amber-200/90 rounded-2xl text-xs">
+            <div class="flex items-center gap-2.5 text-amber-900 font-semibold">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>You have <strong>{{ $pendingCount }}</strong> pending student registration {{ $pendingCount === 1 ? 'application' : 'applications' }} awaiting approval.</span>
+            </div>
+            <a href="{{ route('admin.pending-registrations.index') }}" 
+               class="px-3.5 py-1.5 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold rounded-xl transition shadow-xs w-fit text-xs inline-flex items-center gap-1.5 shrink-0">
+                Go to Registrations →
+            </a>
+        </div>
+    @endif
+
     {{-- FILTER & SEARCH TOOLBAR --}}
     <div class="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         
-        {{-- Status Filter Tabs --}}
+        {{-- Role Filter Tabs --}}
         <div class="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
-            <a href="{{ route('admin.users.index', ['status' => 'all', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition {{ ($status ?? 'all') === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
-                All Users
+            <a href="{{ route('admin.users.index', ['role' => 'all', 'search' => request('search')]) }}" 
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? 'all') === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                All Active Accounts
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? 'all') === 'all' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
+                    {{ $allCount ?? $users->total() }}
+                </span>
             </a>
 
-            <a href="{{ route('admin.users.index', ['status' => 'pending', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? '') === 'pending' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
-                Pending Review
-                @if(($pendingCount ?? 0) > 0)
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? '') === 'pending' ? 'bg-white text-slate-900' : 'bg-amber-100 text-amber-800' }}">
-                        {{ $pendingCount }}
-                    </span>
-                @endif
-            </a>
-
-            <a href="{{ route('admin.users.index', ['status' => 'approved', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? '') === 'approved' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+            <a href="{{ route('admin.users.index', ['role' => 'student', 'search' => request('search')]) }}" 
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? '') === 'student' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
                 Approved Students
                 @if(($approvedCount ?? 0) > 0)
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? '') === 'approved' ? 'bg-white text-slate-900' : 'bg-emerald-100 text-emerald-800' }}">
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? '') === 'student' ? 'bg-white text-slate-900' : 'bg-emerald-100 text-emerald-800' }}">
                         {{ $approvedCount }}
                     </span>
                 @endif
             </a>
 
-            <a href="{{ route('admin.users.index', ['status' => 'rejected', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? '') === 'rejected' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
-                Rejected
-                @if(($rejectedCount ?? 0) > 0)
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? '') === 'rejected' ? 'bg-white text-slate-900' : 'bg-rose-100 text-rose-800' }}">
-                        {{ $rejectedCount }}
-                    </span>
-                @endif
-            </a>
-
-            <a href="{{ route('admin.users.index', ['status' => 'admin', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? '') === 'admin' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
-                Admins
+            <a href="{{ route('admin.users.index', ['role' => 'admin', 'search' => request('search')]) }}" 
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? '') === 'admin' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                Administrators
                 @if(($adminCount ?? 0) > 0)
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? '') === 'admin' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? '') === 'admin' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
                         {{ $adminCount }}
                     </span>
                 @endif
@@ -111,7 +108,7 @@
 
         {{-- Search Form --}}
         <form method="GET" action="{{ route('admin.users.index') }}" class="flex items-center gap-2 w-full md:w-auto">
-            <input type="hidden" name="status" value="{{ $status ?? 'all' }}">
+            <input type="hidden" name="role" value="{{ $role ?? 'all' }}">
             <div class="relative w-full md:w-64">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email, ID..."
                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-slate-800 outline-none focus:border-slate-400 focus:bg-white transition">
@@ -123,7 +120,7 @@
                 Search
             </button>
             @if(request('search'))
-                <a href="{{ route('admin.users.index', ['status' => $status ?? 'all']) }}" class="px-2 py-2 text-slate-400 hover:text-slate-600 font-bold text-xs shrink-0">
+                <a href="{{ route('admin.users.index', ['role' => $role ?? 'all']) }}" class="px-2 py-2 text-slate-400 hover:text-slate-600 font-bold text-xs shrink-0">
                     Clear
                 </a>
             @endif
@@ -133,7 +130,7 @@
     {{-- USERS TABLE CARD --}}
     <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h2 class="font-bold text-sm text-slate-900">User Accounts List</h2>
+            <h2 class="font-bold text-sm text-slate-900">Active Accounts List</h2>
             <span class="text-xs text-slate-400 font-medium">Total: {{ $users->total() }}</span>
         </div>
 
@@ -144,9 +141,9 @@
                         <th class="py-3 px-6">User</th>
                         <th class="py-3 px-6">Email</th>
                         <th class="py-3 px-6">Role</th>
-                        <th class="py-3 px-6">Status</th>
+                        <th class="py-3 px-6">Account Status</th>
                         <th class="py-3 px-6">Papers</th>
-                        <th class="py-3 px-6">Joined</th>
+                        <th class="py-3 px-6">Joined Date</th>
                         <th class="py-3 px-6 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -186,30 +183,12 @@
                                 @endif
                             </td>
                             <td class="py-3.5 px-6">
-                                @if($user->role === 'admin')
-                                    <span class="text-slate-500 font-medium text-xs">Active</span>
-                                @elseif($user->registration_status === 'pending')
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                        Pending
-                                    </span>
-                                @elseif($user->registration_status === 'approved')
-                                    <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
-                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                        Approved
-                                    </span>
-                                @elseif($user->registration_status === 'rejected')
-                                    <span class="inline-flex items-center gap-1 text-rose-700 font-semibold text-xs">
-                                        <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                        Rejected
-                                    </span>
-                                @else
-                                    <span class="text-slate-500 text-xs">{{ ucfirst($user->registration_status ?? 'Approved') }}</span>
-                                @endif
+                                <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
+                                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Active
+                                </span>
                             </td>
                             <td class="py-3.5 px-6 text-slate-600 font-medium">
                                 {{ $user->researches_count }}
@@ -219,13 +198,6 @@
                             </td>
                             <td class="py-3.5 px-6 text-right">
                                 <div class="flex items-center justify-end gap-1.5 flex-wrap">
-                                    @if($user->role === 'student' && $user->registration_status === 'pending')
-                                        <a href="{{ route('admin.pending-registrations.show', $user) }}" 
-                                           class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg font-bold text-xs transition">
-                                            Review
-                                        </a>
-                                    @endif
-
                                     <a href="{{ route('admin.users.show', $user) }}" 
                                        class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-semibold text-xs transition">
                                         View
@@ -248,7 +220,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="py-12 text-center text-slate-400 text-xs">
-                                No user accounts found matching your filter or search.
+                                No active accounts found matching your filter or search.
                             </td>
                         </tr>
                     @endforelse

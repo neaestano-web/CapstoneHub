@@ -21,46 +21,49 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $search = trim($request->input('search', ''));
-        $status = $request->input('status', 'all');
+        $role = $request->input('role', 'all');
 
-        $query = User::withCount('researches');
+        // Strictly exclude pending registrations.
+        // User Accounts page only displays active accounts: Admins and Approved Students.
+        // Pending student accounts are reviewed under the Registrations page.
+        $query = User::withCount('researches')
+            ->where(function ($q) {
+                $q->where('role', 'admin')
+                  ->orWhere(function ($sq) {
+                      $sq->where('role', 'student')
+                         ->where('registration_status', 'approved');
+                  });
+            });
 
         if ($search !== '') {
             $query->where(function ($searchQuery) use ($search) {
                 $searchQuery->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('student_id_number', 'like', "%{$search}%")
-                    ->orWhere('role', 'like', "%{$search}%");
+                    ->orWhere('student_id_number', 'like', "%{$search}%");
             });
         }
 
-        if ($status === 'pending') {
-            $query->where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'pending');
-        } elseif ($status === 'approved') {
-            $query->where('role', 'student')->where('registration_status', 'approved');
-        } elseif ($status === 'rejected') {
-            $query->where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'rejected');
-        } elseif ($status === 'admin') {
+        if ($role === 'student') {
+            $query->where('role', 'student');
+        } elseif ($role === 'admin') {
             $query->where('role', 'admin');
-        } else {
-            // Default "all": Only show active admins and students who completed OTP verification
-            $query->where(function ($q) {
-                $q->where('role', 'admin')
-                  ->orWhere(function ($sq) {
-                      $sq->where('role', 'student')->whereNotNull('email_verified_at');
-                  });
-            });
         }
 
         $users = $query->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();
 
-        $pendingCount = User::where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'pending')->count();
         $approvedCount = User::where('role', 'student')->where('registration_status', 'approved')->count();
-        $rejectedCount = User::where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'rejected')->count();
+        $adminCount = User::where('role', 'admin')->count();
+        $allCount = $approvedCount + $adminCount;
 
-        return view('admin.users.index', compact('users', 'search', 'status', 'pendingCount', 'approvedCount', 'rejectedCount'));
+        // Pending count for the notification link to Registrations reviewer
+        $pendingCount = User::where('role', 'student')
+            ->whereNotNull('email_verified_at')
+            ->where('registration_status', 'pending')
+            ->count();
+
+        return view('admin.users.index', compact('users', 'search', 'role', 'allCount', 'approvedCount', 'adminCount', 'pendingCount'));
     }
 
     /**
@@ -101,6 +104,11 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        // If student is still pending review, redirect to Registrations reviewer
+        if ($user->role === 'student' && $user->registration_status === 'pending') {
+            return redirect()->route('admin.pending-registrations.show', $user);
+        }
+
         $researches = $user->researches()
             ->orderBy('created_at', 'desc')
             ->paginate(10);
