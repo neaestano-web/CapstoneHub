@@ -16,6 +16,12 @@
             </div>
         @endif
 
+        @if (session('warning'))
+            <div class="w-full mb-3 p-3 text-xs font-semibold text-amber-300 bg-amber-950/70 border border-amber-500/40 rounded-xl text-center leading-relaxed">
+                {{ session('warning') }}
+            </div>
+        @endif
+
         <!-- OTP Verification Form -->
         <form method="POST" action="{{ route('password.otp.verify') }}" class="auth-form-body">
             @csrf

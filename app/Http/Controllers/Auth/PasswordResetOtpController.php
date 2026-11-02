@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules;
@@ -49,11 +50,33 @@ class PasswordResetOtpController extends Controller
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        // Send OTP via email
-        Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
-
         // Store email in session for the next step
         Session::put('password_reset_email', $user->email);
+
+        // Send OTP via email with error handling
+        $mailSent = false;
+        $mailErrorMessage = '';
+
+        try {
+            Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
+            Log::info("Password reset OTP sent successfully to {$user->email}");
+            $mailSent = true;
+        } catch (\Throwable $e) {
+            $mailErrorMessage = $e->getMessage();
+            Log::error("Failed to send password reset OTP to {$user->email}: " . $mailErrorMessage);
+        }
+
+        if (!$mailSent) {
+            if (app()->environment('local') || config('app.debug')) {
+                Session::flash('dev_otp', $otp);
+                return redirect()->route('password.otp.verify.form')
+                    ->with('warning', 'Notice: Email could not be delivered (' . $mailErrorMessage . '). For testing, your OTP is: ' . $otp);
+            }
+
+            return back()->withInput()->withErrors([
+                'email' => 'Unable to send OTP email. Please ensure your email settings are properly configured or try again later.',
+            ]);
+        }
 
         return redirect()->route('password.otp.verify.form')
             ->with('status', 'otp-sent');
@@ -195,7 +218,28 @@ class PasswordResetOtpController extends Controller
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
+        $mailSent = false;
+        $mailErrorMessage = '';
+
+        try {
+            Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
+            Log::info("Password reset OTP resent successfully to {$user->email}");
+            $mailSent = true;
+        } catch (\Throwable $e) {
+            $mailErrorMessage = $e->getMessage();
+            Log::error("Failed to resend password reset OTP to {$user->email}: " . $mailErrorMessage);
+        }
+
+        if (!$mailSent) {
+            if (app()->environment('local') || config('app.debug')) {
+                Session::flash('dev_otp', $otp);
+                return back()->with('warning', 'Notice: Email delivery issue (' . $mailErrorMessage . '). For testing, your OTP is: ' . $otp);
+            }
+
+            return back()->withErrors([
+                'otp' => 'Unable to resend OTP email. Please check your mail service configuration.',
+            ]);
+        }
 
         return back()->with('status', 'otp-sent');
     }
