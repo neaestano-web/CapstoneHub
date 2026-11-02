@@ -16,6 +16,12 @@
             </div>
         @endif
 
+        @if (isset($attemptsLeft) && $attemptsLeft <= 0)
+            <div class="w-full mb-3 p-3 text-xs font-semibold text-amber-300 bg-amber-950/70 border border-amber-500/40 rounded-xl text-center">
+                {{ __('Maximum OTP request limit reached (3/3 attempts). Please check your Gmail inbox or spam folder for previous codes, or wait 1 hour to try again.') }}
+            </div>
+        @endif
+
         <!-- OTP Verification Form -->
         <form method="POST" action="{{ route('password.otp.verify') }}" class="auth-form-body">
             @csrf
@@ -50,17 +56,93 @@
             </button>
         </form>
 
-        <div class="flex items-center justify-between w-full mt-4 text-xs pt-2 border-t border-slate-800/60">
-            <form method="POST" action="{{ route('password.otp.resend') }}">
-                @csrf
-                <button type="submit" class="text-emerald-400 font-bold hover:underline bg-transparent border-0 cursor-pointer p-0 text-xs">
-                    {{ __('Resend Code to Gmail') }}
-                </button>
-            </form>
+        <div class="flex items-center justify-between w-full mt-4 text-xs pt-3 border-t border-slate-800/60">
+            <div>
+                @if (isset($attemptsLeft) && $attemptsLeft <= 0)
+                    <span class="text-slate-500 font-semibold cursor-not-allowed text-xs flex items-center gap-1.5 opacity-70">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Limit reached (3/3)
+                    </span>
+                    <div class="text-[10px] text-slate-500 mt-0.5">
+                        {{ __('0 requests left (1-hour cooldown)') }}
+                    </div>
+                @else
+                    <form method="POST" action="{{ route('password.otp.resend') }}" id="resendOtpForm">
+                        @csrf
+                        <button 
+                            type="submit" 
+                            id="resendBtn" 
+                            class="text-emerald-400 font-bold hover:underline bg-transparent border-0 cursor-pointer p-0 text-xs transition-all flex items-center gap-1.5 disabled:text-slate-500 disabled:no-underline disabled:cursor-not-allowed disabled:opacity-75"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            <span id="resendBtnText">{{ __('Resend Code to Gmail') }}</span>
+                        </button>
+                    </form>
+                    <div class="text-[10px] text-slate-400 mt-0.5">
+                        Attempts remaining: <span class="text-emerald-400 font-bold">{{ $attemptsLeft ?? 3 }}/3</span>
+                    </div>
+                @endif
+            </div>
 
             <a href="{{ route('password.request') }}" class="text-slate-400 font-semibold hover:text-emerald-400 hover:underline">
                 {{ __('Change Email') }}
             </a>
         </div>
     </div>
+
+    @if (!isset($attemptsLeft) || $attemptsLeft > 0)
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const resendForm = document.getElementById('resendOtpForm');
+            const resendBtn = document.getElementById('resendBtn');
+            const resendBtnText = document.getElementById('resendBtnText');
+            if (!resendBtn || !resendBtnText) return;
+
+            const storageKey = 'pwd_reset_cooldown_until_{{ md5($email ?? "default") }}';
+            let serverCooldown = {{ (int) ($cooldownSeconds ?? 60) }};
+            const now = Math.floor(Date.now() / 1000);
+            const storedUntil = parseInt(sessionStorage.getItem(storageKey), 10);
+
+            let targetUntil = 0;
+            if (storedUntil && storedUntil > now) {
+                targetUntil = Math.max(storedUntil, now + serverCooldown);
+            } else if (serverCooldown > 0) {
+                targetUntil = now + serverCooldown;
+                sessionStorage.setItem(storageKey, targetUntil.toString());
+            }
+
+            function tick() {
+                const currentNow = Math.floor(Date.now() / 1000);
+                const remaining = Math.max(0, targetUntil - currentNow);
+
+                if (remaining > 0) {
+                    resendBtn.disabled = true;
+                    resendBtnText.textContent = `Resend Code in ${remaining}s`;
+                } else {
+                    resendBtn.disabled = false;
+                    resendBtnText.textContent = "{{ __('Resend Code to Gmail') }}";
+                    sessionStorage.removeItem(storageKey);
+                    if (intervalId) clearInterval(intervalId);
+                }
+            }
+
+            let intervalId = null;
+            if (targetUntil > now) {
+                tick();
+                intervalId = setInterval(tick, 1000);
+            } else {
+                resendBtn.disabled = false;
+                resendBtnText.textContent = "{{ __('Resend Code to Gmail') }}";
+            }
+
+            if (resendForm) {
+                resendForm.addEventListener('submit', function () {
+                    resendBtn.disabled = true;
+                    resendBtnText.textContent = 'Sending...';
+                    sessionStorage.setItem(storageKey, (Math.floor(Date.now() / 1000) + 60).toString());
+                });
+            }
+        });
+    </script>
+    @endif
 </x-guest-layout>

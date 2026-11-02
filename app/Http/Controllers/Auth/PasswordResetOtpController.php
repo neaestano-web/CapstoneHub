@@ -38,6 +38,26 @@ class PasswordResetOtpController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
+        // 1. Check 1-hour request limit (Max 3 OTP requests per hour)
+        $recentOtpCount = OtpCode::where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+
+        if ($recentOtpCount >= 3) {
+            return back()->withInput()->withErrors([
+                'email' => 'Maximum OTP request limit reached (3/3 attempts). Please wait 1 hour before requesting again.',
+            ]);
+        }
+
+        // 2. Check 60-second cooldown from last OTP creation
+        $latestOtp = OtpCode::where('user_id', $user->id)->latest()->first();
+        if ($latestOtp && (int) $latestOtp->created_at->diffInSeconds(now()) < 60) {
+            $secondsLeft = 60 - (int) $latestOtp->created_at->diffInSeconds(now());
+            return back()->withInput()->withErrors([
+                'email' => "Please wait {$secondsLeft} seconds before requesting a new OTP code.",
+            ]);
+        }
+
         // Invalidate all previous password reset OTPs for this user
         OtpCode::where('user_id', $user->id)->update(['used' => true]);
 
@@ -78,7 +98,33 @@ class PasswordResetOtpController extends Controller
             return redirect()->route('password.request');
         }
 
-        return view('auth.verify-reset-otp');
+        $email = Session::get('password_reset_email');
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return redirect()->route('password.request');
+        }
+
+        // Count OTP requests made in the last 1 hour
+        $recentOtpCount = OtpCode::where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+
+        // Calculate remaining 60-second cooldown from the latest OTP
+        $latestOtp = OtpCode::where('user_id', $user->id)->latest()->first();
+        $cooldownSeconds = 0;
+        if ($latestOtp && (int) $latestOtp->created_at->diffInSeconds(now()) < 60) {
+            $cooldownSeconds = 60 - (int) $latestOtp->created_at->diffInSeconds(now());
+        }
+
+        $attemptsLeft = max(0, 3 - $recentOtpCount);
+
+        return view('auth.verify-reset-otp', [
+            'email'           => $email,
+            'cooldownSeconds' => $cooldownSeconds,
+            'attemptsLeft'    => $attemptsLeft,
+            'recentRequests'  => $recentOtpCount,
+        ]);
     }
 
     /**
@@ -167,6 +213,9 @@ class PasswordResetOtpController extends Controller
             'password' => Hash::make($request->password),
         ])->save();
 
+        // Invalidate and remove all OTP codes for this user
+        OtpCode::where('user_id', $user->id)->delete();
+
         // Clear session
         Session::forget(['password_reset_email', 'password_reset_verified']);
 
@@ -191,6 +240,26 @@ class PasswordResetOtpController extends Controller
 
         if (!$user) {
             return redirect()->route('password.request');
+        }
+
+        // 1. Check 1-hour request limit (Max 3 OTP requests)
+        $recentOtpCount = OtpCode::where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+
+        if ($recentOtpCount >= 3) {
+            return back()->withErrors([
+                'otp' => 'Maximum OTP request limit reached (3/3 attempts). Please wait 1 hour before requesting another code.',
+            ]);
+        }
+
+        // 2. Check 60-second cooldown
+        $latestOtp = OtpCode::where('user_id', $user->id)->latest()->first();
+        if ($latestOtp && (int) $latestOtp->created_at->diffInSeconds(now()) < 60) {
+            $secondsLeft = 60 - (int) $latestOtp->created_at->diffInSeconds(now());
+            return back()->withErrors([
+                'otp' => "Please wait {$secondsLeft} seconds before requesting a new OTP.",
+            ]);
         }
 
         // Invalidate all previous OTPs for this user
