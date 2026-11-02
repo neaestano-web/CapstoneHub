@@ -17,6 +17,96 @@ class DocumentViewController extends Controller
      * For PDF files: serves directly.
      * For DOCX files: converts to PDF via the AI service (cached), then serves.
      */
+    /**
+     * Public Preview: Serve ONLY the first page of the first uploaded file as a PDF for guest users.
+     */
+    public function preview(Research $research, AIService $ai)
+    {
+        // 1. Get the first uploaded file in sequential order
+        $files = $research->files()->orderBy('sort_order', 'asc')->get();
+        $firstFile = $files->first();
+        $primaryPath = $firstFile?->file_path ?? $research->pdf_path;
+
+        if (!$primaryPath || !Storage::disk('public')->exists($primaryPath)) {
+            abort(404, 'Preview document not found.');
+        }
+
+        $extension = strtolower(pathinfo($primaryPath, PATHINFO_EXTENSION));
+        $absoluteSourcePath = Storage::disk('public')->path($primaryPath);
+
+        // 2. If it's a DOCX file, convert to PDF first using the existing converter
+        if ($extension !== 'pdf') {
+            $pdfRelativePath = 'researches/pdf_cache/' . pathinfo($primaryPath, PATHINFO_FILENAME) . '.pdf';
+            $absolutePdfPath = Storage::disk('public')->path($pdfRelativePath);
+
+            if (!Storage::disk('public')->exists($pdfRelativePath)) {
+                try {
+                    $converted = $ai->convertDocxToPdf($absoluteSourcePath, $absolutePdfPath);
+                    if (!$converted || !file_exists($absolutePdfPath)) {
+                        abort(404, 'Unable to convert document for preview.');
+                    }
+                } catch (\Throwable $e) {
+                    abort(404, 'Unable to prepare preview.');
+                }
+            }
+            $absoluteSourcePath = $absolutePdfPath;
+        }
+
+        // 3. Generate or retrieve the cached 1-page PDF
+        $mtime = file_exists($absoluteSourcePath) ? filemtime($absoluteSourcePath) : time();
+        $cacheHash = substr(md5($primaryPath . '_' . $mtime), 0, 12);
+        $previewRelativePath = 'researches/pdf_cache/page1_preview_' . $research->id . '_' . $cacheHash . '.pdf';
+        $absolutePreviewPath = Storage::disk('public')->path($previewRelativePath);
+
+        if (!Storage::disk('public')->exists($previewRelativePath)) {
+            // Ensure Fpdi is loaded
+            if (!class_exists(\setasign\Fpdi\Fpdi::class)) {
+                if (file_exists(base_path('vendor/setasign/fpdf/fpdf.php'))) {
+                    require_once base_path('vendor/setasign/fpdf/fpdf.php');
+                }
+                if (file_exists(base_path('vendor/setasign/fpdi/src/autoload.php'))) {
+                    require_once base_path('vendor/setasign/fpdi/src/autoload.php');
+                }
+            }
+
+            try {
+                $fpdi = new \setasign\Fpdi\Fpdi();
+                $pageCount = $fpdi->setSourceFile($absoluteSourcePath);
+                if ($pageCount >= 1) {
+                    $templateId = $fpdi->importPage(1);
+                    $size = $fpdi->getTemplateSize($templateId);
+                    $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                    $fpdi->useTemplate($templateId);
+
+                    if (!is_dir(dirname($absolutePreviewPath))) {
+                        mkdir(dirname($absolutePreviewPath), 0755, true);
+                    }
+                    $fpdi->Output($absolutePreviewPath, 'F');
+                }
+            } catch (\Throwable $e) {
+                // If FPDI fails on a non-standard PDF compression, fall back gracefully
+                return response(file_get_contents($absoluteSourcePath), 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . pathinfo($primaryPath, PATHINFO_FILENAME) . ' (Page 1 Preview).pdf"',
+                ]);
+            }
+        }
+
+        if (Storage::disk('public')->exists($previewRelativePath)) {
+            $content = Storage::disk('public')->get($previewRelativePath);
+            $safeTitle = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $research->title);
+
+            return response($content, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $safeTitle . ' (Page 1 Preview).pdf"',
+                'Content-Length' => strlen($content),
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        abort(404, 'Preview file could not be generated.');
+    }
+
     public function show(Research $research, AIService $ai)
     {
         if (request()->has('download')) {

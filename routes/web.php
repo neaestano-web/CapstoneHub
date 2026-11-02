@@ -133,6 +133,9 @@ Route::get('/browse', [RepositoryController::class, 'index'])->name('browse');
 Route::redirect('/repository/search', '/repository');
 Route::get('/repository/{research}', [RepositoryController::class, 'show'])->name('repository.show');
 
+// Public Manuscript Preview (Page 1 only of first uploaded file for guests)
+Route::get('/repository/{research}/preview', [DocumentViewController::class, 'preview'])->name('document.preview');
+
 // Manuscript viewing and downloading routes (Protected: requires active auth and approved registration)
 Route::middleware(['auth', 'registration_approved'])->group(function () {
     Route::get('/repository/{research}/full', [RepositoryController::class, 'show'])->name('repository.full');
