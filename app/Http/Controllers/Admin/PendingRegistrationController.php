@@ -20,7 +20,9 @@ class PendingRegistrationController extends Controller
     {
         $filter = $request->get('filter', 'pending');
 
+        // Only show student applications whose email has been verified via OTP
         $query = User::where('role', 'student')
+            ->whereNotNull('email_verified_at')
             ->whereIn('registration_status', ['pending', 'rejected']);
 
         if ($filter === 'pending') {
@@ -48,7 +50,7 @@ class PendingRegistrationController extends Controller
      */
     public function show(User $user)
     {
-        if ($user->role !== 'student') {
+        if ($user->role !== 'student' || !$user->hasVerifiedEmail()) {
             abort(404);
         }
 
@@ -64,7 +66,7 @@ class PendingRegistrationController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        if ($user->role !== 'student') {
+        if ($user->role !== 'student' || !$user->hasVerifiedEmail()) {
             abort(404);
         }
 
@@ -92,7 +94,7 @@ class PendingRegistrationController extends Controller
      */
     public function approve(User $user)
     {
-        if ($user->role !== 'student') {
+        if ($user->role !== 'student' || !$user->hasVerifiedEmail()) {
             abort(404);
         }
 
@@ -125,7 +127,7 @@ class PendingRegistrationController extends Controller
      */
     public function reject(Request $request, User $user)
     {
-        if ($user->role !== 'student') {
+        if ($user->role !== 'student' || !$user->hasVerifiedEmail()) {
             abort(404);
         }
 

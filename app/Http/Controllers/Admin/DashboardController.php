@@ -13,7 +13,12 @@ class DashboardController extends Controller
         $totalResearches = Research::count();
         $approvedResearches = Research::where('status', 'approved')->count();
         $pendingResearches = Research::where('status', 'pending')->count();
-        $totalUsers = User::count();
+        $totalUsers = User::where(function ($q) {
+            $q->where('role', 'admin')
+              ->orWhere(function ($sq) {
+                  $sq->where('role', 'student')->whereNotNull('email_verified_at');
+              });
+        })->count();
 
         return view('admin.dashboard', compact(
             'totalResearches',

@@ -74,7 +74,7 @@
     {{-- FILTER & SEARCH TOOLBAR --}}
     <div class="p-4 bg-white rounded-3xl border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
         <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
-            @php $pendingRegCount = \App\Models\User::where('role','student')->where('registration_status','pending')->count(); @endphp
+            @php $pendingRegCount = \App\Models\User::where('role','student')->whereNotNull('email_verified_at')->where('registration_status','pending')->count(); @endphp
             <a href="{{ route('admin.pending-registrations.index', ['filter' => 'pending']) }}" 
                class="filter-pill-admin {{ $filter === 'pending' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
                 <span>⏳ Pending</span>
@@ -83,7 +83,7 @@
                 @endif
             </a>
 
-            @php $rejectedRegCount = \App\Models\User::where('role','student')->where('registration_status','rejected')->count(); @endphp
+            @php $rejectedRegCount = \App\Models\User::where('role','student')->whereNotNull('email_verified_at')->where('registration_status','rejected')->count(); @endphp
             <a href="{{ route('admin.pending-registrations.index', ['filter' => 'rejected']) }}" 
                class="filter-pill-admin {{ $filter === 'rejected' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
                 <span>❌ Rejected</span>

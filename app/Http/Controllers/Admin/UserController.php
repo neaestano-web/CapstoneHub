@@ -33,22 +33,30 @@ class UserController extends Controller
         }
 
         if ($status === 'pending') {
-            $query->where('role', 'student')->where('registration_status', 'pending');
+            $query->where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'pending');
         } elseif ($status === 'approved') {
             $query->where('role', 'student')->where('registration_status', 'approved');
         } elseif ($status === 'rejected') {
-            $query->where('role', 'student')->where('registration_status', 'rejected');
+            $query->where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'rejected');
         } elseif ($status === 'admin') {
             $query->where('role', 'admin');
+        } else {
+            // Default "all": Only show active admins and students who completed OTP verification
+            $query->where(function ($q) {
+                $q->where('role', 'admin')
+                  ->orWhere(function ($sq) {
+                      $sq->where('role', 'student')->whereNotNull('email_verified_at');
+                  });
+            });
         }
 
         $users = $query->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();
 
-        $pendingCount = User::where('role', 'student')->where('registration_status', 'pending')->count();
+        $pendingCount = User::where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'pending')->count();
         $approvedCount = User::where('role', 'student')->where('registration_status', 'approved')->count();
-        $rejectedCount = User::where('role', 'student')->where('registration_status', 'rejected')->count();
+        $rejectedCount = User::where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'rejected')->count();
 
         return view('admin.users.index', compact('users', 'search', 'status', 'pendingCount', 'approvedCount', 'rejectedCount'));
     }

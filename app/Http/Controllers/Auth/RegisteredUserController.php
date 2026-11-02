@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -33,10 +34,22 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Clean up any previous abandoned unverified registration with this email
+        if ($request->filled('email')) {
+            $existingUnverified = User::where('email', strtolower($request->email))
+                ->whereNull('email_verified_at')
+                ->first();
+
+            if ($existingUnverified) {
+                OtpCode::where('user_id', $existingUnverified->id)->delete();
+                $existingUnverified->delete();
+            }
+        }
+
         $request->validate([
             'first_name'        => ['required', 'string', 'max:255'],
             'last_name'         => ['required', 'string', 'max:255'],
-            'email'             => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email'             => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->whereNotNull('email_verified_at')],
             'password'          => ['required', 'confirmed', Rules\Password::defaults()],
             'student_id_number' => ['required', 'string', 'max:50'],
             'id_picture_front'  => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],

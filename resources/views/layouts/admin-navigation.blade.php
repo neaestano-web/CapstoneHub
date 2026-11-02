@@ -110,7 +110,7 @@
 
 @php
     $pendingResCount = \App\Models\Research::where('status', 'pending')->count();
-    $pendingRegCount = \App\Models\User::where('role','student')->where('registration_status','pending')->count();
+    $pendingRegCount = \App\Models\User::where('role','student')->whereNotNull('email_verified_at')->where('registration_status','pending')->count();
     $pendingDownloadCount = \App\Models\DownloadRequest::where('status','pending')->count();
 @endphp
 
