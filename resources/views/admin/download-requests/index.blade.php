@@ -2,213 +2,221 @@
 @section('title', 'Download Requests — JHCSC Capstone Portal')
 
 @section('content')
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
-    .admin-download-req-body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #2d2b56;
-    }
-
-    .table-container-card {
-        background: #ffffff;
-        border-radius: 24px;
-        border: 1.5px solid #e2e8f0;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-    }
-
-    .filter-pill-admin {
-        padding: 8px 18px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 700;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .filter-pill-active {
-        background: #0c4233;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(12, 66, 51, 0.25);
-    }
-
-    .filter-pill-inactive {
-        background: #f1f5f9;
-        color: #64748b;
-    }
-
-    .filter-pill-inactive:hover {
-        background: #e2e8f0;
-        color: #2d2b56;
-    }
-</style>
-
-<div class="admin-download-req-body space-y-6 max-w-7xl mx-auto">
+<div class="space-y-6 max-w-7xl mx-auto pb-12">
     {{-- HEADER SECTION --}}
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200/80">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-            <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem;" class="font-extrabold text-[#2d2b56] tracking-tight leading-tight">
-                Manuscript <span class="text-[#0c4233]">Download Requests</span>
-            </h1>
-            <p class="text-slate-500 text-xs font-medium mt-1">
-                Review student requests to download capstone manuscripts and grant or deny access.
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Administration</span>
+                <span class="text-slate-300">/</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Download Requests</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">Download Requests</h1>
+            <p class="text-slate-500 text-xs font-medium mt-0.5">
+                Review student requests to access and download complete capstone manuscripts.
             </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
+                Total: {{ $requests->total() }} {{ $requests->total() === 1 ? 'Request' : 'Requests' }}
+            </span>
         </div>
     </div>
 
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs">
+        <div class="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold">
             <div class="flex items-center gap-2">
-                <span class="text-base">✅</span>
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
                 <span>{{ session('success') }}</span>
             </div>
-            <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-800 text-sm font-black">✕</button>
+            <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-800 text-sm font-bold">✕</button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="flex items-center justify-between p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-800 text-sm font-bold">✕</button>
         </div>
     @endif
 
     {{-- FILTER TOOLBAR --}}
-    <div class="p-4 bg-white rounded-3xl border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
-        <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
+    <div class="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
             <a href="{{ route('admin.download-requests.index', ['status' => 'all']) }}" 
-               class="filter-pill-admin {{ $status === 'all' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
-                <span>📋 All Requests</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-200 text-slate-700">{{ $pendingCount + $approvedCount + $rejectedCount }}</span>
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? 'all') === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                <span>All Requests</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? 'all') === 'all' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
+                    {{ $pendingCount + $approvedCount + $rejectedCount }}
+                </span>
             </a>
 
             <a href="{{ route('admin.download-requests.index', ['status' => 'pending']) }}" 
-               class="filter-pill-admin {{ $status === 'pending' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
-                <span>⏳ Pending</span>
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? '') === 'pending' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                <span>Pending</span>
                 @if($pendingCount > 0)
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-amber-950">{{ $pendingCount }}</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? '') === 'pending' ? 'bg-amber-400 text-amber-950' : 'bg-amber-100 text-amber-800' }}">
+                        {{ $pendingCount }}
+                    </span>
                 @endif
             </a>
 
             <a href="{{ route('admin.download-requests.index', ['status' => 'approved']) }}" 
-               class="filter-pill-admin {{ $status === 'approved' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
-                <span>✅ Approved</span>
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? '') === 'approved' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                <span>Approved</span>
                 @if($approvedCount > 0)
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-400 text-emerald-950">{{ $approvedCount }}</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? '') === 'approved' ? 'bg-white text-slate-900' : 'bg-emerald-100 text-emerald-800' }}">
+                        {{ $approvedCount }}
+                    </span>
                 @endif
             </a>
 
             <a href="{{ route('admin.download-requests.index', ['status' => 'rejected']) }}" 
-               class="filter-pill-admin {{ $status === 'rejected' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
-                <span>❌ Rejected</span>
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($status ?? '') === 'rejected' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                <span>Rejected</span>
                 @if($rejectedCount > 0)
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-400 text-rose-950">{{ $rejectedCount }}</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($status ?? '') === 'rejected' ? 'bg-white text-slate-900' : 'bg-rose-100 text-rose-800' }}">
+                        {{ $rejectedCount }}
+                    </span>
                 @endif
             </a>
         </div>
-
-        <span class="text-xs font-bold text-slate-400 hidden md:inline">Showing {{ $requests->total() }} Records</span>
     </div>
 
     {{-- TABLE CONTAINER CARD --}}
-    <div class="table-container-card">
-        <div class="p-5 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
-            <h3 class="font-extrabold text-sm text-[#2d2b56] flex items-center gap-2">
-                <span>📥</span> Download Access Requests
-            </h3>
+    <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-bold text-sm text-slate-900">Access Requests List</h2>
+            <span class="text-xs text-slate-400 font-medium">Total: {{ $requests->total() }}</span>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        <th class="py-4 px-6">Student</th>
-                        <th class="py-4 px-6">Requested Manuscript</th>
-                        <th class="py-4 px-6">Reason / Purpose</th>
-                        <th class="py-4 px-6">Requested On</th>
-                        <th class="py-4 px-6">Status</th>
-                        <th class="py-4 px-6 text-right">Actions</th>
+                    <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3 px-6">Student</th>
+                        <th class="py-3 px-6">Requested Manuscript</th>
+                        <th class="py-3 px-6">Purpose / Reason</th>
+                        <th class="py-3 px-6">Date</th>
+                        <th class="py-3 px-6">Status</th>
+                        <th class="py-3 px-6 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-xs font-semibold">
+                <tbody class="divide-y divide-slate-100 text-xs">
                     @forelse($requests as $req)
                         <tr class="hover:bg-slate-50/70 transition-colors">
-                            <td class="py-4 px-6">
-                                <div class="space-y-1">
-                                    <span class="font-extrabold text-sm text-[#2d2b56] block">{{ $req->user->name ?? 'N/A' }}</span>
+                            {{-- Student --}}
+                            <td class="py-3.5 px-6">
+                                <div class="space-y-0.5">
+                                    <span class="font-bold text-slate-900 block">{{ $req->user->name ?? 'N/A' }}</span>
                                     <span class="text-slate-500 block text-[11px]">{{ $req->user->email ?? '' }}</span>
-                                    @if($req->user->student_id_number)
-                                        <code class="inline-block px-2 py-0.5 bg-slate-100 text-[#0c4233] text-[10px] font-extrabold rounded-md">
+                                    @if($req->user && $req->user->student_id_number)
+                                        <span class="inline-block font-mono text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
                                             ID: {{ $req->user->student_id_number }}
-                                        </code>
+                                        </span>
                                     @endif
                                 </div>
                             </td>
-                            <td class="py-4 px-6 max-w-xs">
-                                <div class="space-y-1">
-                                    <a href="{{ route('repository.show', $req->research) }}" target="_blank" class="font-extrabold text-[#0c4233] hover:text-[#5840bb] transition line-clamp-2 leading-snug">
-                                        {{ $req->research->title }}
-                                    </a>
-                                    <span class="text-slate-400 text-[11px] block">Authors: {{ Str::limit($req->research->authors, 35) }}</span>
+
+                            {{-- Requested Manuscript --}}
+                            <td class="py-3.5 px-6 max-w-xs">
+                                <div class="space-y-0.5">
+                                    @if($req->research)
+                                        <a href="{{ route('repository.show', $req->research) }}" target="_blank" 
+                                           class="font-bold text-slate-900 hover:text-emerald-700 transition line-clamp-2 leading-snug">
+                                            {{ $req->research->title }}
+                                        </a>
+                                        <span class="text-slate-400 text-[11px] block truncate">
+                                            Authors: {{ $req->research->authors }}
+                                        </span>
+                                    @else
+                                        <span class="text-slate-400 italic">Research unavailable</span>
+                                    @endif
                                 </div>
                             </td>
-                            <td class="py-4 px-6 max-w-xs text-slate-600 font-medium">
-                                <p class="line-clamp-3 leading-relaxed">{{ $req->reason ? $req->reason : 'No specific purpose provided.' }}</p>
+
+                            {{-- Purpose / Reason --}}
+                            <td class="py-3.5 px-6 max-w-xs text-slate-600">
+                                <p class="line-clamp-2 leading-relaxed text-[11px]">
+                                    {{ $req->reason ? $req->reason : 'No specific purpose provided.' }}
+                                </p>
                             </td>
-                            <td class="py-4 px-6 text-slate-500">
-                                <span class="block font-bold text-slate-700">{{ $req->created_at->format('M d, Y') }}</span>
+
+                            {{-- Date --}}
+                            <td class="py-3.5 px-6 text-slate-400 font-medium whitespace-nowrap">
+                                <span class="block text-slate-700">{{ $req->created_at->format('M d, Y') }}</span>
                                 <span class="text-[10px] text-slate-400">{{ $req->created_at->format('h:i A') }}</span>
                             </td>
-                            <td class="py-4 px-6">
+
+                            {{-- Status --}}
+                            <td class="py-3.5 px-6">
                                 @if($req->isPending())
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></span>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                         Pending Review
                                     </span>
                                 @elseif($req->isApproved())
-                                    <div class="inline-flex flex-col items-start gap-1">
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900">
-                                            ✓ Access Granted
+                                    <div class="inline-flex flex-col items-start gap-0.5">
+                                        <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
+                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            Access Granted
                                         </span>
                                         @if($req->actionedBy)
-                                            <span class="text-[10px] text-slate-400 font-bold px-1">Approved by {{ $req->actionedBy->name }}</span>
+                                            <span class="text-[10px] text-slate-400 font-medium">by {{ $req->actionedBy->name }}</span>
                                         @endif
                                     </div>
                                 @else
-                                    <div class="inline-flex flex-col items-start gap-1">
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-900">
-                                            ✕ Access Denied
+                                    <div class="inline-flex flex-col items-start gap-0.5">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                                            <svg class="w-3 h-3 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Access Denied
                                         </span>
                                         @if($req->actionedBy)
-                                            <span class="text-[10px] text-slate-400 font-bold px-1">Denied by {{ $req->actionedBy->name }}</span>
+                                            <span class="text-[10px] text-slate-400 font-medium">by {{ $req->actionedBy->name }}</span>
                                         @endif
                                     </div>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-right">
-                                <div class="flex items-center justify-end gap-2">
+
+                            {{-- Actions --}}
+                            <td class="py-3.5 px-6 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-1.5">
                                     @if($req->isPending())
                                         <form action="{{ route('admin.download-requests.approve', $req) }}" method="POST" class="inline" onsubmit="return confirm('Grant full manuscript download access to {{ addslashes($req->user->name ?? 'student') }}?')">
                                             @csrf @method('PATCH')
-                                            <button type="submit" class="px-3.5 py-1.5 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-full font-extrabold text-xs transition shadow-xs">
-                                                ✓ Approve
+                                            <button type="submit" class="px-2.5 py-1 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-lg font-bold text-xs transition shadow-xs">
+                                                Approve
                                             </button>
                                         </form>
                                         <form action="{{ route('admin.download-requests.reject', $req) }}" method="POST" class="inline" onsubmit="return confirm('Deny download access for this request?')">
                                             @csrf @method('PATCH')
-                                            <button type="submit" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full font-extrabold text-xs transition">
-                                                ✕ Reject
+                                            <button type="submit" class="px-2.5 py-1 text-rose-700 hover:text-rose-900 hover:bg-rose-50 border border-rose-200 rounded-lg font-bold text-xs transition">
+                                                Reject
                                             </button>
                                         </form>
                                     @elseif($req->isApproved())
                                         <form action="{{ route('admin.download-requests.reject', $req) }}" method="POST" class="inline" onsubmit="return confirm('Revoke download access for this student?')">
                                             @csrf @method('PATCH')
-                                            <button type="submit" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full font-extrabold text-xs transition">
-                                                Revoke Access
+                                            <button type="submit" class="px-2.5 py-1 text-slate-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg font-semibold text-xs transition">
+                                                Revoke
                                             </button>
                                         </form>
                                     @elseif($req->isRejected())
                                         <form action="{{ route('admin.download-requests.approve', $req) }}" method="POST" class="inline" onsubmit="return confirm('Grant download access to this student?')">
                                             @csrf @method('PATCH')
-                                            <button type="submit" class="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-full font-extrabold text-xs transition">
+                                            <button type="submit" class="px-2.5 py-1 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg font-semibold text-xs transition">
                                                 Grant Access
                                             </button>
                                         </form>
@@ -218,12 +226,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-16 text-center space-y-3">
-                                <div class="w-14 h-14 bg-emerald-50 text-[#0c4233] rounded-full flex items-center justify-center font-bold text-2xl mx-auto">
-                                    📭
-                                </div>
-                                <h4 class="font-extrabold text-base text-[#2d2b56]">No Download Requests Found</h4>
-                                <p class="text-xs text-slate-400 max-w-sm mx-auto">There are no download requests matching your selected filter.</p>
+                            <td colspan="6" class="py-12 text-center text-slate-400 text-xs">
+                                No download requests found matching your selected filter.
                             </td>
                         </tr>
                     @endforelse
@@ -232,7 +236,7 @@
         </div>
 
         @if($requests->hasPages())
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
                 {{ $requests->links() }}
             </div>
         @endif

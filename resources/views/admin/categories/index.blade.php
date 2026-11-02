@@ -2,140 +2,117 @@
 @section('title', 'Manage Categories — JHCSC Capstone Portal')
 
 @section('content')
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
-    .admin-categories-body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #2d2b56;
-    }
-
-    .table-container-card {
-        background: #ffffff;
-        border-radius: 24px;
-        border: 1.5px solid #e2e8f0;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-    }
-
-    .btn-create-primary {
-        background: #0c4233;
-        color: #ffffff;
-        padding: 10px 24px;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 13px;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.25s ease;
-        box-shadow: 0 4px 14px rgba(12, 66, 51, 0.25);
-    }
-
-    .btn-create-primary:hover {
-        background: #082d23;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(12, 66, 51, 0.35);
-        color: #ffffff;
-    }
-</style>
-
-<div class="admin-categories-body space-y-6 max-w-7xl mx-auto">
+<div class="space-y-6 max-w-7xl mx-auto pb-12">
     {{-- HEADER SECTION --}}
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200/80">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-            <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem;" class="font-extrabold text-[#2d2b56] tracking-tight leading-tight">
-                Manage <span class="text-[#0c4233]">Categories</span>
-            </h1>
-            <p class="text-slate-500 text-xs font-medium mt-1">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Administration</span>
+                <span class="text-slate-300">/</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Categories</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">Manage Categories</h1>
+            <p class="text-slate-500 text-xs font-medium mt-0.5">
                 Organize and classify research papers into academic categories and sub-project types.
             </p>
         </div>
 
         <div class="flex items-center gap-3 shrink-0">
-            <a href="{{ route('admin.categories.create') }}" class="btn-create-primary">
-                <span>➕</span> Add New Category
+            <a href="{{ route('admin.categories.create') }}" 
+               class="px-4 py-2 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold text-xs rounded-xl transition shadow-xs inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Category
             </a>
         </div>
     </div>
 
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs">
+        <div class="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold">
             <div class="flex items-center gap-2">
-                <span class="text-base">✅</span>
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
                 <span>{{ session('success') }}</span>
             </div>
-            <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-800 text-sm font-black">✕</button>
+            <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-800 text-sm font-bold">✕</button>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs">
+        <div class="flex items-center justify-between p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold">
             <div class="flex items-center gap-2">
-                <span class="text-base">⚠️</span>
+                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
                 <span>{{ session('error') }}</span>
             </div>
-            <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-800 text-sm font-black">✕</button>
+            <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-800 text-sm font-bold">✕</button>
         </div>
     @endif
 
     {{-- TABLE CONTAINER CARD --}}
-    <div class="table-container-card">
-        <div class="p-5 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
-            <h3 class="font-extrabold text-sm text-[#2d2b56] flex items-center gap-2">
-                <span>📂</span> Research Category Classifications
-            </h3>
-            <span class="text-xs font-bold text-slate-400">Total: {{ $categories->total() }} Categories</span>
+    <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-bold text-sm text-slate-900">Category Classifications</h2>
+            <span class="text-xs text-slate-400 font-medium">Total: {{ $categories->total() }}</span>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        <th class="py-4 px-6">#</th>
-                        <th class="py-4 px-6">Category Name</th>
-                        <th class="py-4 px-6">Description</th>
-                        <th class="py-4 px-6">Assigned Papers</th>
-                        <th class="py-4 px-6 text-right">Actions</th>
+                    <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3 px-6 w-12">#</th>
+                        <th class="py-3 px-6">Category Name</th>
+                        <th class="py-3 px-6">Description</th>
+                        <th class="py-3 px-6">Assigned Papers</th>
+                        <th class="py-3 px-6 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-xs font-semibold">
+                <tbody class="divide-y divide-slate-100 text-xs">
                     @forelse($categories as $category)
                         <tr class="hover:bg-slate-50/70 transition-colors">
-                            <td class="py-4 px-6 text-slate-400 font-bold">
+                            <td class="py-3.5 px-6 text-slate-400 font-medium">
                                 {{ $loop->iteration + ($categories->currentPage() - 1) * $categories->perPage() }}
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-3.5 px-6">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-bold shrink-0">
-                                        📂
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center justify-center shrink-0">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                                        </svg>
                                     </div>
-                                    <a href="{{ route('admin.categories.show', $category) }}" class="font-extrabold text-sm text-[#2d2b56] hover:text-[#5840bb] transition">
+                                    <a href="{{ route('admin.categories.show', $category) }}" 
+                                       class="font-bold text-slate-900 hover:text-emerald-700 transition">
                                         {{ $category->name }}
                                     </a>
                                 </div>
                             </td>
-                            <td class="py-4 px-6 text-slate-500 max-w-sm">
-                                {{ Str::limit($category->description, 70) ?? 'No description provided' }}
+                            <td class="py-3.5 px-6 text-slate-500 max-w-sm">
+                                <span class="line-clamp-2">
+                                    {{ $category->description ?? 'No description provided.' }}
+                                </span>
                             </td>
-                            <td class="py-4 px-6">
-                                <span class="px-3 py-1 bg-purple-50 text-purple-800 border border-purple-200 text-xs font-extrabold rounded-full">
+                            <td class="py-3.5 px-6">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                                     {{ number_format($category->classified_researches_count) }} papers
                                 </span>
                             </td>
-                            <td class="py-4 px-6 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('admin.categories.show', $category) }}" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-[#2d2b56] rounded-full font-extrabold text-xs transition">
-                                        View Details
+                            <td class="py-3.5 px-6 text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <a href="{{ route('admin.categories.show', $category) }}" 
+                                       class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-semibold text-xs transition">
+                                        View
                                     </a>
-                                    <a href="{{ route('admin.categories.edit', $category) }}" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full font-extrabold text-xs transition">
+                                    <a href="{{ route('admin.categories.edit', $category) }}" 
+                                       class="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg font-semibold text-xs transition">
                                         Edit
                                     </a>
-                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete this category?')">
+                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete category {{ addslashes($category->name) }}?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full font-extrabold text-xs transition">
+                                        <button type="submit" class="px-2 py-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg font-semibold text-xs transition">
                                             Delete
                                         </button>
                                     </form>
@@ -144,15 +121,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-16 text-center space-y-3">
-                                <div class="w-14 h-14 bg-emerald-50 text-[#0c4233] rounded-full flex items-center justify-center font-bold text-2xl mx-auto">
-                                    📂
-                                </div>
-                                <h4 class="font-extrabold text-base text-[#2d2b56]">No Categories Found</h4>
-                                <p class="text-xs text-slate-400 max-w-sm mx-auto">Start organizing capstone papers by creating your first category.</p>
-                                <a href="{{ route('admin.categories.create') }}" class="btn-create-primary inline-flex mt-2">
-                                    ➕ Create Category
-                                </a>
+                            <td colspan="5" class="py-12 text-center text-slate-400 text-xs">
+                                No categories found. Create a category to start organizing manuscripts.
                             </td>
                         </tr>
                     @endforelse
@@ -161,7 +131,7 @@
         </div>
 
         @if($categories->hasPages())
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
                 {{ $categories->links() }}
             </div>
         @endif
