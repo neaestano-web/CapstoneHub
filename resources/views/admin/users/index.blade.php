@@ -11,27 +11,89 @@
     }
 </style>
 
-<div class="admin-users-wrap max-w-7xl mx-auto space-y-6">
+{{-- FIXED / STICKY HEADER & CONTROLS DECK --}}
+<div class="sticky top-14 lg:top-0 z-30 border-b border-slate-200/90 -mt-6 -mx-5 px-5 lg:-mt-9 lg:-mx-10 lg:px-10 pt-5 pb-4 shadow-xs transition-colors mb-6" style="background-color: var(--guest-bg-surface, #ffffff);">
+    <div class="max-w-7xl mx-auto space-y-3.5">
+        
+        {{-- Top Row: Title, Subtitle, and Add User Button --}}
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">User Accounts</h1>
+                <p class="text-slate-500 text-xs font-medium mt-0.5">
+                    Overview of active student accounts and institutional administrators.
+                </p>
+            </div>
 
-    {{-- HEADER SECTION --}}
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
-        <div>
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">User Accounts</h1>
-            <p class="text-slate-500 text-xs font-medium mt-0.5">
-                Overview of active student accounts and institutional administrators.
-            </p>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ route('admin.users.create') }}" 
+                   class="px-4 py-2 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add User
+                </a>
+            </div>
         </div>
 
-        <div class="flex items-center gap-2 shrink-0">
-            <a href="{{ route('admin.users.create') }}" 
-               class="px-4 py-2 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Add User
-            </a>
+        {{-- Bottom Row: Role Filter Tabs & Search Form --}}
+        <div class="bg-white rounded-2xl border border-slate-200/90 p-3.5 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
+            
+            {{-- Role Filter Tabs --}}
+            <div class="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
+                <a href="{{ route('admin.users.index', ['role' => 'all', 'search' => request('search')]) }}" 
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? 'all') === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                    All Active Accounts
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? 'all') === 'all' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
+                        {{ $allCount ?? $users->total() }}
+                    </span>
+                </a>
+
+                <a href="{{ route('admin.users.index', ['role' => 'student', 'search' => request('search')]) }}" 
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? '') === 'student' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                    Approved Students
+                    @if(($approvedCount ?? 0) > 0)
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? '') === 'student' ? 'bg-white text-slate-900' : 'bg-emerald-100 text-emerald-800' }}">
+                            {{ $approvedCount }}
+                        </span>
+                    @endif
+                </a>
+
+                <a href="{{ route('admin.users.index', ['role' => 'admin', 'search' => request('search')]) }}" 
+                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? '') === 'admin' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                    Administrators
+                    @if(($adminCount ?? 0) > 0)
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? '') === 'admin' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
+                            {{ $adminCount }}
+                        </span>
+                    @endif
+                </a>
+            </div>
+
+            {{-- Search Form --}}
+            <form method="GET" action="{{ route('admin.users.index') }}" class="flex items-center gap-2 w-full md:w-auto">
+                <input type="hidden" name="role" value="{{ $role ?? 'all' }}">
+                <div class="relative w-full md:w-64">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email, ID..."
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-slate-800 outline-none focus:border-slate-400 focus:bg-white transition">
+                    <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <button type="submit" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition shrink-0">
+                    Search
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('admin.users.index', ['role' => $role ?? 'all']) }}" class="px-2 py-2 text-slate-400 hover:text-slate-600 font-bold text-xs shrink-0">
+                        Clear
+                    </a>
+                @endif
+            </form>
         </div>
+
     </div>
+</div>
+
+<div class="admin-users-wrap max-w-7xl mx-auto space-y-6">
 
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
@@ -57,75 +119,6 @@
             <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-800 text-sm font-bold">✕</button>
         </div>
     @endif
-
-    {{-- PENDING REGISTRATIONS REMINDER BANNER --}}
-    @if(($pendingCount ?? 0) > 0)
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-amber-50/80 border border-amber-200/90 rounded-2xl text-xs">
-            <div class="flex items-center gap-2.5 text-amber-900 font-semibold">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                <span>You have <strong>{{ $pendingCount }}</strong> pending student registration {{ $pendingCount === 1 ? 'application' : 'applications' }} awaiting approval.</span>
-            </div>
-            <a href="{{ route('admin.pending-registrations.index') }}" 
-               class="px-3.5 py-1.5 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold rounded-xl transition shadow-xs w-fit text-xs inline-flex items-center gap-1.5 shrink-0">
-                Go to Registrations →
-            </a>
-        </div>
-    @endif
-
-    {{-- FILTER & SEARCH TOOLBAR --}}
-    <div class="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-        
-        {{-- Role Filter Tabs --}}
-        <div class="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
-            <a href="{{ route('admin.users.index', ['role' => 'all', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? 'all') === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
-                All Active Accounts
-                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? 'all') === 'all' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
-                    {{ $allCount ?? $users->total() }}
-                </span>
-            </a>
-
-            <a href="{{ route('admin.users.index', ['role' => 'student', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? '') === 'student' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
-                Approved Students
-                @if(($approvedCount ?? 0) > 0)
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? '') === 'student' ? 'bg-white text-slate-900' : 'bg-emerald-100 text-emerald-800' }}">
-                        {{ $approvedCount }}
-                    </span>
-                @endif
-            </a>
-
-            <a href="{{ route('admin.users.index', ['role' => 'admin', 'search' => request('search')]) }}" 
-               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($role ?? '') === 'admin' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
-                Administrators
-                @if(($adminCount ?? 0) > 0)
-                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($role ?? '') === 'admin' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
-                        {{ $adminCount }}
-                    </span>
-                @endif
-            </a>
-        </div>
-
-        {{-- Search Form --}}
-        <form method="GET" action="{{ route('admin.users.index') }}" class="flex items-center gap-2 w-full md:w-auto">
-            <input type="hidden" name="role" value="{{ $role ?? 'all' }}">
-            <div class="relative w-full md:w-64">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email, ID..."
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-slate-800 outline-none focus:border-slate-400 focus:bg-white transition">
-                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-            </div>
-            <button type="submit" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition shrink-0">
-                Search
-            </button>
-            @if(request('search'))
-                <a href="{{ route('admin.users.index', ['role' => $role ?? 'all']) }}" class="px-2 py-2 text-slate-400 hover:text-slate-600 font-bold text-xs shrink-0">
-                    Clear
-                </a>
-            @endif
-        </form>
-    </div>
 
     {{-- USERS TABLE CARD --}}
     <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden">
