@@ -50,27 +50,20 @@ class PasswordResetOtpController extends Controller
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        // Store email in session for the next step
-        Session::put('password_reset_email', $user->email);
-
-        // Send OTP via email with error handling
-        $mailSent = false;
-        $mailErrorMessage = '';
-
+        // Send OTP strictly via Gmail
         try {
             Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
-            Log::info("Password reset OTP sent successfully to {$user->email}");
-            $mailSent = true;
+            Log::info("Password reset OTP sent securely to email: {$user->email}");
         } catch (\Throwable $e) {
-            $mailErrorMessage = $e->getMessage();
-            Log::error("Failed to send password reset OTP to {$user->email}: " . $mailErrorMessage);
+            Log::error("Failed to send password reset OTP to {$user->email}: " . $e->getMessage());
+
+            return back()->withInput()->withErrors([
+                'email' => 'Unable to send OTP email to your Gmail account. Please ensure your email configuration is valid or try again in a few moments.',
+            ]);
         }
 
-        if (!$mailSent) {
-            Session::flash('dev_otp', $otp);
-            return redirect()->route('password.otp.verify.form')
-                ->with('warning', 'Notice: Email delivery encountered an issue on this server (' . $mailErrorMessage . '). Your OTP code is: ' . $otp);
-        }
+        // Store email in session for OTP verification
+        Session::put('password_reset_email', $user->email);
 
         return redirect()->route('password.otp.verify.form')
             ->with('status', 'otp-sent');
@@ -120,7 +113,7 @@ class PasswordResetOtpController extends Controller
 
         if (!$otpRecord) {
             return back()->withErrors([
-                'otp' => 'The OTP code is invalid or has expired.',
+                'otp' => 'The OTP code is invalid or has expired. Please check your Gmail or request a new code.',
             ]);
         }
 
@@ -203,7 +196,7 @@ class PasswordResetOtpController extends Controller
         // Invalidate all previous OTPs for this user
         OtpCode::where('user_id', $user->id)->update(['used' => true]);
 
-        // Generate and send new OTP
+        // Generate a 6-digit OTP
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         OtpCode::create([
@@ -212,21 +205,16 @@ class PasswordResetOtpController extends Controller
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        $mailSent = false;
-        $mailErrorMessage = '';
-
+        // Send strictly to Gmail
         try {
             Mail::to($user->email)->send(new PasswordResetOtpMail($otp, $user->name));
-            Log::info("Password reset OTP resent successfully to {$user->email}");
-            $mailSent = true;
+            Log::info("Password reset OTP resent securely to email: {$user->email}");
         } catch (\Throwable $e) {
-            $mailErrorMessage = $e->getMessage();
-            Log::error("Failed to resend password reset OTP to {$user->email}: " . $mailErrorMessage);
-        }
+            Log::error("Failed to resend password reset OTP to {$user->email}: " . $e->getMessage());
 
-        if (!$mailSent) {
-            Session::flash('dev_otp', $otp);
-            return back()->with('warning', 'Notice: Email delivery issue on this server (' . $mailErrorMessage . '). Your new OTP code is: ' . $otp);
+            return back()->withErrors([
+                'otp' => 'Unable to resend OTP email. Please ensure your email settings are configured or try again later.',
+            ]);
         }
 
         return back()->with('status', 'otp-sent');

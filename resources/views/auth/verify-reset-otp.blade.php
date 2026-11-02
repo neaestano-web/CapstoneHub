@@ -7,18 +7,12 @@
 
         <h1 class="auth-heading">Verify OTP Code</h1>
         <p class="auth-subheading">
-            {{ __('We have sent a 6-digit OTP code to your email address. Please enter it below to verify your identity and reset your password.') }}
+            {{ __('We have sent a 6-digit OTP code to your registered Gmail address. Please check your inbox (or spam folder) and enter the code below to reset your password.') }}
         </p>
 
         @if (session('status') == 'otp-sent')
             <div class="w-full mb-3 p-3 text-xs font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/40 rounded-xl text-center">
-                {{ __('A new OTP code has been sent to your email address.') }}
-            </div>
-        @endif
-
-        @if (session('warning'))
-            <div class="w-full mb-3 p-3 text-xs font-semibold text-amber-300 bg-amber-950/70 border border-amber-500/40 rounded-xl text-center leading-relaxed">
-                {{ session('warning') }}
+                {{ __('A 6-digit OTP code has been sent to your Gmail inbox.') }}
             </div>
         @endif
 
@@ -28,14 +22,14 @@
 
             <div class="auth-input-group">
                 <label for="otp" class="auth-label" style="text-align: center; display: block;">
-                    {{ __('OTP Code') }}
+                    {{ __('Enter 6-Digit OTP Code') }}
                 </label>
                 <div class="auth-input-wrap">
                     <input 
                         id="otp" 
                         type="text" 
                         name="otp" 
-                        value="{{ old('otp', session('dev_otp') ?? '') }}"
+                        value="{{ old('otp') }}"
                         maxlength="6"
                         inputmode="numeric"
                         pattern="[0-9]{6}"
@@ -52,7 +46,7 @@
             </div>
 
             <button type="submit" class="auth-btn-submit">
-                {{ __('Verify OTP') }}
+                {{ __('Verify OTP & Proceed') }}
             </button>
         </form>
 
@@ -60,12 +54,12 @@
             <form method="POST" action="{{ route('password.otp.resend') }}">
                 @csrf
                 <button type="submit" class="text-emerald-400 font-bold hover:underline bg-transparent border-0 cursor-pointer p-0 text-xs">
-                    {{ __('Resend OTP Code') }}
+                    {{ __('Resend Code to Gmail') }}
                 </button>
             </form>
 
             <a href="{{ route('password.request') }}" class="text-slate-400 font-semibold hover:text-emerald-400 hover:underline">
-                {{ __('Try Again') }}
+                {{ __('Change Email') }}
             </a>
         </div>
     </div>
