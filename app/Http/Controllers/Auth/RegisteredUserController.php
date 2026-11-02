@@ -93,10 +93,10 @@ class RegisteredUserController extends Controller
                 'student_id_number.required' => 'Please provide your student ID number.',
                 'id_picture_front.required'  => 'Please upload the front of your student ID.',
                 'id_picture_front.image'     => 'The front ID must be an image file.',
-                'id_picture_front.max'       => 'The front ID image must not exceed 5MB.',
+                'id_picture_front.max'       => 'The front ID image must not exceed 10MB.',
                 'id_picture_back.required'   => 'Please upload the back of your student ID.',
                 'id_picture_back.image'      => 'The back ID must be an image file.',
-                'id_picture_back.max'        => 'The back ID image must not exceed 5MB.',
+                'id_picture_back.max'        => 'The back ID image must not exceed 10MB.',
             ]);
         } catch (ValidationException $e) {
             Log::warning('POST /register validation FAILED for ' . $request->input('email'), [

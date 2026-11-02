@@ -172,7 +172,7 @@
                             type="file" 
                             name="id_picture_front" 
                             id="id_picture_front" 
-                            accept="image/*" 
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/bmp,image/*" 
                             required
                             class="auth-file-input" 
                             onchange="previewIdImage(this, 'frontPreview', 'frontPlaceholder', 'frontUploadCard')"
@@ -187,7 +187,7 @@
                             <span class="upload-hint">Click or drop image</span>
                         </div>
                         <img id="frontPreview" class="auth-preview-img" style="display:none;" alt="Front ID Preview">
-                        <button type="button" class="auth-remove-img-btn" onclick="removeIdImage('id_picture_front', 'frontPreview', 'frontPlaceholder', 'frontUploadCard')" style="display:none;" aria-label="Remove image">✕</button>
+                        <button type="button" class="auth-remove-img-btn" onclick="removeIdImage(event, 'id_picture_front', 'frontPreview', 'frontPlaceholder', 'frontUploadCard')" style="display:none;" aria-label="Remove image">✕</button>
                     </div>
 
                     <!-- Back ID Card -->
@@ -196,7 +196,7 @@
                             type="file" 
                             name="id_picture_back" 
                             id="id_picture_back" 
-                            accept="image/*" 
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/bmp,image/*" 
                             required
                             class="auth-file-input" 
                             onchange="previewIdImage(this, 'backPreview', 'backPlaceholder', 'backUploadCard')"
@@ -210,7 +210,7 @@
                             <span class="upload-hint">Click or drop image</span>
                         </div>
                         <img id="backPreview" class="auth-preview-img" style="display:none;" alt="Back ID Preview">
-                        <button type="button" class="auth-remove-img-btn" onclick="removeIdImage('id_picture_back', 'backPreview', 'backPlaceholder', 'backUploadCard')" style="display:none;" aria-label="Remove image">✕</button>
+                        <button type="button" class="auth-remove-img-btn" onclick="removeIdImage(event, 'id_picture_back', 'backPreview', 'backPlaceholder', 'backUploadCard')" style="display:none;" aria-label="Remove image">✕</button>
                     </div>
                 </div>
                 @error('id_picture_front')
@@ -352,18 +352,38 @@
             const removeBtn = card.querySelector('.auth-remove-img-btn');
 
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select a valid image file (JPG, PNG, WebP).');
+                    input.value = '';
+                    return;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Image file size must not exceed 10MB.');
+                    input.value = '';
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
                     placeholder.style.display = 'none';
-                    removeBtn.style.display = 'flex';
+                    if (removeBtn) removeBtn.style.display = 'flex';
+                    card.style.borderColor = '#00e676';
+                    card.style.boxShadow = '0 0 12px rgba(0, 230, 118, 0.25)';
                 };
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
 
-        function removeIdImage(inputId, previewId, placeholderId, cardId) {
+        function removeIdImage(e, inputId, previewId, placeholderId, cardId) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             const input = document.getElementById(inputId);
             const preview = document.getElementById(previewId);
             const placeholder = document.getElementById(placeholderId);
@@ -374,7 +394,9 @@
             preview.src = '';
             preview.style.display = 'none';
             placeholder.style.display = 'flex';
-            removeBtn.style.display = 'none';
+            if (removeBtn) removeBtn.style.display = 'none';
+            card.style.borderColor = 'rgba(0, 230, 118, 0.4)';
+            card.style.boxShadow = 'none';
         }
     </script>
 </x-guest-layout>
