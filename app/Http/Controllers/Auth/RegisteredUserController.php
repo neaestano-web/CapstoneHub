@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request.
      *
-     * @throws ValidationException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
@@ -56,11 +56,13 @@ class RegisteredUserController extends Controller
 
             // Only clean up if student and has no existing researches
             if ($existingStale && $existingStale->role === 'student' && $existingStale->researches()->count() === 0) {
-                if ($existingStale->id_picture_front) {
+                if ($existingStale->id_picture_front && !str_starts_with($existingStale->id_picture_front, 'data:image/')) {
                     Storage::disk('local')->delete($existingStale->id_picture_front);
+                    Storage::disk('public')->delete($existingStale->id_picture_front);
                 }
-                if ($existingStale->id_picture_back) {
+                if ($existingStale->id_picture_back && !str_starts_with($existingStale->id_picture_back, 'data:image/')) {
                     Storage::disk('local')->delete($existingStale->id_picture_back);
+                    Storage::disk('public')->delete($existingStale->id_picture_back);
                 }
                 OtpCode::where('user_id', $existingStale->id)->delete();
                 $existingStale->delete();
@@ -108,22 +110,62 @@ class RegisteredUserController extends Controller
         // Build full name from first and last
         $fullName = trim($request->first_name . ' ' . $request->last_name);
 
-        // Store ID pictures
+        // Store ID pictures on private disk
         $frontPath = $request->file('id_picture_front')->store('id-pictures', 'local');
         $backPath  = $request->file('id_picture_back')->store('id-pictures', 'local');
 
+        // Mirror to public disk for fallback
+        try {
+            $request->file('id_picture_front')->storeAs('id-pictures', basename($frontPath), 'public');
+            $request->file('id_picture_back')->storeAs('id-pictures', basename($backPath), 'public');
+        } catch (\Throwable $e) {
+            Log::warning('Could not mirror ID pictures to public disk: ' . $e->getMessage());
+        }
+
+        // Generate persistent Base64 Data URI so photos survive cloud container rebuilds
+        $frontDbValue = $frontPath;
+        $backDbValue  = $backPath;
+        try {
+            $frontBase64 = $this->compressAndEncodeImage($request->file('id_picture_front'));
+            $backBase64  = $this->compressAndEncodeImage($request->file('id_picture_back'));
+            if ($frontBase64) {
+                $frontDbValue = $frontBase64;
+            }
+            if ($backBase64) {
+                $backDbValue = $backBase64;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Could not encode ID pictures to base64: ' . $e->getMessage());
+        }
+
         // Create user with 'pending' registration status (needs manual admin review)
-        $user = User::create([
-            'name'                  => $fullName,
-            'first_name'            => $request->first_name,
-            'last_name'             => $request->last_name,
-            'email'                 => $request->email,
-            'password'              => Hash::make($request->password),
-            'student_id_number'     => $request->student_id_number,
-            'id_picture_front'      => $frontPath,
-            'id_picture_back'       => $backPath,
-            'registration_status'   => 'pending',
-        ]);
+        try {
+            $user = User::create([
+                'name'                  => $fullName,
+                'first_name'            => $request->first_name,
+                'last_name'             => $request->last_name,
+                'email'                 => trim(strtolower($request->email)),
+                'password'              => Hash::make($request->password),
+                'student_id_number'     => $request->student_id_number,
+                'id_picture_front'      => $frontDbValue,
+                'id_picture_back'       => $backDbValue,
+                'registration_status'   => 'pending',
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Fallback to relative file path if column has not yet migrated to LONGTEXT
+            Log::warning('Base64 storage query failed, falling back to disk paths: ' . $e->getMessage());
+            $user = User::create([
+                'name'                  => $fullName,
+                'first_name'            => $request->first_name,
+                'last_name'             => $request->last_name,
+                'email'                 => trim(strtolower($request->email)),
+                'password'              => Hash::make($request->password),
+                'student_id_number'     => $request->student_id_number,
+                'id_picture_front'      => $frontPath,
+                'id_picture_back'       => $backPath,
+                'registration_status'   => 'pending',
+            ]);
+        }
 
         Log::info("Registered user {$fullName} with pending registration status.");
 
@@ -147,5 +189,57 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route('verification.otp.show');
+    }
+
+    /**
+     * Compress and encode an uploaded image to a compact base64 Data URI (max ~150-250KB).
+     */
+    protected function compressAndEncodeImage($file): ?string
+    {
+        if (!$file || !$file->isValid()) {
+            return null;
+        }
+
+        $realPath = $file->getRealPath();
+        if (!$realPath || !file_exists($realPath)) {
+            return null;
+        }
+
+        $mime = $file->getMimeType() ?: 'image/jpeg';
+        $contents = file_get_contents($realPath);
+
+        // If GD is available, resize large images down to max 1200px and compress
+        if (function_exists('imagecreatefromstring')) {
+            $img = @imagecreatefromstring($contents);
+            if ($img !== false) {
+                $width = imagesx($img);
+                $height = imagesy($img);
+                $maxDim = 1200;
+
+                if ($width > $maxDim || $height > $maxDim) {
+                    $ratio = min($maxDim / $width, $maxDim / $height);
+                    $newWidth = (int) round($width * $ratio);
+                    $newHeight = (int) round($height * $ratio);
+
+                    $resized = imagecreatetruecolor($newWidth, $newHeight);
+                    imagealphablending($resized, false);
+                    imagesavealpha($resized, true);
+                    imagecopyresampled($resized, $img, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                    imagedestroy($img);
+                    $img = $resized;
+                }
+
+                ob_start();
+                imagejpeg($img, null, 82);
+                $compressedData = ob_get_clean();
+                imagedestroy($img);
+
+                if (!empty($compressedData)) {
+                    return 'data:image/jpeg;base64,' . base64_encode($compressedData);
+                }
+            }
+        }
+
+        return 'data:' . $mime . ';base64,' . base64_encode($contents);
     }
 }

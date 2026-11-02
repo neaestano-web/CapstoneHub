@@ -246,10 +246,10 @@
                     @if($user->id_picture_front)
                         <img src="{{ route('admin.pending-registrations.id-picture', [$user, 'front']) }}" 
                              alt="Student ID Front" 
-                             class="w-full h-48 object-cover rounded-xl border border-slate-200 shadow-xs cursor-pointer hover:opacity-95 transition"
+                             class="w-full h-52 object-contain bg-slate-100 rounded-xl border border-slate-200 shadow-xs cursor-pointer hover:opacity-95 transition"
                              onclick="window.open(this.src, '_blank')">
                     @else
-                        <div class="h-48 flex items-center justify-center text-xs text-slate-400 font-bold bg-slate-100 rounded-xl">
+                        <div class="h-52 flex items-center justify-center text-xs text-slate-400 font-bold bg-slate-100 rounded-xl">
                             No front photo uploaded
                         </div>
                     @endif
@@ -261,10 +261,10 @@
                     @if($user->id_picture_back)
                         <img src="{{ route('admin.pending-registrations.id-picture', [$user, 'back']) }}" 
                              alt="Student ID Back" 
-                             class="w-full h-48 object-cover rounded-xl border border-slate-200 shadow-xs cursor-pointer hover:opacity-95 transition"
+                             class="w-full h-52 object-contain bg-slate-100 rounded-xl border border-slate-200 shadow-xs cursor-pointer hover:opacity-95 transition"
                              onclick="window.open(this.src, '_blank')">
                     @else
-                        <div class="h-48 flex items-center justify-center text-xs text-slate-400 font-bold bg-slate-100 rounded-xl">
+                        <div class="h-52 flex items-center justify-center text-xs text-slate-400 font-bold bg-slate-100 rounded-xl">
                             No back photo uploaded
                         </div>
                     @endif

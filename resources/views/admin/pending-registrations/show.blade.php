@@ -174,13 +174,14 @@
                 <div class="space-y-2">
                     <span class="block text-xs font-extrabold text-slate-400 uppercase tracking-wider">Front of Student ID</span>
                     @if($user->id_picture_front)
-                        <div class="border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:border-[#0c4233] transition group"
-                             onclick="openImageModal('{{ route('admin.pending-registrations.id-picture', [$user, 'front']) }}', 'Front of Student ID')">
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:border-[#0c4233] transition group relative bg-slate-50 p-1"
+                             onclick="openImageModal('{{ route('admin.pending-registrations.id-picture', [$user, 'front']) }}', 'Front of Student ID — {{ addslashes($user->name) }}')">
                             <img src="{{ route('admin.pending-registrations.id-picture', [$user, 'front']) }}" alt="Front ID" 
-                                 class="w-full h-44 object-cover group-hover:scale-105 transition duration-300">
+                                 class="w-full h-52 object-contain rounded-xl group-hover:scale-102 transition duration-300"
+                                 loading="lazy">
                         </div>
                     @else
-                        <div class="h-44 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-xs font-bold text-slate-400">
+                        <div class="h-52 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-xs font-bold text-slate-400">
                             No front ID uploaded
                         </div>
                     @endif
@@ -190,13 +191,14 @@
                 <div class="space-y-2">
                     <span class="block text-xs font-extrabold text-slate-400 uppercase tracking-wider">Back of Student ID</span>
                     @if($user->id_picture_back)
-                        <div class="border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:border-[#0c4233] transition group"
-                             onclick="openImageModal('{{ route('admin.pending-registrations.id-picture', [$user, 'back']) }}', 'Back of Student ID')">
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:border-[#0c4233] transition group relative bg-slate-50 p-1"
+                             onclick="openImageModal('{{ route('admin.pending-registrations.id-picture', [$user, 'back']) }}', 'Back of Student ID — {{ addslashes($user->name) }}')">
                             <img src="{{ route('admin.pending-registrations.id-picture', [$user, 'back']) }}" alt="Back ID" 
-                                 class="w-full h-44 object-cover group-hover:scale-105 transition duration-300">
+                                 class="w-full h-52 object-contain rounded-xl group-hover:scale-102 transition duration-300"
+                                 loading="lazy">
                         </div>
                     @else
-                        <div class="h-44 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-xs font-bold text-slate-400">
+                        <div class="h-52 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-xs font-bold text-slate-400">
                             No back ID uploaded
                         </div>
                     @endif

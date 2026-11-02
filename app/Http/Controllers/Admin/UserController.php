@@ -198,11 +198,13 @@ class UserController extends Controller
         }
 
         // Delete uploaded ID pictures if student
-        if ($user->id_picture_front) {
+        if ($user->id_picture_front && !str_starts_with($user->id_picture_front, 'data:image/')) {
             Storage::disk('local')->delete($user->id_picture_front);
+            Storage::disk('public')->delete($user->id_picture_front);
         }
-        if ($user->id_picture_back) {
+        if ($user->id_picture_back && !str_starts_with($user->id_picture_back, 'data:image/')) {
             Storage::disk('local')->delete($user->id_picture_back);
+            Storage::disk('public')->delete($user->id_picture_back);
         }
 
         OtpCode::where('user_id', $user->id)->delete();
