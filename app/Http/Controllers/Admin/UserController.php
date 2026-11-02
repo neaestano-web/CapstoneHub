@@ -189,12 +189,23 @@ class UserController extends Controller
                 ->with('error', 'Cannot delete your own account.');
         }
 
-        // Check if user has researches
-        $researchesCount = $user->researches()->count();
-        
-        if ($researchesCount > 0) {
-            return redirect()->route('admin.users.index')
-                ->with('error', "Cannot delete user. They have {$researchesCount} associated researches. Delete the researches first.");
+        // Clean up associated researches and their files if student
+        foreach ($user->researches as $research) {
+            foreach ($research->files as $f) {
+                if ($f->file_path && Storage::disk('public')->exists($f->file_path)) {
+                    Storage::disk('public')->delete($f->file_path);
+                }
+                $f->delete();
+            }
+            if ($research->pdf_path && Storage::disk('public')->exists($research->pdf_path)) {
+                Storage::disk('public')->delete($research->pdf_path);
+            }
+            if ($research->embedding) {
+                $research->embedding->delete();
+            }
+            $research->categories()->detach();
+            $research->projectTypes()->detach();
+            $research->delete();
         }
 
         // Delete uploaded ID pictures if student

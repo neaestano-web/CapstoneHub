@@ -11,6 +11,20 @@
             Create an account to submit and explore capstone projects!
         </p>
 
+        @if (session('status'))
+            <div class="w-full mb-4 p-3.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 border border-emerald-500/50 rounded-xl flex items-center gap-2">
+                <span>✅</span>
+                <span>{{ session('status') }}</span>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="w-full mb-4 p-3.5 text-xs font-semibold text-rose-300 bg-rose-950/80 border border-rose-500/50 rounded-xl flex items-center gap-2">
+                <span>⚠️</span>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="w-full mb-4 p-3.5 text-xs font-semibold text-rose-300 bg-rose-950/80 border border-rose-500/50 rounded-xl space-y-1">
                 @foreach ($errors->all() as $error)

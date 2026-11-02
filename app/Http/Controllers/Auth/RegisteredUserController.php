@@ -25,6 +25,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        Log::info('GET /register page accessed from IP: ' . request()->ip());
         return view('auth.register');
     }
 
@@ -35,6 +36,15 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        Log::info('POST /register submitted', [
+            'email' => $request->input('email'),
+            'first_name' => $request->input('first_name'),
+            'last_name' => $request->input('last_name'),
+            'student_id' => $request->input('student_id_number'),
+            'has_id_front' => $request->hasFile('id_picture_front'),
+            'has_id_back' => $request->hasFile('id_picture_back'),
+        ]);
+
         // Clean up any previous unverified OR rejected student registration with this email so they can re-register cleanly
         if ($request->filled('email')) {
             $existingStale = User::where('email', strtolower($request->email))
@@ -54,38 +64,46 @@ class RegisteredUserController extends Controller
                 }
                 OtpCode::where('user_id', $existingStale->id)->delete();
                 $existingStale->delete();
+                Log::info("Cleaned up previous stale/rejected registration for email: " . $request->email);
             }
         }
 
-        $request->validate([
-            'first_name'        => ['required', 'string', 'max:255'],
-            'last_name'         => ['required', 'string', 'max:255'],
-            'email'             => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->where(function ($q) {
-                    $q->whereNotNull('email_verified_at')
-                      ->where('registration_status', '!=', 'rejected');
-                }),
-            ],
-            'password'          => ['required', 'confirmed', Rules\Password::defaults()],
-            'student_id_number' => ['required', 'string', 'max:50'],
-            'id_picture_front'  => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
-            'id_picture_back'   => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
-        ], [
-            'first_name.required'        => 'Please provide your first name.',
-            'last_name.required'         => 'Please provide your last name.',
-            'student_id_number.required' => 'Please provide your student ID number.',
-            'id_picture_front.required'  => 'Please upload the front of your student ID.',
-            'id_picture_front.image'     => 'The front ID must be an image file.',
-            'id_picture_front.max'       => 'The front ID image must not exceed 5MB.',
-            'id_picture_back.required'   => 'Please upload the back of your student ID.',
-            'id_picture_back.image'      => 'The back ID must be an image file.',
-            'id_picture_back.max'        => 'The back ID image must not exceed 5MB.',
-        ]);
+        try {
+            $request->validate([
+                'first_name'        => ['required', 'string', 'max:255'],
+                'last_name'         => ['required', 'string', 'max:255'],
+                'email'             => [
+                    'required',
+                    'string',
+                    'lowercase',
+                    'email',
+                    'max:255',
+                    Rule::unique(User::class)->where(function ($q) {
+                        $q->whereNotNull('email_verified_at')
+                          ->where('registration_status', '!=', 'rejected');
+                    }),
+                ],
+                'password'          => ['required', 'confirmed', Rules\Password::defaults()],
+                'student_id_number' => ['required', 'string', 'max:50'],
+                'id_picture_front'  => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif,bmp', 'max:10240'],
+                'id_picture_back'   => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif,bmp', 'max:10240'],
+            ], [
+                'first_name.required'        => 'Please provide your first name.',
+                'last_name.required'         => 'Please provide your last name.',
+                'student_id_number.required' => 'Please provide your student ID number.',
+                'id_picture_front.required'  => 'Please upload the front of your student ID.',
+                'id_picture_front.image'     => 'The front ID must be an image file.',
+                'id_picture_front.max'       => 'The front ID image must not exceed 5MB.',
+                'id_picture_back.required'   => 'Please upload the back of your student ID.',
+                'id_picture_back.image'      => 'The back ID must be an image file.',
+                'id_picture_back.max'        => 'The back ID image must not exceed 5MB.',
+            ]);
+        } catch (ValidationException $e) {
+            Log::warning('POST /register validation FAILED for ' . $request->input('email'), [
+                'errors' => $e->errors(),
+            ]);
+            throw $e;
+        }
 
         // Build full name from first and last
         $fullName = trim($request->first_name . ' ' . $request->last_name);
