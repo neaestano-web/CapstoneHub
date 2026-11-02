@@ -1,214 +1,205 @@
 @extends('layouts.admin')
-@section('title', 'Pending Registrations — JHCSC Capstone Portal')
+@section('title', 'Student Registrations — JHCSC Capstone Portal')
 
 @section('content')
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
-    .admin-pending-body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #2d2b56;
-    }
-
-    .table-container-card {
-        background: #ffffff;
-        border-radius: 24px;
-        border: 1.5px solid #e2e8f0;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-    }
-
-    .filter-pill-admin {
-        padding: 8px 18px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 700;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .filter-pill-active {
-        background: #0c4233;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(12, 66, 51, 0.25);
-    }
-
-    .filter-pill-inactive {
-        background: #f1f5f9;
-        color: #64748b;
-    }
-
-    .filter-pill-inactive:hover {
-        background: #e2e8f0;
-        color: #2d2b56;
-    }
-</style>
-
-<div class="admin-pending-body space-y-6 max-w-7xl mx-auto">
+<div class="space-y-6 max-w-7xl mx-auto pb-12">
     {{-- HEADER SECTION --}}
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200/80">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-            <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem;" class="font-extrabold text-[#2d2b56] tracking-tight leading-tight">
-                Pending <span class="text-[#0c4233]">Registrations</span>
-            </h1>
-            <p class="text-slate-500 text-xs font-medium mt-1">
-                Review, verify student identity documents, and approve registration access.
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Administration</span>
+                <span class="text-slate-300">/</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Student Registrations</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">Student Registrations</h1>
+            <p class="text-slate-500 text-xs font-medium mt-0.5">
+                Review and verify student identity documents and approve account activation.
             </p>
         </div>
+        <a href="{{ route('admin.users.index') }}" 
+           class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition inline-flex items-center gap-2">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            Active User Accounts
+        </a>
     </div>
 
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs">
+        <div class="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold">
             <div class="flex items-center gap-2">
-                <span class="text-base">✅</span>
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
                 <span>{{ session('success') }}</span>
             </div>
-            <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-800 text-sm font-black">✕</button>
+            <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-800 text-sm font-bold">✕</button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="flex items-center justify-between p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-800 text-sm font-bold">✕</button>
         </div>
     @endif
 
     {{-- FILTER & SEARCH TOOLBAR --}}
-    <div class="p-4 bg-white rounded-3xl border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
-        <div class="flex items-center gap-2 flex-wrap w-full md:w-auto">
-            @php $pendingRegCount = \App\Models\User::where('role','student')->whereNotNull('email_verified_at')->where('registration_status','pending')->count(); @endphp
-            <a href="{{ route('admin.pending-registrations.index', ['filter' => 'pending']) }}" 
-               class="filter-pill-admin {{ $filter === 'pending' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
-                <span>⏳ Pending</span>
-                @if($pendingRegCount > 0)
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-amber-950">{{ $pendingRegCount }}</span>
+    <div class="bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        {{-- Status Filter Tabs --}}
+        <div class="flex items-center gap-1.5 flex-wrap w-full md:w-auto">
+            <a href="{{ route('admin.pending-registrations.index', ['filter' => 'pending', 'search' => request('search')]) }}" 
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($filter ?? 'pending') === 'pending' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                <span>Pending Review</span>
+                @if(($pendingCount ?? 0) > 0)
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($filter ?? 'pending') === 'pending' ? 'bg-amber-400 text-amber-950' : 'bg-amber-100 text-amber-800' }}">
+                        {{ $pendingCount }}
+                    </span>
                 @endif
             </a>
 
-            @php $rejectedRegCount = \App\Models\User::where('role','student')->whereNotNull('email_verified_at')->where('registration_status','rejected')->count(); @endphp
-            <a href="{{ route('admin.pending-registrations.index', ['filter' => 'rejected']) }}" 
-               class="filter-pill-admin {{ $filter === 'rejected' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
-                <span>❌ Rejected</span>
-                @if($rejectedRegCount > 0)
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-400 text-rose-950">{{ $rejectedRegCount }}</span>
+            <a href="{{ route('admin.pending-registrations.index', ['filter' => 'rejected', 'search' => request('search')]) }}" 
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($filter ?? '') === 'rejected' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                <span>Rejected</span>
+                @if(($rejectedCount ?? 0) > 0)
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($filter ?? '') === 'rejected' ? 'bg-white text-slate-900' : 'bg-rose-100 text-rose-800' }}">
+                        {{ $rejectedCount }}
+                    </span>
                 @endif
             </a>
 
-            <a href="{{ route('admin.pending-registrations.index', ['filter' => 'all']) }}" 
-               class="filter-pill-admin {{ $filter === 'all' ? 'filter-pill-active' : 'filter-pill-inactive' }}">
-                <span>📋 All Registrations</span>
+            <a href="{{ route('admin.pending-registrations.index', ['filter' => 'all', 'search' => request('search')]) }}" 
+               class="px-3 py-1.5 rounded-lg text-xs font-bold transition inline-flex items-center gap-1.5 {{ ($filter ?? '') === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100' }}">
+                <span>All Applications</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold {{ ($filter ?? '') === 'all' ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700' }}">
+                    {{ $allCount ?? $registrations->total() }}
+                </span>
             </a>
         </div>
 
+        {{-- Search Form --}}
         <form method="GET" action="{{ route('admin.pending-registrations.index') }}" class="flex items-center gap-2 w-full md:w-auto">
             <input type="hidden" name="filter" value="{{ $filter }}">
             <div class="relative w-full md:w-64">
-                <input type="text" name="search" value="{{ $search }}" placeholder="Search name, email, or ID..."
-                       class="w-full bg-slate-50 border border-slate-200 rounded-full py-2 pl-9 pr-4 text-xs font-semibold text-[#2d2b56] outline-none focus:border-[#0c4233] focus:bg-white transition">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</span>
+                <input type="text" name="search" value="{{ $search }}" placeholder="Search name, email, ID..."
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-slate-800 outline-none focus:border-slate-400 focus:bg-white transition">
+                <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
             </div>
-            <button type="submit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#2d2b56] font-extrabold text-xs rounded-full transition shrink-0">
+            <button type="submit" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition shrink-0">
                 Search
             </button>
+            @if($search)
+                <a href="{{ route('admin.pending-registrations.index', ['filter' => $filter]) }}" class="px-2 py-2 text-slate-400 hover:text-slate-600 font-bold text-xs shrink-0">
+                    Clear
+                </a>
+            @endif
         </form>
     </div>
 
     {{-- TABLE CONTAINER CARD --}}
-    <div class="table-container-card">
-        <div class="p-5 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
-            <h3 class="font-extrabold text-sm text-[#2d2b56] flex items-center gap-2">
-                <span>🎓</span> Student Registration Applications
-            </h3>
-            <span class="text-xs font-bold text-slate-400">Total: {{ $registrations->total() }} Applications</span>
+    <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-bold text-sm text-slate-900">Student Applications</h2>
+            <span class="text-xs text-slate-400 font-medium">Total: {{ $registrations->total() }}</span>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        <th class="py-4 px-6">Student</th>
-                        <th class="py-4 px-6">Student ID Number</th>
-                        <th class="py-4 px-6">Email Address</th>
-                        <th class="py-4 px-6">Registration Status</th>
-                        <th class="py-4 px-6">Submitted Date</th>
-                        <th class="py-4 px-6 text-right">Actions</th>
+                    <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3 px-6">Student</th>
+                        <th class="py-3 px-6">Student ID</th>
+                        <th class="py-3 px-6">Email</th>
+                        <th class="py-3 px-6">Status</th>
+                        <th class="py-3 px-6">Submitted Date</th>
+                        <th class="py-3 px-6 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-xs font-semibold">
+                <tbody class="divide-y divide-slate-100 text-xs">
                     @forelse($registrations as $registration)
                         <tr class="hover:bg-slate-50/70 transition-colors">
-                            <td class="py-4 px-6">
+                            <td class="py-3.5 px-6">
                                 <div class="flex items-center gap-3">
-                                    @if($registration->id_picture_front)
-                                        <img src="{{ route('admin.pending-registrations.id-picture', [$registration, 'front']) }}" alt="Student ID"
-                                             class="w-9 h-9 rounded-xl object-cover border border-slate-200 shrink-0"
-                                             onerror="this.onerror=null; this.src='{{ asset('storage/' . $registration->id_picture_front) }}';">
-                                    @else
-                                        <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-900 font-black text-xs flex items-center justify-center shrink-0">
-                                            {{ substr($registration->name, 0, 1) }}
-                                        </div>
-                                    @endif
-                                    <a href="{{ route('admin.pending-registrations.show', $registration) }}" class="font-extrabold text-sm text-[#2d2b56] hover:text-[#5840bb] transition">
-                                        {{ $registration->name }}
-                                    </a>
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                                        @if($registration->id_picture_front)
+                                            <img src="{{ route('admin.pending-registrations.id-picture', [$registration, 'front']) }}" 
+                                                 alt="{{ $registration->name }}"
+                                                 class="w-full h-full object-cover"
+                                                 onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'font-bold text-xs text-slate-600\'>{{ strtoupper(substr($registration->name, 0, 1)) }}</span>';">
+                                        @else
+                                            <span class="font-bold text-xs text-slate-600">{{ strtoupper(substr($registration->name, 0, 1)) }}</span>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('admin.pending-registrations.show', $registration) }}" 
+                                           class="font-bold text-slate-900 hover:text-emerald-700 transition">
+                                            {{ $registration->name }}
+                                        </a>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="py-4 px-6">
-                                <code class="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-extrabold">
-                                    {{ $registration->student_id_number ?? 'Not provided' }}
-                                </code>
+                            <td class="py-3.5 px-6">
+                                <span class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                                    {{ $registration->student_id_number ?? '—' }}
+                                </span>
                             </td>
-                            <td class="py-4 px-6 text-slate-600 font-bold">
+                            <td class="py-3.5 px-6 text-slate-600">
                                 {{ $registration->email }}
                             </td>
-                            <td class="py-4 px-6">
+                            <td class="py-3.5 px-6">
                                 @if($registration->registration_status === 'pending')
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></span>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                         Pending Review
                                     </span>
                                 @elseif($registration->registration_status === 'rejected')
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-900">
-                                        ✕ Rejected
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+                                        <svg class="w-3 h-3 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        Rejected
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900">
+                                    <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
+                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
                                         Approved
                                     </span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-slate-500">
+                            <td class="py-3.5 px-6 text-slate-400 font-medium">
                                 {{ $registration->created_at->format('M d, Y') }}
                             </td>
-                            <td class="py-4 px-6 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('admin.pending-registrations.show', $registration) }}" class="px-4 py-1.5 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-full font-extrabold text-xs transition shadow-xs">
-                                        👁 Review Verification
+                            <td class="py-3.5 px-6 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <a href="{{ route('admin.pending-registrations.show', $registration) }}" 
+                                       class="px-3 py-1.5 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-lg font-bold text-xs transition shadow-xs">
+                                        Review
                                     </a>
                                     @if($registration->registration_status === 'pending')
                                         <form action="{{ route('admin.pending-registrations.approve', $registration) }}" method="POST" class="inline" onsubmit="return confirm('Approve registration for {{ addslashes($registration->name) }}?')">
                                             @csrf @method('PATCH')
-                                            <button type="submit" class="px-3.5 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-full font-extrabold text-xs transition">
-                                                ✓ Approve
+                                            <button type="submit" class="px-2.5 py-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 border border-emerald-200 rounded-lg font-bold text-xs transition">
+                                                Approve
                                             </button>
                                         </form>
                                     @endif
-
-                                    <form action="{{ route('admin.pending-registrations.destroy', $registration) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete registration for {{ addslashes($registration->name) }}?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full font-extrabold text-xs transition" title="Delete application">
-                                            Delete
-                                        </button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-16 text-center space-y-3">
-                                <div class="w-14 h-14 bg-amber-50 text-amber-800 rounded-full flex items-center justify-center font-bold text-2xl mx-auto">
-                                    🎉
-                                </div>
-                                <h4 class="font-extrabold text-base text-[#2d2b56]">No {{ $filter === 'all' ? '' : ucfirst($filter) }} Registrations</h4>
-                                <p class="text-xs text-slate-400 max-w-sm mx-auto">All student registration requests in this view have been processed.</p>
+                            <td colspan="6" class="py-12 text-center text-slate-400 text-xs">
+                                No student registrations found matching your filter or search.
                             </td>
                         </tr>
                     @endforelse
@@ -217,7 +208,7 @@
         </div>
 
         @if($registrations->hasPages())
-            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
                 {{ $registrations->links() }}
             </div>
         @endif

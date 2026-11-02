@@ -43,7 +43,11 @@ class PendingRegistrationController extends Controller
 
         $registrations = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
-        return view('admin.pending-registrations.index', compact('registrations', 'filter', 'search'));
+        $pendingCount = User::where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'pending')->count();
+        $rejectedCount = User::where('role', 'student')->whereNotNull('email_verified_at')->where('registration_status', 'rejected')->count();
+        $allCount = $pendingCount + $rejectedCount;
+
+        return view('admin.pending-registrations.index', compact('registrations', 'filter', 'search', 'pendingCount', 'rejectedCount', 'allCount'));
     }
 
     /**
