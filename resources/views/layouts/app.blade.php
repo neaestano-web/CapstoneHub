@@ -9,6 +9,13 @@
 
         <!-- Pre-paint Script & CSS for Sidebar FOUC & Guest Theme Engine -->
         <script>
+            // Force reload if restored from browser back-forward cache (BFCache) after logout
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+
             (function() {
                 if (localStorage.getItem('student_sidebar_collapsed') === 'true') {
                     document.documentElement.classList.add('sidebar-is-collapsed');

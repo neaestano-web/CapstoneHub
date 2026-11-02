@@ -8,6 +8,13 @@
 
     <!-- Pre-paint Script for Sidebar FOUC & Display Theme Engine -->
     <script>
+        // Force reload if restored from browser back-forward cache (BFCache) after logout
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
         (function() {
             if (localStorage.getItem('admin_sidebar_collapsed') === 'true') {
                 document.documentElement.classList.add('admin-sidebar-is-collapsed');

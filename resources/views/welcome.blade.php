@@ -898,6 +898,13 @@
             @endif
         </header>
 
+        @if (session('status'))
+            <div style="position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 9999; background: rgba(6, 78, 59, 0.95); border: 1px solid rgba(16, 185, 129, 0.4); backdrop-filter: blur(12px); color: #ecfdf5; padding: 10px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); pointer-events: none;">
+                <span>✅</span>
+                <span>{{ session('status') }}</span>
+            </div>
+        @endif
+
         <!-- HERO STAGE -->
         <main class="hero-stage">
 

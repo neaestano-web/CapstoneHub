@@ -234,7 +234,7 @@
         <div class="pt-6 border-t border-white/10">
             <form method="POST" action="{{ route('logout') }}" class="m-0">
                 @csrf
-                <button type="submit" class="ecoursie-nav-item w-full text-rose-300 hover:text-rose-100 hover:bg-rose-900/30">
+                <button type="submit" class="ecoursie-nav-item w-full text-rose-300 hover:text-rose-100 hover:bg-rose-900/30 cursor-pointer" title="Log Out">
                     <svg class="nav-svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                     </svg>

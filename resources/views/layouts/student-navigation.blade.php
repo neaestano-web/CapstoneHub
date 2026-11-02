@@ -361,7 +361,7 @@
             <form method="POST" action="{{ route('logout') }}" class="m-0">
                 @csrf
                 <button type="submit" 
-                        class="ecoursie-nav-item w-full text-rose-300 hover:text-rose-100 hover:bg-rose-950/40 hover:border-rose-500/30"
+                        class="ecoursie-nav-item w-full text-rose-300 hover:text-rose-100 hover:bg-rose-950/40 hover:border-rose-500/30 cursor-pointer"
                         title="Log Out">
                     <span class="nav-icon-wrap text-rose-400">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
