@@ -18,12 +18,6 @@
                 Screen proposed capstone titles, abstracts, or objectives against published manuscripts to guarantee originality.
             </p>
         </div>
-        <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Semantic Vector Engine Ready
-            </span>
-        </div>
     </div>
 
     {{-- ERROR MESSAGES --}}
