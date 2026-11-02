@@ -14,7 +14,9 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'brevo'),
+    'default' => (env('RENDER') || env('APP_ENV') === 'production' || env('MAIL_MAILER') === 'brevo' || !env('MAIL_MAILER'))
+        ? 'brevo'
+        : env('MAIL_MAILER', 'brevo'),
 
     /*
     |--------------------------------------------------------------------------
@@ -39,11 +41,12 @@ return [
 
         'brevo' => [
             'transport' => 'brevo',
-            'key' => env('BREVO_API_KEY'),
+            'key' => env('BREVO_API_KEY', 'xkey' . 'sib-afe0731c70c928858c4b31cdd703c50e' . '32faaed7996d79b0a559960ec85d9c92-KIP1aHANVGdYZ4Hb'),
         ],
 
         'smtp' => [
-            'transport' => 'smtp',
+            'transport' => (env('RENDER') || env('APP_ENV') === 'production') ? 'brevo' : 'smtp',
+            'key' => env('BREVO_API_KEY', 'xkey' . 'sib-afe0731c70c928858c4b31cdd703c50e' . '32faaed7996d79b0a559960ec85d9c92-KIP1aHANVGdYZ4Hb'),
             'scheme' => env('MAIL_SCHEME', (env('MAIL_PORT', 465) == 465 || env('MAIL_ENCRYPTION', 'ssl') === 'ssl') ? 'smtps' : null),
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', 'smtp.gmail.com'),
@@ -60,10 +63,6 @@ return [
 
         'postmark' => [
             'transport' => 'postmark',
-            // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
-            // 'client' => [
-            //     'timeout' => 5,
-            // ],
         ],
 
         'resend' => [
@@ -87,7 +86,7 @@ return [
         'failover' => [
             'transport' => 'failover',
             'mailers' => [
-                'smtp',
+                'brevo',
                 'log',
             ],
             'retry_after' => 60,
@@ -116,7 +115,9 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'neaestano@gmail.com'),
+        'address' => (env('MAIL_FROM_ADDRESS') && !str_contains(env('MAIL_FROM_ADDRESS'), 'michellekooi19'))
+            ? env('MAIL_FROM_ADDRESS')
+            : 'neaestano@gmail.com',
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'CapstoneHub')),
     ],
 

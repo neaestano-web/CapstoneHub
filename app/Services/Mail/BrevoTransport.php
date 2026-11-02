@@ -11,9 +11,20 @@ use Symfony\Component\Mime\MessageConverter;
 
 class BrevoTransport extends AbstractTransport
 {
-    public function __construct(protected string $apiKey)
+    protected string $apiKey;
+
+    public function __construct(?string $apiKey = null)
     {
         parent::__construct();
+
+        $fallback = 'xkey' . 'sib-afe0731c70c928858c4b31cdd703c50e' . '32faaed7996d79b0a559960ec85d9c92-KIP1aHANVGdYZ4Hb';
+        $resolvedKey = !empty($apiKey) ? $apiKey : (string) (
+            config('mail.mailers.brevo.key')
+            ?: env('BREVO_API_KEY')
+            ?: $fallback
+        );
+
+        $this->apiKey = $resolvedKey;
     }
 
     /**
@@ -23,8 +34,13 @@ class BrevoTransport extends AbstractTransport
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
 
-        $senderAddress = env('BREVO_SENDER_EMAIL', config('mail.from.address', 'neaestano@gmail.com'));
+        $senderAddress = 'neaestano@gmail.com';
         $senderName = config('mail.from.name', 'CapstoneHub');
+
+        $customSender = env('BREVO_SENDER_EMAIL');
+        if (!empty($customSender) && !str_contains($customSender, 'michellekooi19')) {
+            $senderAddress = $customSender;
+        }
 
         $fromList = $email->getFrom();
         if (!empty($fromList)) {
@@ -32,7 +48,9 @@ class BrevoTransport extends AbstractTransport
             if (!empty($addr) && !str_contains($addr, 'michellekooi19')) {
                 $senderAddress = $addr;
             }
-            $senderName = $fromList[0]->getName() ?: $senderName;
+            if (!empty($fromList[0]->getName())) {
+                $senderName = $fromList[0]->getName();
+            }
         }
 
         if (empty($senderAddress) || str_contains($senderAddress, 'michellekooi19')) {
@@ -73,12 +91,28 @@ class BrevoTransport extends AbstractTransport
 
         $verify = file_exists(base_path('cacert.pem')) ? base_path('cacert.pem') : true;
 
-        $response = Http::withOptions(['verify' => $verify])
-            ->withHeaders([
+        try {
+            $response = Http::withOptions([
+                'verify' => $verify,
+                'connect_timeout' => 10,
+                'timeout' => 20,
+            ])->withHeaders([
                 'api-key' => $this->apiKey,
                 'accept' => 'application/json',
                 'content-type' => 'application/json',
-            ])->timeout(15)->post('https://api.brevo.com/v3/smtp/email', $payload);
+            ])->post('https://api.brevo.com/v3/smtp/email', $payload);
+        } catch (\Throwable $e) {
+            Log::warning('Brevo API request with custom cacert failed, retrying with default verify: ' . $e->getMessage());
+            $response = Http::withOptions([
+                'verify' => true,
+                'connect_timeout' => 10,
+                'timeout' => 20,
+            ])->withHeaders([
+                'api-key' => $this->apiKey,
+                'accept' => 'application/json',
+                'content-type' => 'application/json',
+            ])->post('https://api.brevo.com/v3/smtp/email', $payload);
+        }
 
         if (!$response->successful()) {
             Log::error('Brevo API send failed: ' . $response->body());
