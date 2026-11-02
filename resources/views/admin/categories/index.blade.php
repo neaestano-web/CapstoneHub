@@ -2,11 +2,11 @@
 @section('title', 'Manage Categories — JHCSC Capstone Portal')
 
 @section('content')
-<div class="space-y-6 max-w-7xl mx-auto pb-12">
-    {{-- HEADER SECTION --}}
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
+{{-- FIXED / STICKY HEADER DECK --}}
+<div class="sticky top-14 lg:top-0 z-30 border-b border-slate-200/90 -mt-6 -mx-5 px-5 lg:-mt-9 lg:-mx-10 lg:px-10 pt-5 pb-4 shadow-xs transition-colors mb-6" style="background-color: var(--guest-bg-surface, #ffffff);">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Categories</h1>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Manage Categories</h1>
             <p class="text-slate-500 text-xs font-medium mt-0.5">
                 Organize and classify research papers into academic categories and sub-project types.
             </p>
@@ -22,7 +22,9 @@
             </a>
         </div>
     </div>
+</div>
 
+<div class="space-y-6 max-w-7xl mx-auto pb-12">
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
         <div class="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs font-semibold">
