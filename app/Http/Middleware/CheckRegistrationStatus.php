@@ -16,8 +16,15 @@ class CheckRegistrationStatus
     {
         $user = $request->user();
 
-        if ($user && $user->role === 'student' && !$user->isApproved()) {
-            return redirect()->route('registration.status');
+        if ($user) {
+            // Must verify email OTP first before any status checks
+            if (!$user->hasVerifiedEmail()) {
+                return redirect()->route('verification.otp.show');
+            }
+
+            if ($user->role === 'student' && !$user->isApproved()) {
+                return redirect()->route('registration.status');
+            }
         }
 
         return $next($request);

@@ -52,6 +52,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->get('/registration-status', function () {
     $user = auth()->user();
 
+    // Must verify email OTP first!
+    if (!$user->hasVerifiedEmail()) {
+        return redirect()->route('verification.otp.show');
+    }
+
     // Only show this page to non-approved students
     if ($user->role !== 'student' || $user->isApproved()) {
         return redirect()->route('dashboard');
@@ -105,6 +110,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user) {
+        // Must verify email OTP first!
+        if (!$user->hasVerifiedEmail()) {
+            return redirect()->route('verification.otp.show');
+        }
+
         // Check if student registration is not approved
         if ($user->role === 'student' && !$user->isApproved()) {
             return redirect()->route('registration.status');
