@@ -6,12 +6,7 @@
     {{-- HEADER SECTION --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Administration</span>
-                <span class="text-slate-300">/</span>
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Download Requests</span>
-            </div>
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">Download Requests</h1>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Download Requests</h1>
             <p class="text-slate-500 text-xs font-medium mt-0.5">
                 Review student requests to access and download complete capstone manuscripts.
             </p>
