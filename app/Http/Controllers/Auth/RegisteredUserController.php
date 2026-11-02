@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -34,22 +35,42 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Clean up any previous abandoned unverified registration with this email
+        // Clean up any previous unverified OR rejected student registration with this email so they can re-register cleanly
         if ($request->filled('email')) {
-            $existingUnverified = User::where('email', strtolower($request->email))
-                ->whereNull('email_verified_at')
+            $existingStale = User::where('email', strtolower($request->email))
+                ->where(function ($q) {
+                    $q->whereNull('email_verified_at')
+                      ->orWhere('registration_status', 'rejected');
+                })
                 ->first();
 
-            if ($existingUnverified) {
-                OtpCode::where('user_id', $existingUnverified->id)->delete();
-                $existingUnverified->delete();
+            // Only clean up if student and has no existing researches
+            if ($existingStale && $existingStale->role === 'student' && $existingStale->researches()->count() === 0) {
+                if ($existingStale->id_picture_front) {
+                    Storage::disk('local')->delete($existingStale->id_picture_front);
+                }
+                if ($existingStale->id_picture_back) {
+                    Storage::disk('local')->delete($existingStale->id_picture_back);
+                }
+                OtpCode::where('user_id', $existingStale->id)->delete();
+                $existingStale->delete();
             }
         }
 
         $request->validate([
             'first_name'        => ['required', 'string', 'max:255'],
             'last_name'         => ['required', 'string', 'max:255'],
-            'email'             => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->whereNotNull('email_verified_at')],
+            'email'             => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                Rule::unique(User::class)->where(function ($q) {
+                    $q->whereNotNull('email_verified_at')
+                      ->where('registration_status', '!=', 'rejected');
+                }),
+            ],
             'password'          => ['required', 'confirmed', Rules\Password::defaults()],
             'student_id_number' => ['required', 'string', 'max:50'],
             'id_picture_front'  => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],

@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\RegistrationApprovedMail;
 use App\Mail\RegistrationRejectedMail;
+use App\Models\OtpCode;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -195,6 +197,15 @@ class UserController extends Controller
                 ->with('error', "Cannot delete user. They have {$researchesCount} associated researches. Delete the researches first.");
         }
 
+        // Delete uploaded ID pictures if student
+        if ($user->id_picture_front) {
+            Storage::disk('local')->delete($user->id_picture_front);
+        }
+        if ($user->id_picture_back) {
+            Storage::disk('local')->delete($user->id_picture_back);
+        }
+
+        OtpCode::where('user_id', $user->id)->delete();
         $user->delete();
 
         return redirect()->route('admin.users.index')

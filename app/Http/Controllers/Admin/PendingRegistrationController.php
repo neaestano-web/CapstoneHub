@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\RegistrationApprovedMail;
 use App\Mail\RegistrationRejectedMail;
+use App\Models\OtpCode;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -157,5 +158,33 @@ class PendingRegistrationController extends Controller
         }
 
         return back()->with('success', $msg);
+    }
+
+    /**
+     * Delete a pending or rejected registration permanently.
+     */
+    public function destroy(User $user)
+    {
+        if ($user->role !== 'student') {
+            abort(404);
+        }
+
+        if ($user->researches()->count() > 0) {
+            return back()->with('error', "Cannot delete student. They have associated researches. Delete the researches first.");
+        }
+
+        // Delete uploaded ID pictures
+        if ($user->id_picture_front) {
+            Storage::disk('local')->delete($user->id_picture_front);
+        }
+        if ($user->id_picture_back) {
+            Storage::disk('local')->delete($user->id_picture_back);
+        }
+
+        OtpCode::where('user_id', $user->id)->delete();
+        $user->delete();
+
+        return redirect()->route('admin.pending-registrations.index')
+            ->with('success', "Registration application for {$user->name} has been permanently deleted.");
     }
 }

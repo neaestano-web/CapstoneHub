@@ -11,6 +11,17 @@
             Create an account to submit and explore capstone projects!
         </p>
 
+        @if ($errors->any())
+            <div class="w-full mb-4 p-3.5 text-xs font-semibold text-rose-300 bg-rose-950/80 border border-rose-500/50 rounded-xl space-y-1">
+                @foreach ($errors->all() as $error)
+                    <p class="flex items-center gap-1.5">
+                        <span class="text-rose-400">⚠️</span>
+                        <span>{{ $error }}</span>
+                    </p>
+                @endforeach
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" class="auth-form-body" id="registerForm">
             @csrf
 

@@ -93,6 +93,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/pending-registrations/{user}/id-picture/{side}', [PendingRegistrationController::class, 'idPicture'])->name('pending-registrations.id-picture');
     Route::patch('/pending-registrations/{user}/approve', [PendingRegistrationController::class, 'approve'])->name('pending-registrations.approve');
     Route::patch('/pending-registrations/{user}/reject', [PendingRegistrationController::class, 'reject'])->name('pending-registrations.reject');
+    Route::delete('/pending-registrations/{user}', [PendingRegistrationController::class, 'destroy'])->name('pending-registrations.destroy');
 
     // Download Requests Management
     Route::get('/download-requests', [AdminDownloadRequestController::class, 'index'])->name('download-requests.index');

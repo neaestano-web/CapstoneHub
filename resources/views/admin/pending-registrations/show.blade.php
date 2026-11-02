@@ -94,6 +94,13 @@
                 <button type="button" onclick="openRejectModal()" class="w-full sm:w-auto px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-full shadow-xs transition">
                     ✕ Reject Registration
                 </button>
+
+                <form action="{{ route('admin.pending-registrations.destroy', $user) }}" method="POST" class="w-full sm:w-auto" onsubmit="return confirm('Permanently delete registration application for {{ addslashes($user->name) }}?')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-extrabold text-xs rounded-full transition">
+                        🗑 Delete Application
+                    </button>
+                </form>
             </div>
         </div>
     @endif

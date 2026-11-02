@@ -191,6 +191,13 @@
                                             </button>
                                         </form>
                                     @endif
+
+                                    <form action="{{ route('admin.pending-registrations.destroy', $registration) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete registration for {{ addslashes($registration->name) }}?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full font-extrabold text-xs transition" title="Delete application">
+                                            Delete
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
