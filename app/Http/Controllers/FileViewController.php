@@ -32,17 +32,24 @@ class FileViewController extends Controller
             }
         }
 
-        // pdf_path is already stored with "researches/" prefix
-        if (!Storage::disk('public')->exists($path)) {
-            abort(404);
+        // Support paths with or without "researches/" prefix
+        $actualPath = $path;
+        if (!Storage::disk('public')->exists($actualPath)) {
+            if (Storage::disk('public')->exists('researches/' . $path)) {
+                $actualPath = 'researches/' . $path;
+            } elseif (str_starts_with($path, 'researches/') && Storage::disk('public')->exists(substr($path, 11))) {
+                $actualPath = substr($path, 11);
+            } else {
+                abort(404, 'File not found in storage.');
+            }
         }
 
-        $file = Storage::disk('public')->get($path);
-        $mimeType = Storage::disk('public')->mimeType($path);
+        $file = Storage::disk('public')->get($actualPath);
+        $mimeType = Storage::disk('public')->mimeType($actualPath);
 
         return response($file, 200, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            'Content-Disposition' => 'inline; filename="' . basename($actualPath) . '"',
             'Content-Length' => strlen($file),
         ]);
     }
