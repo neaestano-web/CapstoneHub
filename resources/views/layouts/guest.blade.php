@@ -529,6 +529,44 @@
             object-fit: cover;
         }
 
+        /* ===== AUTH ALERT BANNERS ===== */
+        .auth-alert {
+            width: 100%;
+            margin-bottom: 1.15rem;
+            padding: 0.85rem 1.1rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            line-height: 1.45;
+            border-radius: 14px;
+            text-align: center;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .auth-alert-warning {
+            color: #fef08a;
+            background: rgba(113, 63, 18, 0.55);
+            border: 1px solid rgba(234, 179, 8, 0.45);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .auth-alert-success {
+            color: #86efac;
+            background: rgba(6, 78, 59, 0.55);
+            border: 1px solid rgba(16, 185, 129, 0.45);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .auth-alert-error {
+            color: #fca5a5;
+            background: rgba(127, 29, 29, 0.55);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+
         /* Floating particles matching picture circles and pluses */
         .auth-particle {
             position: absolute;
@@ -536,14 +574,14 @@
             pointer-events: none;
             z-index: 2;
         }
-        .p-1 { width: 6px; height: 6px; left: 6%; bottom: 60px; border: 1.5px solid rgba(255, 255, 255, 0.25); background: transparent; }
-        .p-2 { width: 4px; height: 4px; left: 14%; bottom: 95px; background: rgba(0, 230, 118, 0.4); }
-        .p-3 { width: 7px; height: 7px; left: 32%; bottom: 75px; border: 1.5px solid rgba(255, 255, 255, 0.25); background: transparent; }
-        .p-4 { width: 5px; height: 5px; left: 45%; bottom: 85px; background: rgba(56, 189, 248, 0.35); }
-        .p-5 { width: 6px; height: 6px; right: 34%; bottom: 70px; border: 1.5px solid rgba(255, 255, 255, 0.25); background: transparent; }
-        .p-6 { width: 4px; height: 4px; right: 22%; bottom: 100px; background: rgba(0, 230, 118, 0.4); }
-        .p-7 { width: 7px; height: 7px; right: 11%; bottom: 80px; border: 1.5px solid rgba(255, 255, 255, 0.2); background: transparent; }
-        .p-8 { width: 5px; height: 5px; right: 4%; bottom: 65px; background: rgba(255, 255, 255, 0.25); }
+        .auth-p-1 { width: 6px; height: 6px; left: 6%; bottom: 60px; border: 1.5px solid rgba(255, 255, 255, 0.25); background: transparent; }
+        .auth-p-2 { width: 4px; height: 4px; left: 14%; bottom: 95px; background: rgba(0, 230, 118, 0.4); }
+        .auth-p-3 { width: 7px; height: 7px; left: 32%; bottom: 75px; border: 1.5px solid rgba(255, 255, 255, 0.25); background: transparent; }
+        .auth-p-4 { width: 5px; height: 5px; left: 45%; bottom: 85px; background: rgba(56, 189, 248, 0.35); }
+        .auth-p-5 { width: 6px; height: 6px; right: 34%; bottom: 70px; border: 1.5px solid rgba(255, 255, 255, 0.25); background: transparent; }
+        .auth-p-6 { width: 4px; height: 4px; right: 22%; bottom: 100px; background: rgba(0, 230, 118, 0.4); }
+        .auth-p-7 { width: 7px; height: 7px; right: 11%; bottom: 80px; border: 1.5px solid rgba(255, 255, 255, 0.2); background: transparent; }
+        .auth-p-8 { width: 5px; height: 5px; right: 4%; bottom: 65px; background: rgba(255, 255, 255, 0.25); }
     </style>
 </head>
 <body>
@@ -570,14 +608,14 @@
 
     <!-- Bottom Layered Waves & Micro Particles (matching reference image) -->
     <div class="auth-bottom-waves" aria-hidden="true">
-        <span class="auth-particle p-1"></span>
-        <span class="auth-particle p-2"></span>
-        <span class="auth-particle p-3"></span>
-        <span class="auth-particle p-4"></span>
-        <span class="auth-particle p-5"></span>
-        <span class="auth-particle p-6"></span>
-        <span class="auth-particle p-7"></span>
-        <span class="auth-particle p-8"></span>
+        <span class="auth-particle auth-p-1"></span>
+        <span class="auth-particle auth-p-2"></span>
+        <span class="auth-particle auth-p-3"></span>
+        <span class="auth-particle auth-p-4"></span>
+        <span class="auth-particle auth-p-5"></span>
+        <span class="auth-particle auth-p-6"></span>
+        <span class="auth-particle auth-p-7"></span>
+        <span class="auth-particle auth-p-8"></span>
 
         <!-- Layered translucent wave ribbons from image -->
         <svg class="wave-svg" viewBox="0 0 1440 160" preserveAspectRatio="none" fill="none">

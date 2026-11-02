@@ -11,14 +11,16 @@
         </p>
 
         @if (session('status') == 'otp-sent')
-            <div class="w-full mb-3 p-3 text-xs font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/40 rounded-xl text-center">
-                {{ __('A 6-digit OTP code has been sent to your Gmail inbox.') }}
+            <div class="auth-alert auth-alert-success">
+                <span>✅</span>
+                <span>{{ __('A 6-digit OTP code has been sent to your Gmail inbox.') }}</span>
             </div>
         @endif
 
         @if (isset($attemptsLeft) && $attemptsLeft <= 0)
-            <div class="w-full mb-3 p-3 text-xs font-semibold text-amber-300 bg-amber-950/70 border border-amber-500/40 rounded-xl text-center">
-                {{ __('Maximum OTP request limit reached (3/3 attempts). Please check your Gmail inbox or spam folder for previous codes, or wait 1 hour to try again.') }}
+            <div class="auth-alert auth-alert-warning">
+                <span>⚠️</span>
+                <span>{{ __('Maximum OTP request limit reached (3/3 attempts). Please check your Gmail inbox or spam folder for previous codes, or wait 1 hour to try again.') }}</span>
             </div>
         @endif
 

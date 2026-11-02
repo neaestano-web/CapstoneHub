@@ -13,8 +13,9 @@
 
         <!-- Session Status Alert -->
         @if (session('status'))
-            <div class="w-full mb-3 p-3 text-xs font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/40 rounded-xl text-center">
-                {{ session('status') }}
+            <div class="auth-alert auth-alert-success">
+                <span>✅</span>
+                <span>{{ session('status') }}</span>
             </div>
         @endif
 

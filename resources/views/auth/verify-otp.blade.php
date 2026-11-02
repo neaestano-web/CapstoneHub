@@ -11,14 +11,16 @@
         </p>
 
         @if (session('status') == 'verification-link-sent')
-            <div class="w-full mb-3 p-3 text-xs font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/40 rounded-xl text-center">
-                A new OTP code has been sent to your email address.
+            <div class="auth-alert auth-alert-success">
+                <span>✅</span>
+                <span>A new OTP code has been sent to your email address.</span>
             </div>
         @endif
 
         @if (isset($attemptsLeft) && $attemptsLeft <= 0)
-            <div class="w-full mb-3 p-3 text-xs font-semibold text-amber-300 bg-amber-950/70 border border-amber-500/40 rounded-xl text-center">
-                Maximum OTP request limit reached (3/3 attempts). Please check your email inbox or spam folder for previous codes, or wait 1 hour to try again.
+            <div class="auth-alert auth-alert-warning">
+                <span>⚠️</span>
+                <span>Maximum OTP request limit reached (3/3 attempts). Please check your email inbox or spam folder for previous codes, or wait 1 hour to try again.</span>
             </div>
         @endif
 

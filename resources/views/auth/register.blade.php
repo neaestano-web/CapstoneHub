@@ -12,24 +12,24 @@
         </p>
 
         @if (session('status'))
-            <div class="w-full mb-4 p-3.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 border border-emerald-500/50 rounded-xl flex items-center gap-2">
+            <div class="auth-alert auth-alert-success">
                 <span>✅</span>
                 <span>{{ session('status') }}</span>
             </div>
         @endif
 
         @if (session('error'))
-            <div class="w-full mb-4 p-3.5 text-xs font-semibold text-rose-300 bg-rose-950/80 border border-rose-500/50 rounded-xl flex items-center gap-2">
+            <div class="auth-alert auth-alert-error">
                 <span>⚠️</span>
                 <span>{{ session('error') }}</span>
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="w-full mb-4 p-3.5 text-xs font-semibold text-rose-300 bg-rose-950/80 border border-rose-500/50 rounded-xl space-y-1">
+            <div class="auth-alert auth-alert-error" style="flex-direction: column; align-items: flex-start; text-align: left;">
                 @foreach ($errors->all() as $error)
-                    <p class="flex items-center gap-1.5">
-                        <span class="text-rose-400">⚠️</span>
+                    <p class="flex items-center gap-1.5" style="margin: 2px 0;">
+                        <span>⚠️</span>
                         <span>{{ $error }}</span>
                     </p>
                 @endforeach
