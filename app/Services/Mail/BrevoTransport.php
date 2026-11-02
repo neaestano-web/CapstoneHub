@@ -23,13 +23,20 @@ class BrevoTransport extends AbstractTransport
     {
         $email = MessageConverter::toEmail($message->getOriginalMessage());
 
-        $senderAddress = config('mail.from.address', 'michellekooi19@gmail.com');
+        $senderAddress = env('BREVO_SENDER_EMAIL', config('mail.from.address', 'neaestano@gmail.com'));
         $senderName = config('mail.from.name', 'CapstoneHub');
 
         $fromList = $email->getFrom();
         if (!empty($fromList)) {
-            $senderAddress = $fromList[0]->getAddress();
+            $addr = $fromList[0]->getAddress();
+            if (!empty($addr) && !str_contains($addr, 'michellekooi19')) {
+                $senderAddress = $addr;
+            }
             $senderName = $fromList[0]->getName() ?: $senderName;
+        }
+
+        if (empty($senderAddress) || str_contains($senderAddress, 'michellekooi19')) {
+            $senderAddress = 'neaestano@gmail.com';
         }
 
         $to = [];

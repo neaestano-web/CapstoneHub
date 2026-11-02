@@ -116,7 +116,7 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'michellekooi19@gmail.com'),
+        'address' => env('MAIL_FROM_ADDRESS', 'neaestano@gmail.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'CapstoneHub')),
     ],
 
