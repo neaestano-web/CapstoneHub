@@ -80,6 +80,37 @@
                 </select>
             </div>
 
+            @if($user->role === 'student')
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                    <span class="block text-xs font-extrabold text-[#2d2b56] uppercase tracking-wider">
+                        Registration Application Status
+                    </span>
+
+                    <div>
+                        <label for="registration_status" class="block text-xs font-bold text-slate-600 mb-1">
+                            Status
+                        </label>
+                        <select name="registration_status" id="registration_status"
+                                onchange="document.getElementById('rejection_reason_wrap').style.display = (this.value === 'rejected' ? 'block' : 'none')"
+                                class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-semibold text-[#2d2b56] outline-none focus:border-[#0c4233] transition">
+                            <option value="pending" {{ old('registration_status', $user->registration_status) == 'pending' ? 'selected' : '' }}>⏳ Pending Review</option>
+                            <option value="approved" {{ old('registration_status', $user->registration_status) == 'approved' ? 'selected' : '' }}>✅ Approved (Send Email)</option>
+                            <option value="rejected" {{ old('registration_status', $user->registration_status) == 'rejected' ? 'selected' : '' }}>❌ Rejected (Send Email)</option>
+                        </select>
+                        <p class="text-[11px] text-slate-400 mt-1">Changing status to Approved or Rejected will automatically send an email notification to {{ $user->email }}.</p>
+                    </div>
+
+                    <div id="rejection_reason_wrap" style="display: {{ old('registration_status', $user->registration_status) === 'rejected' ? 'block' : 'none' }};">
+                        <label for="rejection_reason" class="block text-xs font-bold text-slate-600 mb-1">
+                            Rejection Reason (Emailed to Student)
+                        </label>
+                        <textarea name="rejection_reason" id="rejection_reason" rows="3"
+                                  placeholder="Specify the reason for rejecting registration..."
+                                  class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-semibold text-[#2d2b56] outline-none focus:border-rose-500 transition">{{ old('rejection_reason', $user->registration_rejection_reason) }}</textarea>
+                    </div>
+                </div>
+            @endif
+
             <div class="pt-2 border-t border-slate-100 space-y-4">
                 <span class="block text-xs font-extrabold text-slate-400 uppercase tracking-wider">Change Password (Optional)</span>
 

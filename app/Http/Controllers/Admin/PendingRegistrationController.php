@@ -101,15 +101,23 @@ class PendingRegistrationController extends Controller
         $user->save();
 
         // Send approval notification email to student
+        $emailSuccess = false;
         try {
             Mail::to($user->email)->send(new RegistrationApprovedMail($user));
             Log::info("Registration approval email sent to {$user->email}");
+            $emailSuccess = true;
         } catch (\Throwable $e) {
             Log::error("Failed to send registration approval email to {$user->email}: " . $e->getMessage());
         }
 
-        return redirect()->route('admin.pending-registrations.index')
-            ->with('success', "Registration for {$user->name} has been approved and a notification email has been sent.");
+        $msg = "Registration for {$user->name} has been approved.";
+        if ($emailSuccess) {
+            $msg .= " Notification email sent to {$user->email}.";
+        } else {
+            $msg .= " (Note: Notification email could not be delivered to {$user->email}. Check logs/mail settings).";
+        }
+
+        return back()->with('success', $msg);
     }
 
     /**
@@ -130,14 +138,22 @@ class PendingRegistrationController extends Controller
         $user->save();
 
         // Send rejection notification email to student
+        $emailSuccess = false;
         try {
             Mail::to($user->email)->send(new RegistrationRejectedMail($user, $request->rejection_reason));
             Log::info("Registration rejection email sent to {$user->email}");
+            $emailSuccess = true;
         } catch (\Throwable $e) {
             Log::error("Failed to send registration rejection email to {$user->email}: " . $e->getMessage());
         }
 
-        return redirect()->route('admin.pending-registrations.index')
-            ->with('success', "Registration for {$user->name} has been rejected and a notification email has been sent.");
+        $msg = "Registration for {$user->name} has been rejected.";
+        if ($emailSuccess) {
+            $msg .= " Notification email sent to {$user->email}.";
+        } else {
+            $msg .= " (Note: Notification email could not be delivered to {$user->email}. Check logs/mail settings).";
+        }
+
+        return back()->with('success', $msg);
     }
 }
