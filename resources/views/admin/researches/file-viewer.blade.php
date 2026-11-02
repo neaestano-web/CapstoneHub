@@ -137,6 +137,27 @@
             box-shadow: 0 4px 24px rgba(0,0,0,0.12);
         }
 
+        @if(request('embedded'))
+        body {
+            background: #ffffff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .doc-wrapper {
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            padding: 10px 20px !important;
+        }
+        #docx-container {
+            box-shadow: none !important;
+            border: none !important;
+            min-height: 100vh;
+        }
+        #docx-container .docx-wrapper > section.docx {
+            padding: 24px 32px !important;
+        }
+        @endif
+
         /* Loading state */
         .loading-state {
             display: flex;

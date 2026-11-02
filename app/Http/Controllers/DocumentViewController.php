@@ -24,6 +24,111 @@ class DocumentViewController extends Controller
     }
 
     /**
+     * Convert a Word document (.docx) to PDF locally in pure PHP.
+     */
+    public function convertDocxToPdfLocally(string $docxPath, string $outputPath): bool
+    {
+        $this->ensureFpdiLoaded();
+
+        if (!file_exists($docxPath) || !class_exists(\FPDF::class)) {
+            return false;
+        }
+
+        try {
+            $zip = new \ZipArchive();
+            if ($zip->open($docxPath) !== true) {
+                return false;
+            }
+
+            $xml = $zip->getFromName('word/document.xml');
+            $zip->close();
+
+            if (!$xml) {
+                return false;
+            }
+
+            $dom = new \DOMDocument();
+            @$dom->loadXML($xml);
+            $xpath = new \DOMXPath($dom);
+            $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+            $fpdf = new \FPDF('P', 'mm', 'A4');
+            $fpdf->SetMargins(20, 20, 20);
+            $fpdf->SetAutoPageBreak(true, 20);
+            $fpdf->AddPage();
+
+            $hasContent = false;
+
+            foreach ($xpath->query('//w:p') as $p) {
+                $text = '';
+                $isHeading = false;
+                $isBold = false;
+
+                $pStyle = $xpath->query('.//w:pStyle/@w:val', $p)->item(0)?->nodeValue;
+                if ($pStyle && (stripos($pStyle, 'heading') !== false || stripos($pStyle, 'title') !== false)) {
+                    $isHeading = true;
+                }
+
+                foreach ($xpath->query('.//w:r', $p) as $r) {
+                    $boldNode = $xpath->query('.//w:b', $r)->item(0);
+                    if ($boldNode) {
+                        $isBold = true;
+                    }
+                    foreach ($xpath->query('.//w:t', $r) as $t) {
+                        $text .= $t->nodeValue;
+                    }
+                }
+
+                $text = trim($text);
+                if ($text === '') {
+                    $fpdf->Ln(3);
+                    continue;
+                }
+
+                $hasContent = true;
+
+                // Transliterate to standard windows-1252 for FPDF
+                $cleanText = iconv('UTF-8', 'windows-1252//TRANSLIT', $text);
+                if ($cleanText === false) {
+                    $cleanText = utf8_decode($text);
+                }
+
+                if ($isHeading) {
+                    $fpdf->Ln(4);
+                    $fpdf->SetFont('Helvetica', 'B', 12);
+                    $fpdf->SetTextColor(15, 23, 42);
+                    $fpdf->MultiCell(0, 6, $cleanText);
+                    $fpdf->Ln(2);
+                } elseif ($isBold) {
+                    $fpdf->SetFont('Helvetica', 'B', 10);
+                    $fpdf->SetTextColor(30, 41, 59);
+                    $fpdf->MultiCell(0, 5, $cleanText);
+                    $fpdf->Ln(1.5);
+                } else {
+                    $fpdf->SetFont('Helvetica', '', 10);
+                    $fpdf->SetTextColor(51, 65, 85);
+                    $fpdf->MultiCell(0, 5, $cleanText);
+                    $fpdf->Ln(1.5);
+                }
+            }
+
+            if (!$hasContent) {
+                return false;
+            }
+
+            if (!is_dir(dirname($outputPath))) {
+                mkdir(dirname($outputPath), 0755, true);
+            }
+
+            $fpdf->Output($outputPath, 'F');
+            return file_exists($outputPath);
+        } catch (\Throwable $e) {
+            Log::warning("Local docx to pdf conversion failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Public Preview: Serve ONLY the first page of the first uploaded file as a PDF for guest users.
      */
     public function preview(Research $research, AIService $ai)
@@ -42,22 +147,25 @@ class DocumentViewController extends Controller
         $extension = strtolower(pathinfo($primaryPath, PATHINFO_EXTENSION));
         $absoluteSourcePath = Storage::disk('public')->path($primaryPath);
 
-        // 2. If it's a DOCX file, check cache first or convert
+        // 2. If it's a DOCX file, check cache first or convert locally
         if ($extension !== 'pdf') {
             $pdfRelativePath = 'researches/pdf_cache/' . pathinfo($primaryPath, PATHINFO_FILENAME) . '.pdf';
             $absolutePdfPath = Storage::disk('public')->path($pdfRelativePath);
 
             if (!Storage::disk('public')->exists($pdfRelativePath)) {
-                try {
-                    $converted = $ai->convertDocxToPdf($absoluteSourcePath, $absolutePdfPath);
-                    if (!$converted || !file_exists($absolutePdfPath)) {
-                        return $this->serveMissingFileNotice($research, 'Guest Preview (Conversion in Progress)');
+                $converted = $this->convertDocxToPdfLocally($absoluteSourcePath, $absolutePdfPath);
+                if (!$converted) {
+                    try {
+                        $ai->convertDocxToPdf($absoluteSourcePath, $absolutePdfPath);
+                    } catch (\Throwable $e) {
+                        // ignore
                     }
-                } catch (\Throwable $e) {
-                    return $this->serveMissingFileNotice($research, 'Guest Preview');
                 }
             }
-            $absoluteSourcePath = $absolutePdfPath;
+
+            if (Storage::disk('public')->exists($pdfRelativePath)) {
+                $absoluteSourcePath = $absolutePdfPath;
+            }
         }
 
         // 3. Generate or retrieve the cached 1-page PDF
@@ -66,7 +174,7 @@ class DocumentViewController extends Controller
         $previewRelativePath = 'researches/pdf_cache/page1_preview_' . $research->id . '_' . $cacheHash . '.pdf';
         $absolutePreviewPath = Storage::disk('public')->path($previewRelativePath);
 
-        if (!Storage::disk('public')->exists($previewRelativePath)) {
+        if (!Storage::disk('public')->exists($previewRelativePath) && strtolower(pathinfo($absoluteSourcePath, PATHINFO_EXTENSION)) === 'pdf') {
             try {
                 if (class_exists(\setasign\Fpdi\Fpdi::class)) {
                     $fpdi = new \setasign\Fpdi\Fpdi();
@@ -278,13 +386,22 @@ class DocumentViewController extends Controller
                     if (Storage::disk('public')->exists($cachedPdfRel)) {
                         $inputPdfPaths[] = $cachedPdfAbs;
                     } else {
-                        // Attempt conversion
-                        try {
-                            if ($ai->convertDocxToPdf($absoluteSrcPath, $cachedPdfAbs) && file_exists($cachedPdfAbs)) {
-                                $inputPdfPaths[] = $cachedPdfAbs;
+                        // 1. Attempt local pure-PHP conversion
+                        $converted = $this->convertDocxToPdfLocally($absoluteSrcPath, $cachedPdfAbs);
+
+                        // 2. Fallback to AI service
+                        if (!$converted || !file_exists($cachedPdfAbs)) {
+                            try {
+                                if ($ai->convertDocxToPdf($absoluteSrcPath, $cachedPdfAbs) && file_exists($cachedPdfAbs)) {
+                                    $converted = true;
+                                }
+                            } catch (\Throwable $e) {
+                                // ignore
                             }
-                        } catch (\Throwable $e) {
-                            Log::warning("DOCX conversion failed for merge: {$f->file_path}");
+                        }
+
+                        if ($converted && file_exists($cachedPdfAbs)) {
+                            $inputPdfPaths[] = $cachedPdfAbs;
                         }
                     }
                 }
@@ -354,23 +471,27 @@ class DocumentViewController extends Controller
             ];
         }
 
-        try {
-            $converted = $ai->convertDocxToPdf($absoluteDocxPath, $absolutePdfPath);
-            if ($converted && Storage::disk('public')->exists($pdfRelativePath)) {
-                return [
-                    'content' => Storage::disk('public')->get($pdfRelativePath),
-                    'filename' => $safeTitle . '.pdf',
-                ];
+        $converted = $this->convertDocxToPdfLocally($absoluteDocxPath, $absolutePdfPath);
+        if (!$converted) {
+            try {
+                $converted = $ai->convertDocxToPdf($absoluteDocxPath, $absolutePdfPath);
+            } catch (\Throwable $e) {
+                Log::warning("Single DOCX conversion failed: {$primaryPath}");
             }
-        } catch (\Throwable $e) {
-            Log::warning("Single DOCX conversion failed: {$primaryPath}");
+        }
+
+        if (Storage::disk('public')->exists($pdfRelativePath)) {
+            return [
+                'content' => Storage::disk('public')->get($pdfRelativePath),
+                'filename' => $safeTitle . '.pdf',
+            ];
         }
 
         return null;
     }
 
     /**
-     * Serve a single file inline as PDF (converting DOCX if needed).
+     * Serve a single file inline (PDF as inline PDF, DOCX via converted PDF or embedded docx-preview).
      */
     private function serveSingleFile(Research $research, string $path, AIService $ai, ?string $originalName = null)
     {
@@ -400,23 +521,32 @@ class DocumentViewController extends Controller
             ]);
         }
 
-        // If not cached, attempt conversion
-        try {
-            $converted = $ai->convertDocxToPdf($absoluteDocxPath, $absolutePdfPath);
-            if ($converted && Storage::disk('public')->exists($pdfRelativePath)) {
-                $file = Storage::disk('public')->get($pdfRelativePath);
-                return response($file, 200, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . pathinfo($displayName, PATHINFO_FILENAME) . '.pdf"',
-                    'Content-Length' => strlen($file),
-                ]);
+        // If not cached, attempt local conversion
+        $converted = $this->convertDocxToPdfLocally($absoluteDocxPath, $absolutePdfPath);
+        if (!$converted) {
+            try {
+                $converted = $ai->convertDocxToPdf($absoluteDocxPath, $absolutePdfPath);
+            } catch (\Throwable $e) {
+                Log::warning("DOCX conversion exception: {$path}");
             }
-        } catch (\Throwable $e) {
-            Log::warning("DOCX conversion exception: {$path}");
         }
 
-        // Fallback: render a clean DOCX notice PDF instead of redirecting (which breaks iframes)
-        return $this->serveDocxNotice($research, $path, $displayName);
+        if (Storage::disk('public')->exists($pdfRelativePath)) {
+            $file = Storage::disk('public')->get($pdfRelativePath);
+            return response($file, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . pathinfo($displayName, PATHINFO_FILENAME) . '.pdf"',
+                'Content-Length' => strlen($file),
+            ]);
+        }
+
+        // View the actual Word Document content using high-fidelity docx-preview
+        return response()->view('admin.researches.file-viewer', [
+            'research' => $research,
+            'fileUrl' => route('files.show', ['path' => $path]),
+            'extension' => 'docx',
+            'displayName' => $displayName,
+        ]);
     }
 
     /**
@@ -497,75 +627,5 @@ class DocumentViewController extends Controller
         return response('Manuscript document is undergoing archival synchronization.', 200, [
             'Content-Type' => 'text/plain',
         ]);
-    }
-
-    /**
-     * Clean PDF notice when a DOCX file could not be converted on the fly.
-     */
-    private function serveDocxNotice(Research $research, string $path, string $displayName)
-    {
-        $this->ensureFpdiLoaded();
-        $safeTitle = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $research->title);
-
-        if (class_exists(\FPDF::class)) {
-            try {
-                $fpdf = new \FPDF('P', 'mm', 'A4');
-                $fpdf->AddPage();
-                $fpdf->SetMargins(20, 20, 20);
-
-                // Top decorative bar
-                $fpdf->SetFillColor(12, 66, 51);
-                $fpdf->Rect(0, 0, 210, 8, 'F');
-
-                $fpdf->Ln(14);
-                $fpdf->SetFont('Helvetica', 'B', 16);
-                $fpdf->SetTextColor(15, 23, 42);
-                $fpdf->Cell(0, 10, 'JHCSC CAPSTONE REPOSITORY', 0, 1, 'C');
-
-                $fpdf->SetFont('Helvetica', '', 10);
-                $fpdf->SetTextColor(100, 116, 139);
-                $fpdf->Cell(0, 6, 'Digital Manuscript Archival Services', 0, 1, 'C');
-
-                $fpdf->Ln(10);
-                $fpdf->SetDrawColor(226, 232, 240);
-                $fpdf->Line(20, $fpdf->GetY(), 190, $fpdf->GetY());
-                $fpdf->Ln(12);
-
-                $boxY = $fpdf->GetY();
-                $fpdf->SetFillColor(248, 250, 252);
-                $fpdf->SetDrawColor(203, 213, 225);
-                $fpdf->Rect(20, $boxY, 170, 75, 'DF');
-
-                $fpdf->SetXY(25, $boxY + 8);
-                $fpdf->SetFont('Helvetica', 'B', 11);
-                $fpdf->SetTextColor(12, 66, 51);
-                $fpdf->Cell(160, 7, 'DOCUMENT FORMAT: MICROSOFT WORD (.DOCX)', 0, 1, 'L');
-
-                $fpdf->Ln(2);
-                $fpdf->SetX(25);
-                $fpdf->SetFont('Helvetica', 'B', 10);
-                $fpdf->SetTextColor(30, 41, 59);
-                $cleanTitle = iconv('UTF-8', 'windows-1252//TRANSLIT', $research->title);
-                $fpdf->MultiCell(160, 5, 'Title: ' . $cleanTitle);
-
-                $fpdf->Ln(3);
-                $fpdf->SetX(25);
-                $fpdf->SetFont('Helvetica', '', 9.5);
-                $fpdf->SetTextColor(71, 85, 105);
-                $fpdf->MultiCell(160, 5, 'This manuscript was uploaded as a Word Document (' . $displayName . '). Click the "Download Full PDF" or download button above to retrieve the file.');
-
-                $pdfString = $fpdf->Output('S');
-
-                return response($pdfString, 200, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . $safeTitle . ' (Word Notice).pdf"',
-                    'Content-Length' => strlen($pdfString),
-                ]);
-            } catch (\Throwable $e) {
-                Log::warning("Error creating docx notice PDF: " . $e->getMessage());
-            }
-        }
-
-        return redirect()->route('document.view', $research);
     }
 }
