@@ -241,6 +241,173 @@
         color: var(--view-text-muted);
     }
 
+    [x-cloak] { display: none !important; }
+
+    /* Single Row Interactive Mini-Cards: Abstract, Context, & Objectives */
+    .research-mini-card {
+        background: var(--view-bg-subtle);
+        border: 1px solid var(--view-border);
+        border-radius: 18px;
+        padding: 1.25rem 1.35rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.85rem;
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        user-select: none;
+    }
+
+    .research-mini-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(16, 185, 129, 0.45);
+        box-shadow: 0 10px 24px rgba(16, 185, 129, 0.12);
+        background: linear-gradient(145deg, var(--view-bg-subtle) 0%, rgba(16, 185, 129, 0.05) 100%);
+    }
+
+    .mini-card-badge-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .mini-card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.25rem 0.65rem;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-radius: 8px;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: var(--view-accent-soft);
+    }
+
+    .mini-card-arrow {
+        font-size: 0.85rem;
+        color: var(--view-accent-soft);
+        opacity: 0.5;
+        transition: all 0.2s ease;
+    }
+
+    .research-mini-card:hover .mini-card-arrow {
+        opacity: 1;
+        transform: translate(2px, -2px);
+    }
+
+    .mini-card-title {
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--view-text-headings);
+        line-height: 1.35;
+    }
+
+    .mini-card-preview {
+        font-size: 0.81rem;
+        line-height: 1.6;
+        color: var(--view-text-muted);
+        font-weight: 400;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .mini-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.65rem;
+        border-top: 1px solid var(--view-border);
+        font-size: 0.74rem;
+    }
+
+    .mini-card-footer-prompt {
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--view-text-muted);
+    }
+
+    .mini-card-footer-action {
+        font-size: 0.74rem;
+        font-weight: 800;
+        color: var(--view-accent-soft);
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        transition: transform 0.2s ease;
+    }
+
+    .research-mini-card:hover .mini-card-footer-action {
+        transform: translateX(2px);
+    }
+
+    /* Centered Expand Modal */
+    .expand-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1050;
+        background: rgba(5, 10, 20, 0.82);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem;
+    }
+
+    .expand-modal-container {
+        background: var(--view-bg-surface);
+        border: 1.5px solid var(--view-border);
+        border-radius: 22px;
+        width: 100%;
+        max-width: 680px;
+        max-height: 85vh;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+        color: var(--view-text-main);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        margin: auto;
+    }
+
+    .expand-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.2rem 1.6rem;
+        border-bottom: 1px solid var(--view-border);
+        background: var(--view-bg-surface);
+        flex-shrink: 0;
+    }
+
+    .expand-modal-body {
+        padding: 1.5rem 1.6rem;
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: calc(85vh - 135px);
+        overscroll-behavior: contain;
+    }
+
+    .expand-modal-footer {
+        padding: 0.85rem 1.6rem;
+        border-top: 1px solid var(--view-border);
+        background: var(--view-bg-subtle);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-shrink: 0;
+    }
+
     /* Section Panels: Keywords & Information */
     .detail-section-panel {
         background: var(--view-bg-subtle);
@@ -680,62 +847,204 @@
             </div>
         </div>
 
-        {{-- ABSTRACT --}}
-        @if(!empty($research->abstract))
-            <div class="detail-section-panel">
-                <h3 class="section-header-title">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    Abstract
-                </h3>
-                <div class="section-body-text whitespace-pre-line leading-relaxed">
-                    {{ $research->abstract }}
-                </div>
-            </div>
-        @endif
+        {{-- SINGLE ROW INTERACTIVE CARDS: ABSTRACT, PROJECT CONTEXT, & STUDY OBJECTIVES --}}
+        <div x-data="{
+            activeDetailModal: null,
+            modalIcons: {
+                abstract: '📝',
+                context: '🏢',
+                objectives: '🎯'
+            },
+            modalTags: {
+                abstract: 'Research Abstract',
+                context: 'Project Context',
+                objectives: 'Study Objectives'
+            },
+            modalTitles: {
+                abstract: 'Abstract Overview',
+                context: 'Project Context & Background',
+                objectives: 'Objectives of the Study'
+            }
+        }" id="projectDetailsSection">
 
-        {{-- PROJECT CONTEXT --}}
-        @if(!empty($research->project_context))
-            <div class="detail-section-panel">
-                <h3 class="section-header-title">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                        <line x1="9" y1="22" x2="9" y2="22.01"></line>
-                        <line x1="15" y1="22" x2="15" y2="22.01"></line>
-                        <line x1="8" y1="6" x2="16" y2="6"></line>
-                        <line x1="8" y1="10" x2="16" y2="10"></line>
-                        <line x1="8" y1="14" x2="16" y2="14"></line>
-                        <line x1="8" y1="18" x2="12" y2="18"></line>
-                    </svg>
-                    Project Context & Background
-                </h3>
-                <div class="section-body-text whitespace-pre-line leading-relaxed">
-                    {{ $research->project_context }}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+                
+                {{-- 1. ABSTRACT CARD --}}
+                <div @click="activeDetailModal = 'abstract'; document.body.style.overflow = 'hidden'" 
+                     onclick="openDetailModal('abstract')"
+                     class="research-mini-card"
+                     title="Click to view full Abstract Overview">
+                    <div class="space-y-2">
+                        <div class="mini-card-badge-row">
+                            <span class="mini-card-badge">
+                                <span>📝</span>
+                                <span>Abstract</span>
+                            </span>
+                            <span class="mini-card-arrow">↗</span>
+                        </div>
+                        <h3 class="mini-card-title">
+                            Abstract Overview
+                        </h3>
+                        <p class="mini-card-preview">
+                            {{ $research->abstract ? Str::limit(trim(strip_tags($research->abstract)), 140) : 'No abstract overview provided for this research project.' }}
+                        </p>
+                    </div>
+                    <div class="mini-card-footer">
+                        <span class="mini-card-footer-prompt">Click to expand</span>
+                        <span class="mini-card-footer-action">
+                            Expand ↗
+                        </span>
+                    </div>
                 </div>
-            </div>
-        @endif
 
-        {{-- OBJECTIVES OF THE STUDY --}}
-        @if(!empty($research->objectives))
-            <div class="detail-section-panel">
-                <h3 class="section-header-title">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <circle cx="12" cy="12" r="6"></circle>
-                        <circle cx="12" cy="12" r="2"></circle>
-                    </svg>
-                    Objectives of the Study
-                </h3>
-                <div class="section-body-text whitespace-pre-line leading-relaxed">
-                    {{ $research->objectives }}
+                {{-- 2. PROJECT CONTEXT CARD --}}
+                <div @click="activeDetailModal = 'context'; document.body.style.overflow = 'hidden'" 
+                     onclick="openDetailModal('context')"
+                     class="research-mini-card"
+                     title="Click to view full Project Context & Setting">
+                    <div class="space-y-2">
+                        <div class="mini-card-badge-row">
+                            <span class="mini-card-badge">
+                                <span>🏢</span>
+                                <span>Context</span>
+                            </span>
+                            <span class="mini-card-arrow">↗</span>
+                        </div>
+                        <h3 class="mini-card-title">
+                            Project Context & Setting
+                        </h3>
+                        <p class="mini-card-preview">
+                            {{ $research->project_context ? Str::limit(trim(strip_tags($research->project_context)), 140) : 'No project context or setting provided for this research project.' }}
+                        </p>
+                    </div>
+                    <div class="mini-card-footer">
+                        <span class="mini-card-footer-prompt">Click to expand</span>
+                        <span class="mini-card-footer-action">
+                            Expand ↗
+                        </span>
+                    </div>
+                </div>
+
+                {{-- 3. STUDY OBJECTIVES CARD --}}
+                <div @click="activeDetailModal = 'objectives'; document.body.style.overflow = 'hidden'" 
+                     onclick="openDetailModal('objectives')"
+                     class="research-mini-card"
+                     title="Click to view full Objectives of the Study">
+                    <div class="space-y-2">
+                        <div class="mini-card-badge-row">
+                            <span class="mini-card-badge">
+                                <span>🎯</span>
+                                <span>Objectives</span>
+                            </span>
+                            <span class="mini-card-arrow">↗</span>
+                        </div>
+                        <h3 class="mini-card-title">
+                            Objectives of the Study
+                        </h3>
+                        <p class="mini-card-preview">
+                            {{ $research->objectives ? Str::limit(trim(strip_tags($research->objectives)), 140) : 'No specific study objectives provided for this research project.' }}
+                        </p>
+                    </div>
+                    <div class="mini-card-footer">
+                        <span class="mini-card-footer-prompt">Click to expand</span>
+                        <span class="mini-card-footer-action">
+                            Expand ↗
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- CENTERED EXPAND POPUP MODAL --}}
+            <div x-show="activeDetailModal !== null"
+                 x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @keydown.escape.window="activeDetailModal = null; document.body.style.overflow = ''"
+                 class="expand-modal-backdrop"
+                 id="researchDetailModal"
+                 style="display: none;"
+                 onclick="if(event.target === this) closeDetailModal()">
+
+                <div x-show="activeDetailModal !== null"
+                     x-transition:enter="transition ease-out duration-250"
+                     x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+                     @click.outside="activeDetailModal = null; document.body.style.overflow = ''"
+                     class="expand-modal-container"
+                     onclick="event.stopPropagation()">
+
+                    <!-- Modal Header -->
+                    <div class="expand-modal-header">
+                        <div class="flex items-center gap-3 min-w-0 pr-2">
+                            <span class="text-2xl shrink-0" id="modal-dyn-icon" x-text="modalIcons[activeDetailModal]">📝</span>
+                            <div class="min-w-0">
+                                <span class="mini-card-badge inline-block mb-1" id="modal-dyn-tag" x-text="modalTags[activeDetailModal]">
+                                    Research Detail
+                                </span>
+                                <h3 class="font-extrabold text-base sm:text-lg truncate" style="color: var(--view-text-headings);" id="modal-dyn-title" x-text="modalTitles[activeDetailModal]">
+                                    Project Details
+                                </h3>
+                            </div>
+                        </div>
+                        <button type="button"
+                                @click="activeDetailModal = null; document.body.style.overflow = ''"
+                                onclick="closeDetailModal()"
+                                class="p-2 rounded-full transition shrink-0 hover:bg-slate-700/30 cursor-pointer"
+                                style="color: var(--view-text-muted);"
+                                title="Close (Esc)">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Scrollable Body -->
+                    <div class="expand-modal-body">
+                        {{-- 1. Abstract Content --}}
+                        <div x-show="activeDetailModal === 'abstract'" id="modal-pane-abstract" class="detail-modal-panel">
+                            <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
+                                {{ $research->abstract ?: 'No abstract available for this research.' }}
+                            </div>
+                        </div>
+
+                        {{-- 2. Project Context Content --}}
+                        <div x-show="activeDetailModal === 'context'" id="modal-pane-context" class="detail-modal-panel" style="display: none;">
+                            <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
+                                {{ $research->project_context ?: 'No project context provided for this research.' }}
+                            </div>
+                        </div>
+
+                        {{-- 3. Objectives Content --}}
+                        <div x-show="activeDetailModal === 'objectives'" id="modal-pane-objectives" class="detail-modal-panel" style="display: none;">
+                            <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
+                                {{ $research->objectives ?: 'No objectives provided for this research.' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="expand-modal-footer">
+                        <button type="button"
+                                @click="activeDetailModal = null; document.body.style.overflow = ''"
+                                onclick="closeDetailModal()"
+                                class="px-5 py-2 rounded-full text-xs font-extrabold transition shadow-sm hover:brightness-110 cursor-pointer"
+                                style="background: #10b981; color: #ffffff;">
+                            Close
+                        </button>
+                    </div>
+
                 </div>
             </div>
-        @endif
+
+        </div>
 
         {{-- KEYWORDS --}}
         @if($research->keywords)
@@ -1015,6 +1324,53 @@
 </div>
 
 <script>
+    function openDetailModal(type) {
+        const section = document.getElementById('projectDetailsSection');
+        if (window.Alpine && section && section._x_dataStack && section._x_dataStack.length > 0) {
+            section._x_dataStack[0].activeDetailModal = type;
+        }
+        const modal = document.getElementById('researchDetailModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            ['abstract', 'context', 'objectives'].forEach(function(t) {
+                const el = document.getElementById('modal-pane-' + t);
+                if (el) el.style.display = (t === type ? 'block' : 'none');
+            });
+            const titles = {
+                abstract: 'Abstract Overview',
+                context: 'Project Context & Setting',
+                objectives: 'Objectives of the Study'
+            };
+            const icons = { abstract: '📝', context: '🏢', objectives: '🎯' };
+            const tags = { abstract: 'Research Abstract', context: 'Project Context', objectives: 'Study Objectives' };
+            const titleEl = document.getElementById('modal-dyn-title');
+            const iconEl = document.getElementById('modal-dyn-icon');
+            const tagEl = document.getElementById('modal-dyn-tag');
+            if (titleEl) titleEl.textContent = titles[type] || 'Project Details';
+            if (iconEl) iconEl.textContent = icons[type] || '📝';
+            if (tagEl) tagEl.textContent = tags[type] || 'Research Detail';
+        }
+    }
+
+    function closeDetailModal() {
+        const section = document.getElementById('projectDetailsSection');
+        if (window.Alpine && section && section._x_dataStack && section._x_dataStack.length > 0) {
+            section._x_dataStack[0].activeDetailModal = null;
+        }
+        const modal = document.getElementById('researchDetailModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+    }
+
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDetailModal();
+        }
+    });
+
     function openCitationModal() {
         const modal = document.getElementById('citationModal');
         if (modal) modal.classList.add('active');
