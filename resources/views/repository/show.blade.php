@@ -680,6 +680,63 @@
             </div>
         </div>
 
+        {{-- ABSTRACT --}}
+        @if(!empty($research->abstract))
+            <div class="detail-section-panel">
+                <h3 class="section-header-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Abstract
+                </h3>
+                <div class="section-body-text whitespace-pre-line leading-relaxed">
+                    {{ $research->abstract }}
+                </div>
+            </div>
+        @endif
+
+        {{-- PROJECT CONTEXT --}}
+        @if(!empty($research->project_context))
+            <div class="detail-section-panel">
+                <h3 class="section-header-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                        <line x1="9" y1="22" x2="9" y2="22.01"></line>
+                        <line x1="15" y1="22" x2="15" y2="22.01"></line>
+                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                        <line x1="8" y1="10" x2="16" y2="10"></line>
+                        <line x1="8" y1="14" x2="16" y2="14"></line>
+                        <line x1="8" y1="18" x2="12" y2="18"></line>
+                    </svg>
+                    Project Context & Background
+                </h3>
+                <div class="section-body-text whitespace-pre-line leading-relaxed">
+                    {{ $research->project_context }}
+                </div>
+            </div>
+        @endif
+
+        {{-- OBJECTIVES OF THE STUDY --}}
+        @if(!empty($research->objectives))
+            <div class="detail-section-panel">
+                <h3 class="section-header-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                    Objectives of the Study
+                </h3>
+                <div class="section-body-text whitespace-pre-line leading-relaxed">
+                    {{ $research->objectives }}
+                </div>
+            </div>
+        @endif
+
         {{-- KEYWORDS --}}
         @if($research->keywords)
             <div class="detail-section-panel">
