@@ -76,6 +76,16 @@
         </div>
     @endif
 
+    @if(session('warning'))
+        <div class="p-4 bg-amber-50 border border-amber-300 text-amber-900 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-base">⚠️</span>
+                <span>{{ session('warning') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-amber-600 hover:text-amber-900 text-sm font-black">✕</button>
+        </div>
+    @endif
+
     @if(session('error'))
         <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs">
             <div class="flex items-center gap-2">

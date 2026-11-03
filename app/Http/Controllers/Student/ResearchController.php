@@ -230,6 +230,30 @@ class ResearchController extends Controller
     }
 
     /**
+     * AJAX: Check if a research manuscript with a matching/similar title already exists.
+     */
+    public function checkExists(Request $request)
+    {
+        $title = $request->input('title', '');
+        $existing = Research::findExistingByTitle($title);
+
+        if ($existing) {
+            return response()->json([
+                'exists' => true,
+                'research' => [
+                    'id' => $existing->id,
+                    'title' => $existing->title,
+                    'authors' => $existing->authors ?? 'Unknown Authors',
+                    'year' => $existing->year,
+                    'status' => $existing->status,
+                ],
+            ]);
+        }
+
+        return response()->json(['exists' => false]);
+    }
+
+    /**
      * Store a newly created research in storage.
      */
     public function store(Request $request)
@@ -278,8 +302,12 @@ class ResearchController extends Controller
             return back()->withErrors(['files' => 'Please upload at least one PDF or DOCX file.'])->withInput();
         }
 
+        // Check if an existing research with the same or matching title already exists
+        $existing = Research::findExistingByTitle($request->title);
+
+        $categoryIds = array_values(array_unique($request->category_ids));
         // Use the first selected category as the primary category (backward compat)
-        $primaryCategoryId = $request->category_ids[0] ?? null;
+        $primaryCategoryId = $categoryIds[0] ?? null;
 
         $research = Research::create([
             'user_id' => Auth::id(),
@@ -313,13 +341,19 @@ class ResearchController extends Controller
         $research->update(['pdf_path' => $firstPath]);
 
         // Sync many-to-many relationships
-        $research->categories()->sync($request->category_ids);
+        $research->categories()->sync($categoryIds);
         if ($request->project_type_ids) {
-            $research->projectTypes()->sync($request->project_type_ids);
+            $research->projectTypes()->sync(array_values(array_unique($request->project_type_ids)));
         }
 
-        $catNames = ResearchCategory::whereIn('id', $request->category_ids)->pluck('name')->implode(', ');
-        $successMsg = "Research submitted successfully with " . count($uploadedFiles) . " file(s)! Classified under: {$catNames}. Waiting for admin approval.";
+        $catNames = ResearchCategory::whereIn('id', $categoryIds)->pluck('name')->implode(', ');
+        $fileCount = count($uploadedFiles);
+        $successMsg = "Research submitted successfully with {$fileCount} file(s)! Classified under: {$catNames}. Waiting for admin approval.";
+
+        // If title already existed in repository, attach warning alert to the session
+        if ($existing) {
+            session()->flash('warning', "⚠️ Paalala / Warning: Ang na-upload na capstone ay may kaparehong pamagat sa umiiral nang pag-aaral: \"{$existing->title}\" ({$existing->year}). Pakitiyak ang orihinalidad sa admin review.");
+        }
 
         return redirect()->route('student.researches.index')
             ->with('success', $successMsg);

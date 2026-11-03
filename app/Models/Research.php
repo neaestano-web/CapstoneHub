@@ -84,4 +84,60 @@ class Research extends Model
     {
         return $this->hasMany(ResearchFile::class)->orderBy('sort_order', 'asc');
     }
+
+    /**
+     * Check if a research already exists by title (exact, normalized, or high similarity).
+     *
+     * @param string $title
+     * @param int|null $excludeId
+     * @return self|null
+     */
+    public static function findExistingByTitle(string $title, ?int $excludeId = null): ?self
+    {
+        $title = trim($title);
+        if (mb_strlen($title) < 3) {
+            return null;
+        }
+
+        $query = self::query();
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        // 1. Direct case-insensitive trimmed match (exact title)
+        $exact = (clone $query)->whereRaw('LOWER(TRIM(title)) = ?', [mb_strtolower($title)])->first();
+        if ($exact) {
+            return $exact;
+        }
+
+        // 2. Normalized alphanumeric comparison (ignoring case, punctuation, multiple spaces)
+        $cleanInput = preg_replace('/[^\p{L}\p{N}\s]/u', '', mb_strtolower($title));
+        $cleanInput = preg_replace('/\s+/', ' ', trim($cleanInput ?? ''));
+
+        if (!$cleanInput || mb_strlen($cleanInput) < 3) {
+            return null;
+        }
+
+        // Fetch candidate researches for close inspection
+        $candidates = (clone $query)->select('id', 'title', 'authors', 'year', 'status')->get();
+
+        foreach ($candidates as $candidate) {
+            $cleanCandidate = preg_replace('/[^\p{L}\p{N}\s]/u', '', mb_strtolower($candidate->title));
+            $cleanCandidate = preg_replace('/\s+/', ' ', trim($cleanCandidate ?? ''));
+
+            if ($cleanInput === $cleanCandidate) {
+                return $candidate;
+            }
+
+            // Check high string similarity (85%+) for titles with length >= 12
+            if (mb_strlen($cleanInput) >= 12 && mb_strlen($cleanCandidate) >= 12) {
+                similar_text($cleanInput, $cleanCandidate, $percent);
+                if ($percent >= 85) {
+                    return $candidate;
+                }
+            }
+        }
+
+        return null;
+    }
 }

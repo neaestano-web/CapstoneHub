@@ -109,6 +109,16 @@
         </div>
     @endif
 
+    @if(session('warning'))
+        <div class="flex items-center justify-between p-4 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs font-semibold">
+            <div class="flex items-center gap-2">
+                <span class="text-base">⚠️</span>
+                <span>{{ session('warning') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-amber-600 hover:text-amber-800 text-sm font-bold">✕</button>
+        </div>
+    @endif
+
     @if(session('error'))
         <div class="flex items-center justify-between p-4 bg-rose-50 border border-rose-200 text-rose-900 rounded-xl text-xs font-semibold">
             <div class="flex items-center gap-2">

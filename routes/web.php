@@ -69,6 +69,7 @@ Route::middleware('auth')->get('/registration-status', function () {
 Route::middleware(['auth', 'registration_approved'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [ResearchController::class, 'dashboard'])->name('dashboard');
     Route::post('/researches/classify', [ResearchController::class, 'classify'])->name('researches.classify');
+    Route::post('/researches/check-exists', [ResearchController::class, 'checkExists'])->name('researches.check-exists');
     Route::resource('researches', ResearchController::class);
 });
 
@@ -83,6 +84,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/researches', [AdminResearchController::class, 'manageIndex'])->name('researches.index');
     Route::get('/researches/create', [AdminResearchController::class, 'create'])->name('researches.create');
     Route::post('/researches/classify', [AdminResearchController::class, 'classify'])->name('researches.classify');
+    Route::post('/researches/check-exists', [AdminResearchController::class, 'checkExists'])->name('researches.check-exists');
     Route::post('/researches', [AdminResearchController::class, 'store'])->name('researches.store');
     Route::get('/researches/{research}', [AdminResearchController::class, 'show'])->name('researches.show');
     Route::patch('/researches/{research}/approve', [AdminResearchController::class, 'approve'])->name('researches.approve');

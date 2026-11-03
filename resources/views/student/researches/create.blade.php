@@ -49,6 +49,11 @@
             <span class="text-lg">✅</span> {{ session('success') }}
         </div>
     @endif
+    @if(session('warning'))
+        <div class="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 font-medium text-sm flex items-center gap-3">
+            <span class="text-lg">⚠️</span> {{ session('warning') }}
+        </div>
+    @endif
     @if($errors->any())
         <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
             <ul class="list-disc list-inside space-y-1">
@@ -76,7 +81,33 @@
                         <div>
                             <label for="title" class="form-label">Research Title <span class="required">*</span></label>
                             <input type="text" name="title" id="title" value="{{ old('title') }}"
-                                   class="form-input" placeholder="e.g. Development of Student Attendance Monitoring System" required>
+                                   class="form-input" placeholder="e.g. Development of Student Attendance Monitoring System" required autocomplete="off">
+
+                            {{-- Real-time Duplicate / Existed Title Warning Alert --}}
+                            <div id="duplicateTitleWarning" style="display:none;" class="mt-2.5 p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-xs shadow-xs">
+                                <div class="flex items-start gap-2.5">
+                                    <span class="text-lg leading-none shrink-0">⚠️</span>
+                                    <div class="space-y-1 flex-1">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <p class="font-bold text-amber-950">
+                                                Warning / Alert: Mayroon nang umiiral na capstone sa repository na may pareho o katulad na pamagat!
+                                            </p>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-900 border border-amber-300 uppercase">
+                                                Existed Project
+                                            </span>
+                                        </div>
+                                        <div class="bg-white/90 p-2.5 rounded-lg border border-amber-200 mt-1">
+                                            <p class="font-semibold text-slate-800">📌 Existing Title: <span id="dupMatchTitle" class="text-amber-950 font-bold"></span></p>
+                                            <p class="text-[11px] text-slate-600 mt-0.5">
+                                                👤 Authors: <span id="dupMatchAuthors" class="font-medium"></span> · 📅 Year: <span id="dupMatchYear" class="font-mono"></span> · Status: <span id="dupMatchStatus" class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-slate-100"></span>
+                                            </p>
+                                        </div>
+                                        <p class="text-[11px] text-amber-800 font-medium pt-0.5">
+                                            Paalala: Siguraduhing natatangi at orihinal ang pag-aaral upang maiwasan ang duplication o plagiarism.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -154,9 +185,15 @@
                     </h2>
                     <p class="text-sm text-gray-500 mb-5">Fill in the details above, then click the button below. The System will suggest the best categories and project types for your research. You can review and adjust.</p>
 
-                    <button type="button" id="classifyBtn" class="btn-classify" onclick="runClassify()">
-                        <span id="classifyBtnText">Auto-Classify My Research</span>
-                    </button>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                        <button type="button" id="classifyBtn" class="btn-classify flex-1" onclick="runClassify()">
+                            <span id="classifyBtnText">🤖 Auto-Classify My Research</span>
+                        </button>
+                        <button type="button" onclick="toggleManualCategories()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition inline-flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200 shrink-0">
+                            <span>📁</span>
+                            <span id="manualToggleBtnText">Select Categories Manually ▾</span>
+                        </button>
+                    </div>
 
                     {{-- Classification Results Panel --}}
                     <div id="classificationPanel" style="display:none" class="classification-panel">
@@ -547,7 +584,99 @@ function handleAuthorInput(input) {
     }
 }
 
-// Form validation: ensure category & at least one file selected
+// Toggle manual category panel
+function toggleManualCategories() {
+    const manualPanel = document.getElementById('manualPanel');
+    const btnText = document.getElementById('manualToggleBtnText');
+    if (!manualPanel) return;
+
+    if (manualPanel.style.display === 'none' || manualPanel.style.display === '') {
+        manualPanel.style.display = 'block';
+        if (btnText) btnText.textContent = 'Hide Manual Categories ▴';
+    } else {
+        manualPanel.style.display = 'none';
+        if (btnText) btnText.textContent = 'Select Categories Manually ▾';
+    }
+}
+
+// Real-time duplicate title checking
+let titleDebounceTimer = null;
+window.hasDuplicateTitle = false;
+window.duplicateMatchTitle = '';
+
+const titleInput = document.getElementById('title');
+if (titleInput) {
+    titleInput.addEventListener('input', function() {
+        clearTimeout(titleDebounceTimer);
+        const val = this.value.trim();
+        if (val.length < 4) {
+            hideDuplicateWarning();
+            return;
+        }
+
+        titleDebounceTimer = setTimeout(() => {
+            checkDuplicateTitle(val);
+        }, 350);
+    });
+
+    // Check on initial load if old title exists
+    if (titleInput.value.trim().length >= 4) {
+        checkDuplicateTitle(titleInput.value.trim());
+    }
+}
+
+function checkDuplicateTitle(title) {
+    fetch('{{ route("student.researches.check-exists") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ title: title })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.exists && data.research) {
+            showDuplicateWarning(data.research);
+        } else {
+            hideDuplicateWarning();
+        }
+    })
+    .catch(() => {
+        // Silent catch on network interruption
+    });
+}
+
+function showDuplicateWarning(research) {
+    window.hasDuplicateTitle = true;
+    window.duplicateMatchTitle = research.title;
+    const box = document.getElementById('duplicateTitleWarning');
+    if (box) {
+        document.getElementById('dupMatchTitle').textContent = research.title;
+        document.getElementById('dupMatchAuthors').textContent = research.authors || 'Unknown';
+        document.getElementById('dupMatchYear').textContent = research.year || 'N/A';
+        const statusEl = document.getElementById('dupMatchStatus');
+        if (statusEl) {
+            statusEl.textContent = (research.status || 'pending').toUpperCase();
+            if (research.status === 'approved') {
+                statusEl.className = 'font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800';
+            } else {
+                statusEl.className = 'font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800';
+            }
+        }
+        box.style.display = 'block';
+    }
+}
+
+function hideDuplicateWarning() {
+    window.hasDuplicateTitle = false;
+    window.duplicateMatchTitle = '';
+    const box = document.getElementById('duplicateTitleWarning');
+    if (box) box.style.display = 'none';
+}
+
+// Form validation: ensure category & at least one file selected + duplicate confirmation alert
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
     const checked = this.querySelectorAll('input[name="category_ids[]"]:checked');
     if (checked.length === 0) {
@@ -560,6 +689,24 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
         e.preventDefault();
         alert('Please upload at least one PDF or DOCX file before submitting.');
         return;
+    }
+
+    // If an existing research was detected, warn the user before submitting
+    if (window.hasDuplicateTitle) {
+        const proceed = confirm(
+            '⚠️ BABALA / ALERT:\n\n' +
+            'Ang pamagat ng capstone na iyong ina-upload ay umiiral na sa repository:\n"' + window.duplicateMatchTitle + '"\n\n' +
+            'Nais mo pa rin bang magpatuloy sa pag-submit?'
+        );
+        if (!proceed) {
+            e.preventDefault();
+            const t = document.getElementById('title');
+            if (t) {
+                t.focus();
+                t.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
     }
 });
 
