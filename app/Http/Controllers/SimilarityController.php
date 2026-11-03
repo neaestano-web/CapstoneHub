@@ -21,12 +21,11 @@ class SimilarityController extends Controller
         $aiUrl = rtrim((string) config('services.ai.url', env('AI_SERVICE_URL', 'https://capstone-ai-fqz3.onrender.com')), '/');
 
         try {
-            // Send quick non-blocking trigger (2-second timeout) to start Render container cold start
             \Illuminate\Support\Facades\Http::timeout(2)
                 ->connectTimeout(2)
                 ->get($aiUrl . '/');
         } catch (\Throwable $e) {
-            // Ignore timeout — the incoming connection triggers the Render wake-up cycle
+            // Ignore timeout — incoming connection triggers Render wake-up cycle
         }
 
         return response()->json(['status' => 'waking', 'url' => $aiUrl]);
@@ -63,84 +62,87 @@ class SimilarityController extends Controller
 
         $results = [];
 
+        // Pre-tokenize input for fallback string comparison if AI service/embeddings are unavailable
+        $inputTokens = $this->tokenize($query);
+
         foreach ($researches as $research)
         {
-            $aiTitleScore = null;
-            $aiObjectiveScore = null;
-            $aiContextScore = null;
-            $aiContentScore = null;
+            $titleScore = null;
+            $objectiveScore = null;
+            $contextScore = null;
+            $contentScore = null;
+            $primaryMatch = 'Overall Topic';
 
-            // 1. Semantic Embedding Comparison (AI Vectors)
             if ($hasAiEmbedding && $research->embedding) {
+                // 1. Compare against Title Vector (if input is a title, this score will be high)
                 if (!empty($research->embedding->title_embedding)) {
                     $decoded = json_decode($research->embedding->title_embedding, true);
                     if (is_array($decoded)) {
                         $res = $ai->compare($inputEmbedding, $decoded);
-                        $aiTitleScore = $res['similarity'] ?? null;
+                        $titleScore = $res['similarity'] ?? 0;
                     }
                 }
 
+                // 2. Compare against Objectives Vector (if input is an objective, this score will be high)
                 if (!empty($research->embedding->objective_embedding)) {
                     $decoded = json_decode($research->embedding->objective_embedding, true);
                     if (is_array($decoded)) {
                         $res = $ai->compare($inputEmbedding, $decoded);
-                        $aiObjectiveScore = $res['similarity'] ?? null;
+                        $objectiveScore = $res['similarity'] ?? 0;
                     }
                 }
 
+                // 3. Compare against Context Vector (if input is a project context, this score will be high)
                 if (!empty($research->embedding->context_embedding)) {
                     $decoded = json_decode($research->embedding->context_embedding, true);
                     if (is_array($decoded)) {
                         $res = $ai->compare($inputEmbedding, $decoded);
-                        $aiContextScore = $res['similarity'] ?? null;
+                        $contextScore = $res['similarity'] ?? 0;
                     }
                 }
 
+                // 4. Compare against Combined Content / Abstract Vector
                 if (!empty($research->embedding->content_embedding)) {
                     $decoded = json_decode($research->embedding->content_embedding, true);
                     if (is_array($decoded)) {
                         $res = $ai->compare($inputEmbedding, $decoded);
-                        $aiContentScore = $res['similarity'] ?? null;
+                        $contentScore = $res['similarity'] ?? 0;
                     }
                 }
+            } else {
+                // Fallback token similarity only if AI embeddings are not present
+                $titleScore = $this->computeTokenSimilarity($inputTokens, $this->tokenize($research->title));
+                $objectiveScore = !empty($research->objectives) 
+                    ? $this->computeTokenSimilarity($inputTokens, $this->tokenize($research->objectives)) 
+                    : null;
+                $contextScore = !empty($research->project_context)
+                    ? $this->computeTokenSimilarity($inputTokens, $this->tokenize($research->project_context))
+                    : null;
+                $contentScore = $this->computeTokenSimilarity(
+                    $inputTokens, 
+                    $this->tokenize($research->title . ' ' . $research->project_context . ' ' . $research->abstract . ' ' . $research->objectives)
+                );
             }
 
-            // 2. High-Accuracy Lexical & Phrase Matching
-            $lexTitleScore = $this->computeLexicalScore($query, (string)$research->title);
+            // Fallback for context score if existing AI embedding row has not yet computed context_embedding
+            if ($contextScore === null && !empty($research->project_context)) {
+                $contextScore = $this->computeTokenSimilarity($inputTokens, $this->tokenize($research->project_context));
+            }
 
-            $lexObjectiveScore = !empty($research->objectives)
-                ? $this->computeLexicalScore($query, (string)$research->objectives)
-                : null;
-
-            $lexContextScore = !empty($research->project_context)
-                ? $this->computeLexicalScore($query, (string)$research->project_context)
-                : null;
-
-            $fullContent = trim($research->title . ' ' . $research->project_context . ' ' . $research->abstract . ' ' . $research->objectives);
-            $lexContentScore = $this->computeLexicalScore($query, $fullContent);
-
-            // 3. Hybrid Blending (Vector Semantic + Lexical Match)
-            // Evaluates both AI semantic alignment and exact keyword/phrase containment
-            $titleScore = $this->blendScores($aiTitleScore, $lexTitleScore);
-            $objectiveScore = $this->blendScores($aiObjectiveScore, $lexObjectiveScore);
-            $contextScore = $this->blendScores($aiContextScore, $lexContextScore);
-            $contentScore = $this->blendScores($aiContentScore, $lexContentScore);
-
-            // Collect all non-null scores
+            // Collect all available scores
             $availableScores = array_filter([
-                'title'     => $titleScore,
+                'title' => $titleScore,
                 'objective' => $objectiveScore,
-                'context'   => $contextScore,
-                'content'   => $contentScore
+                'context' => $contextScore,
+                'content' => $contentScore
             ], fn($s) => $s !== null);
 
             if (empty($availableScores)) {
                 continue;
             }
 
-            // Strongest match dimension
+            // Identify the strongest match dimension (Title, Objectives, Context, or Overall Content)
             $maxScore = max($availableScores);
-            $primaryMatch = 'Overall Topic';
 
             if ($titleScore !== null && abs($maxScore - $titleScore) < 0.001) {
                 $primaryMatch = 'Title Match';
@@ -152,18 +154,19 @@ class SimilarityController extends Controller
                 $primaryMatch = 'Topic / Abstract Match';
             }
 
+            // The overall similarity accurately reflects the highest semantic alignment
             $overall = round($maxScore, 1);
 
-            // Filter by minimum score threshold
-            if ($overall >= config('similarity.minimum_score', 50)) {
+            // Filter strictly by minimum score threshold (60% and above)
+            if ($overall >= config('similarity.minimum_score', 60)) {
                 $results[] = [
-                    'research'             => $research,
-                    'title_similarity'     => $titleScore !== null ? round($titleScore, 1) : null,
+                    'research' => $research,
+                    'title_similarity' => $titleScore !== null ? round($titleScore, 1) : null,
                     'objective_similarity' => $objectiveScore !== null ? round($objectiveScore, 1) : null,
-                    'context_similarity'   => $contextScore !== null ? round($contextScore, 1) : null,
-                    'content_similarity'   => $contentScore !== null ? round($contentScore, 1) : null,
-                    'primary_match'        => $primaryMatch,
-                    'overall_similarity'   => $overall
+                    'context_similarity' => $contextScore !== null ? round($contextScore, 1) : null,
+                    'content_similarity' => $contentScore !== null ? round($contentScore, 1) : null,
+                    'primary_match' => $primaryMatch,
+                    'overall_similarity' => $overall
                 ];
             }
         }
@@ -181,27 +184,7 @@ class SimilarityController extends Controller
     }
 
     /**
-     * Blend semantic AI vector similarity with lexical/keyword similarity.
-     */
-    private function blendScores(?float $aiScore, ?float $lexScore): ?float
-    {
-        if ($aiScore === null && $lexScore === null) {
-            return null;
-        }
-        if ($aiScore === null) {
-            return $lexScore;
-        }
-        if ($lexScore === null || $lexScore <= 0.0) {
-            return $aiScore;
-        }
-
-        // When both are present: if lexical match is strong (e.g. keywords in title),
-        // provide a balanced blend that preserves high semantic or high lexical matches
-        return max($aiScore, (0.5 * $aiScore) + (0.5 * $lexScore));
-    }
-
-    /**
-     * Helper to extract clean word tokens for string comparison.
+     * Helper to extract clean word tokens for fallback comparison.
      */
     private function tokenize(string $text): array
     {
@@ -211,51 +194,16 @@ class SimilarityController extends Controller
     }
 
     /**
-     * Compute comprehensive lexical score using Containment, Dice coefficient, and Phrase Matching.
-     * Prevents short queries (e.g. "booking system") from being artificially penalized when matched
-     * against realistic academic titles.
+     * Compute Jaccard/Dice token similarity percentage.
      */
-    private function computeLexicalScore(string $query, string $target): float
+    private function computeTokenSimilarity(array $tokens1, array $tokens2): float
     {
-        $queryClean = strtolower(trim(strip_tags($query)));
-        $targetClean = strtolower(trim(strip_tags($target)));
-
-        if ($queryClean === '' || $targetClean === '') {
+        if (empty($tokens1) || empty($tokens2)) {
             return 0.0;
         }
-
-        // Exact full string match
-        if ($queryClean === $targetClean) {
-            return 100.0;
-        }
-
-        // Contiguous phrase match (e.g. "booking system" appearing verbatim in target title)
-        $phraseBonus = 0.0;
-        if (str_contains($targetClean, $queryClean) || (strlen($queryClean) > 10 && str_contains($queryClean, $targetClean))) {
-            $phraseBonus = 82.0;
-        }
-
-        $qTokens = $this->tokenize($queryClean);
-        $tTokens = $this->tokenize($targetClean);
-
-        if (empty($qTokens) || empty($tTokens)) {
-            return $phraseBonus;
-        }
-
-        $intersection = count(array_intersect($qTokens, $tTokens));
-        if ($intersection === 0) {
-            return 0.0;
-        }
-
-        $minCount = min(count($qTokens), count($tTokens));
-        $containment = ($intersection / $minCount) * 100.0;
-        $dice = ((2.0 * $intersection) / (count($qTokens) + count($tTokens))) * 100.0;
-
-        // Base guarantee: if all query tokens are present in target, guarantee high score
-        $baseScore = ($intersection >= count($qTokens)) ? 75.0 : 0.0;
-
-        $lexical = (0.6 * $containment) + (0.4 * $dice);
-
-        return round(max($phraseBonus, $baseScore, $lexical), 1);
+        $intersection = count(array_intersect($tokens1, $tokens2));
+        $union = count(array_unique(array_merge($tokens1, $tokens2)));
+        if ($union === 0) return 0.0;
+        return round(($intersection / $union) * 100, 1);
     }
 }
