@@ -504,30 +504,8 @@
 
     {{-- MAIN 2-COLUMN GRID --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {{-- LEFT COLUMN: ANALYTICS CHART & SUBMISSION DETAIL --}}
+        {{-- LEFT COLUMN: SUBMISSION DETAIL --}}
         <div class="lg:col-span-2 space-y-6">
-            {{-- READERSHIP ENGAGEMENT CHART CARD --}}
-            <div class="sd-section-card space-y-4">
-                <div class="sd-card-header">
-                    <div>
-                        <h3 class="sd-card-title">
-                            <span>📈</span> My Manuscript Views & Engagement
-                        </h3>
-                        <p class="text-xs mt-0.5" style="color: var(--sd-text-muted);">
-                            Readership tracking for your uploaded capstones over the past 6 months
-                        </p>
-                    </div>
-                    <span class="sd-badge-portal shrink-0">
-                        Live Analytics
-                    </span>
-                </div>
-
-                {{-- Chart Container --}}
-                <div class="h-64 relative pt-2">
-                    <canvas id="capstoneAnalyticsChart"></canvas>
-                </div>
-            </div>
-
             {{-- MY RECENT SUBMISSION DETAIL CARD --}}
             <div class="sd-section-card space-y-4">
                 <div class="sd-card-header">
