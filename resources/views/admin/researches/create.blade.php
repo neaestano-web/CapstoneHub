@@ -1,183 +1,57 @@
 @extends('layouts.admin')
-@section('title', 'Upload Capstone Manuscript')
+@section('title', 'Upload Capstone — Admin Catalog')
 @section('breadcrumb', 'Upload Capstone')
 
 @section('content')
 <style>
-    .upload-form-card {
-        background: white;
-        border-radius: 20px;
-        border: 1.5px solid #e2e8f0;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    .admin-form-card {
+        background-color: var(--guest-bg-surface, #ffffff);
+        border: 1px solid var(--guest-border, #e2e8f0);
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
-    .upload-form-card .card-accent {
-        height: 5px;
-        background: linear-gradient(90deg, #0c4233, #166534, #22c55e);
+    .admin-form-subtle {
+        background-color: var(--guest-bg-input, #f8fafc);
+        border: 1px solid var(--guest-border, #e2e8f0);
+        border-radius: 0.75rem;
     }
-    .form-input-custom {
-        border: 1.5px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 13px 18px;
-        font-size: 14px;
-        transition: all 0.25s ease;
+    .admin-title {
+        color: var(--guest-text-headings, #0f172a) !important;
+    }
+    .admin-muted {
+        color: var(--guest-text-muted, #64748b) !important;
+    }
+    .admin-border {
+        border-color: var(--guest-border, #e2e8f0) !important;
+    }
+    .admin-input {
+        background-color: var(--guest-bg-input, #f8fafc);
+        border: 1px solid var(--guest-border, #cbd5e1);
+        border-radius: 0.75rem;
+        padding: 0.65rem 0.95rem;
+        font-size: 0.875rem;
         width: 100%;
+        color: var(--guest-text-headings, #0f172a);
         outline: none;
-        background: #f8fafc;
-        color: #1e293b;
-    }
-    .form-input-custom:focus {
-        border-color: #166534;
-        box-shadow: 0 0 0 4px rgba(22, 101, 52, 0.12);
-        background: white;
-    }
-    .form-label-custom {
-        display: block;
-        font-size: 13px;
-        font-weight: 700;
-        color: #2d2b56;
-        margin-bottom: 7px;
-    }
-    .form-label-custom .req {
-        color: #dc2626;
-        margin-left: 2px;
-    }
-    .btn-submit-custom {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 13px 32px;
-        background: linear-gradient(135deg, #0c4233, #166534);
-        color: white;
-        border: none;
-        border-radius: 50px;
-        font-size: 14px;
-        font-weight: 800;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        box-shadow: 0 4px 14px rgba(12, 66, 51, 0.25);
-    }
-    .btn-submit-custom:hover {
-        background: #082d23;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(12, 66, 51, 0.35);
-        color: white;
-    }
-    .btn-submit-custom:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-    .btn-cancel-custom {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 13px 26px;
-        background: white;
-        color: #64748b;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 50px;
-        font-size: 14px;
-        font-weight: 700;
-        text-decoration: none;
         transition: all 0.2s ease;
     }
-    .btn-cancel-custom:hover {
+    .admin-input:focus {
         border-color: #0c4233;
-        color: #0c4233;
-        background: #f0fdf4;
+        box-shadow: 0 0 0 3px rgba(12, 66, 51, 0.1);
+        background-color: var(--guest-bg-surface, #ffffff);
     }
-    .btn-classify {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 14px 28px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 14px;
-        font-size: 14px;
-        font-weight: 700;
+    .custom-repo-cb {
+        accent-color: #0c4233;
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
         cursor: pointer;
-        transition: all 0.25s ease;
-        width: 100%;
-    }
-    .btn-classify:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(124, 58, 237, 0.3);
-    }
-    .btn-classify:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-    .classification-panel {
-        background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-        border: 1.5px solid #c4b5fd;
-        border-radius: 16px;
-        padding: 24px;
-        margin-top: 12px;
-    }
-    .classification-panel-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 15px;
-        font-weight: 800;
-        color: #5b21b6;
-        margin-bottom: 16px;
-    }
-    .check-card {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        background: white;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        user-select: none;
-    }
-    .check-card:hover {
-        border-color: #7c3aed;
-        background: #faf5ff;
-    }
-    .check-card.checked, .check-card.is-checked {
-        border-color: #22c55e;
-        background: #f0fdf4;
-    }
-    .check-card input[type=checkbox] {
-        width: 18px;
-        height: 18px;
-        accent-color: #22c55e;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-    .section-sep {
-        border: none;
-        border-top: 2px dashed #e2e8f0;
-        margin: 28px 0;
-    }
-    .step-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 800;
-        margin-right: 10px;
-        flex-shrink: 0;
     }
     .spinner {
         display: inline-block;
-        width: 18px;
-        height: 18px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
         border-top-color: white;
         border-radius: 50%;
         animation: spin 0.6s linear infinite;
@@ -185,41 +59,80 @@
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
+
+    /* Dark and OLED Adaptations */
+    html[data-guest-theme="dark"] .admin-form-card,
+    html[data-guest-theme="oled"] .admin-form-card,
+    html[data-admin-theme="dark"] .admin-form-card,
+    html[data-admin-theme="oled"] .admin-form-card {
+        background: #111827 !important;
+        border-color: #1f2937 !important;
+    }
+
+    html[data-guest-theme="dark"] .admin-input,
+    html[data-guest-theme="oled"] .admin-input,
+    html[data-admin-theme="dark"] .admin-input,
+    html[data-admin-theme="oled"] .admin-input {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-guest-theme="dark"] .admin-title,
+    html[data-guest-theme="oled"] .admin-title,
+    html[data-admin-theme="dark"] .admin-title,
+    html[data-admin-theme="oled"] .admin-title {
+        color: #f8fafc !important;
+    }
 </style>
 
-<div class="max-w-5xl mx-auto space-y-6 pb-12">
+<div class="max-w-5xl mx-auto space-y-6 pb-16">
     {{-- Header Section --}}
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b admin-border">
         <div>
-            <a href="{{ route('admin.researches.index') }}"
-               class="inline-flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full text-xs font-bold text-[#0c4233] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition">
-                ← Back
-            </a>
-            <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem;" class="font-extrabold text-[#2d2b56] tracking-tight leading-tight">
-                Upload Capstone <span class="text-[#0c4233]">Manuscript</span>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider admin-muted">Admin Catalog</span>
+                <span class="admin-muted opacity-40">/</span>
+                <a href="{{ route('admin.researches.index') }}" class="text-xs font-bold uppercase tracking-wider admin-muted hover:text-emerald-700 transition">Manage Researches</a>
+                <span class="admin-muted opacity-40">/</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Upload</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight admin-title">
+                Upload & Publish Capstone
             </h1>
+            <p class="text-xs sm:text-sm admin-muted mt-0.5">
+                Directly upload, classify, and publish approved research papers to the institutional catalog.
+            </p>
         </div>
+
+        <a href="{{ route('admin.researches.index') }}"
+           class="admin-form-card px-3.5 py-2 text-xs font-bold admin-title inline-flex items-center gap-1.5 hover:border-[#0c4233] transition shrink-0">
+            ← Back to Researches
+        </a>
     </div>
 
     {{-- Alerts --}}
     @if(session('success'))
-        <div class="p-4 bg-green-50 border border-green-200 rounded-2xl text-green-800 font-semibold text-sm flex items-center gap-3">
-            <span class="text-lg">✅</span> {{ session('success') }}
+        <div class="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2.5">
+            <span class="text-base">✅</span>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
     @if(session('warning'))
-        <div class="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900 font-semibold text-sm flex items-center gap-3">
-            <span class="text-lg">⚠️</span> {{ session('warning') }}
+        <div class="p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-2.5">
+            <span class="text-base">⚠️</span>
+            <span>{{ session('warning') }}</span>
         </div>
     @endif
     @if(session('error'))
-        <div class="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 font-semibold text-sm flex items-center gap-3">
-            <span class="text-lg">❌</span> {{ session('error') }}
+        <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-800 dark:text-rose-300 text-xs font-bold flex items-center gap-2.5">
+            <span class="text-base">❌</span>
+            <span>{{ session('error') }}</span>
         </div>
     @endif
     @if($errors->any())
-        <div class="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm">
-            <ul class="list-disc list-inside space-y-1 font-medium">
+        <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-800 dark:text-rose-300 text-xs font-semibold">
+            <ul class="list-disc list-inside space-y-1">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -227,271 +140,298 @@
         </div>
     @endif
 
-    <div class="upload-form-card">
-        <div class="card-accent"></div>
-        <div class="p-6 sm:p-10">
-            <form action="{{ route('admin.researches.store') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
-                @csrf
+    {{-- Form Card --}}
+    <div class="admin-form-card p-6 sm:p-8">
+        <form action="{{ route('admin.researches.store') }}" method="POST" enctype="multipart/form-data" id="uploadForm" class="space-y-8">
+            @csrf
 
-                {{-- STEP 1: Research Details --}}
-                <div style="margin-bottom:28px">
-                    <h2 class="flex items-center text-lg font-bold text-[#2d2b56] mb-5">
-                        <span class="step-badge" style="background:#dcfce7;color:#166534">1</span>
-                        Research Details
-                    </h2>
+            {{-- STEP 1: Research Details --}}
+            <div class="space-y-4">
+                <div class="flex items-center gap-2.5 pb-2 border-b admin-border">
+                    <span class="w-6 h-6 rounded-md bg-[#0c4233] text-white font-bold text-xs inline-flex items-center justify-center">1</span>
+                    <h2 class="text-base font-bold admin-title">Research Details</h2>
+                </div>
 
-                    <div class="space-y-5">
-                        <div>
-                            <label for="title" class="form-label-custom">Research Title <span class="req">*</span></label>
-                            <input type="text" name="title" id="title" value="{{ old('title') }}"
-                                   class="form-input-custom" placeholder="e.g. Development of Student Attendance Monitoring System" required autocomplete="off">
+                <div class="space-y-4 pt-1">
+                    {{-- Title --}}
+                    <div>
+                        <label for="title" class="block text-xs font-bold uppercase tracking-wider admin-title mb-1.5">
+                            Research Title <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="title" id="title" value="{{ old('title') }}"
+                               class="admin-input" placeholder="e.g. Development of Student Attendance Monitoring System" required autocomplete="off">
 
-                            {{-- Real-time Duplicate / Existed Title Warning Alert --}}
-                            <div id="duplicateTitleWarning" style="display:none;" class="mt-2.5 p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-xs shadow-xs">
-                                <div class="flex items-start gap-2.5">
-                                    <span class="text-lg leading-none shrink-0">⚠️</span>
-                                    <div class="space-y-1 flex-1">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <p class="font-bold text-amber-950">
-                                                Warning / Alert: Mayroon nang umiiral na capstone sa repository na may pareho o katulad na pamagat!
-                                            </p>
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-900 border border-amber-300 uppercase">
-                                                Existed Project
-                                            </span>
-                                        </div>
-                                        <div class="bg-white/90 p-2.5 rounded-lg border border-amber-200 mt-1">
-                                            <p class="font-semibold text-slate-800">📌 Existing Title: <span id="dupMatchTitle" class="text-amber-950 font-bold"></span></p>
-                                            <p class="text-[11px] text-slate-600 mt-0.5">
-                                                👤 Authors: <span id="dupMatchAuthors" class="font-medium"></span> · 📅 Year: <span id="dupMatchYear" class="font-mono"></span> · Status: <span id="dupMatchStatus" class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-slate-100"></span>
-                                            </p>
-                                        </div>
-                                        <p class="text-[11px] text-amber-800 font-medium pt-0.5">
-                                            Paalala: Siguraduhing natatangi at orihinal ang pag-aaral bago ito i-publish sa opisyal na repository.
+                        {{-- Real-time Duplicate / Existed Title Warning Alert --}}
+                        <div id="duplicateTitleWarning" style="display:none;" class="mt-2.5 p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-900 dark:text-amber-200 text-xs shadow-xs">
+                            <div class="flex items-start gap-2.5">
+                                <span class="text-base leading-none shrink-0">⚠️</span>
+                                <div class="space-y-1.5 flex-1">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <p class="font-bold text-amber-950 dark:text-amber-100">
+                                            Warning / Alert: Mayroon nang umiiral na capstone sa repository na may pareho o katulad na pamagat!
+                                        </p>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 uppercase">
+                                            Existed Project
+                                        </span>
+                                    </div>
+                                    <div class="admin-form-card p-2.5 border-amber-500/20">
+                                        <p class="font-semibold admin-title">📌 Existing Title: <span id="dupMatchTitle" class="text-amber-700 dark:text-amber-300 font-bold"></span></p>
+                                        <p class="text-[11px] admin-muted mt-0.5">
+                                            👤 Authors: <span id="dupMatchAuthors"></span> · 📅 Year: <span id="dupMatchYear" class="font-mono"></span> · Status: <span id="dupMatchStatus" class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded admin-form-subtle"></span>
                                         </p>
                                     </div>
+                                    <p class="text-[11px] text-amber-800 dark:text-amber-300 font-medium">
+                                        Paalala: Siguraduhing natatangi at orihinal ang pag-aaral bago ito i-publish sa opisyal na repository.
+                                    </p>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="form-label-custom m-0">Authors / Researchers <span class="req">*</span></label>
-                                    <button type="button" onclick="addAuthorRow()" class="text-xs text-emerald-700 hover:text-emerald-800 font-extrabold flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200 transition cursor-pointer">
-                                        + Add Co-Author
-                                    </button>
-                                </div>
-                                <div id="authorsListContainer" class="space-y-2">
-                                    {{-- Row 1: Primary Author --}}
-                                    <div class="flex items-center gap-2 author-row">
-                                        <input type="text" name="authors[]" value="{{ old('authors.0', '') }}"
-                                               class="form-input-custom flex-1" placeholder="Author full name" required
-                                               oninput="handleAuthorInput(this)">
-                                    </div>
-                                    @if(old('authors') && is_array(old('authors')) && count(old('authors')) > 1)
-                                        @foreach(array_slice(old('authors'), 1) as $idx => $extraAuthor)
-                                            <div class="flex items-center gap-2 author-row">
-                                                <input type="text" name="authors[]" value="{{ $extraAuthor }}"
-                                                       class="form-input-custom flex-1" placeholder="Co-author full name" required
-                                                       oninput="handleAuthorInput(this)">
-                                                <button type="button" onclick="removeAuthorRow(this)" class="px-2.5 py-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition cursor-pointer" title="Remove Co-Author">
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                </div>
-                                <p class="text-[11px] text-slate-400 mt-1.5">
-                                    Maaaring maglagay ng higit sa isang author / miyembro ng research team.
-                                </p>
-                            </div>
-
-                            <div>
-                                <label for="year" class="form-label-custom">Publication / Defense Year <span class="req">*</span></label>
-                                <input type="number" name="year" id="year" value="{{ old('year', date('Y')) }}"
-                                       min="1900" max="{{ date('Y') + 1 }}" class="form-input-custom" required>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="abstract" class="form-label-custom">Abstract <span class="req">*</span></label>
-                            <textarea name="abstract" id="abstract" rows="4" class="form-input-custom"
-                                      placeholder="Provide a comprehensive summary of the research..." required>{{ old('abstract') }}</textarea>
-                        </div>
-
-                        <div>
-                            <label for="project_context" class="form-label-custom">Project Context <span class="req">*</span></label>
-                            <textarea name="project_context" id="project_context" rows="4" class="form-input-custom"
-                                      placeholder="Describe the background, context, or community/organizational setting of the project..." required>{{ old('project_context') }}</textarea>
-                        </div>
-
-                        <div>
-                            <label for="objectives" class="form-label-custom">Objectives of the Study <span class="req">*</span></label>
-                            <textarea name="objectives" id="objectives" rows="4" class="form-input-custom"
-                                      placeholder="List the specific objectives of the research..." required>{{ old('objectives') }}</textarea>
-                        </div>
-
-                        <div>
-                            <label for="keywords" class="form-label-custom">Keywords <span style="font-weight:400;color:#94a3b8">(Optional, comma-separated)</span></label>
-                            <input type="text" name="keywords" id="keywords" value="{{ old('keywords') }}"
-                                   class="form-input-custom" placeholder="e.g. machine learning, agriculture, monitoring, IoT">
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="section-sep">
-
-                {{-- STEP 2: Automated Classification --}}
-                <div style="margin-bottom:28px">
-                    <h2 class="flex items-center text-lg font-bold text-[#2d2b56] mb-3">
-                        <span class="step-badge" style="background:#ede9fe;color:#7c3aed">2</span>
-                        Category Classification
-                    </h2>
-                    <p class="text-xs text-slate-500 mb-5">
-                        Fill in the details above, then click the button below. The system will suggest the best categories and project types for this research. You can review and adjust anytime.
-                    </p>
-
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                        <button type="button" id="classifyBtn" class="btn-classify flex-1" onclick="runClassify()">
-                            <span style="font-size:18px">🤖</span>
-                            <span id="classifyBtnText">Auto-Classify Capstone</span>
-                        </button>
-                        <button type="button" onclick="toggleManualCategories()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition inline-flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200 shrink-0">
-                            <span>📁</span>
-                            <span id="manualToggleBtnText">Select Categories Manually ▾</span>
-                        </button>
-                    </div>
-
-                    {{-- Classification Results Panel --}}
-                    <div id="classificationPanel" style="display:none" class="classification-panel">
-                        <div class="classification-panel-title">
-                            <span style="font-size:22px">🤖</span>
-                            Suggestions — Review & Adjust
-                        </div>
-
-                        {{-- Categories --}}
-                        <div style="margin-bottom:20px">
-                            <label class="form-label-custom" style="color:#5b21b6">📂 Categories <span class="req">*</span></label>
-                            <p style="font-size:11px;color:#7c3aed;margin-bottom:10px">Select at least one category. Suggested items are pre-checked.</p>
-                            <div id="categoryCheckboxes" class="space-y-2">
-                                {{-- Dynamically populated --}}
-                            </div>
-                        </div>
-
-                        {{-- Project Types --}}
-                        <div>
-                            <label class="form-label-custom" style="color:#5b21b6">🏷 Project Types</label>
-                            <p style="font-size:11px;color:#7c3aed;margin-bottom:10px">Select the project types that apply. Suggested items are pre-checked.</p>
-                            <div id="projectTypeCheckboxes" class="space-y-2">
-                                {{-- Dynamically populated --}}
-                            </div>
-                            <div id="noProjectTypes" style="display:none;padding:16px;background:white;border-radius:10px;text-align:center;color:#7c3aed;font-size:13px;border:1.5px dashed #c4b5fd;margin-top:8px">
-                                No project types available for the categories yet.
                             </div>
                         </div>
                     </div>
 
-                    {{-- Manual Fallback Panel --}}
-                    <div id="manualPanel" style="display:none;margin-top:12px">
-                        <div style="padding:16px;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:12px;margin-bottom:16px">
-                            <p style="font-size:13px;color:#92400e;font-weight:600">⚠️ AI Classification service unavailable. Please select categories manually below.</p>
-                        </div>
-                        <div style="margin-bottom:16px">
-                            <label class="form-label-custom">📂 Categories <span class="req">*</span></label>
-                            <div id="manualCategoryCheckboxes" class="space-y-2">
-                                @foreach($categories as $cat)
-                                    <label class="check-card">
-                                        <input type="checkbox" name="category_ids[]" value="{{ $cat->id }}"
-                                               {{ in_array($cat->id, old('category_ids', [])) ? 'checked' : '' }}
-                                               onchange="this.parentElement.classList.toggle('checked', this.checked)">
-                                        <span style="font-size:14px;font-weight:600;color:#374151">{{ $cat->name }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
+                    {{-- Authors & Year --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="form-label-custom">🏷 Project Types</label>
-                            <div id="manualProjectTypeCheckboxes" class="space-y-2">
-                                @foreach($categories as $cat)
-                                    @foreach($cat->projectTypes as $pt)
-                                        <label class="check-card">
-                                            <input type="checkbox" name="project_type_ids[]" value="{{ $pt->id }}"
-                                                   {{ in_array($pt->id, old('project_type_ids', [])) ? 'checked' : '' }}
-                                                   onchange="this.parentElement.classList.toggle('checked', this.checked)">
-                                            <span style="font-size:14px;font-weight:600;color:#374151">{{ $pt->name }}</span>
-                                            <span style="font-size:11px;color:#6b7280">— {{ $cat->name }}</span>
-                                        </label>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-bold uppercase tracking-wider admin-title m-0">
+                                    Authors / Researchers <span class="text-rose-500">*</span>
+                                </label>
+                                <button type="button" onclick="addAuthorRow()" class="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                                    + Add Co-Author
+                                </button>
+                            </div>
+                            <div id="authorsListContainer" class="space-y-2">
+                                <div class="flex items-center gap-2 author-row">
+                                    <input type="text" name="authors[]" value="{{ old('authors.0', '') }}"
+                                           class="admin-input flex-1" placeholder="Primary Author full name" required
+                                           oninput="handleAuthorInput(this)">
+                                </div>
+                                @if(old('authors') && is_array(old('authors')) && count(old('authors')) > 1)
+                                    @foreach(array_slice(old('authors'), 1) as $idx => $extraAuthor)
+                                        <div class="flex items-center gap-2 author-row">
+                                            <input type="text" name="authors[]" value="{{ $extraAuthor }}"
+                                                   class="admin-input flex-1" placeholder="Co-author full name" required
+                                                   oninput="handleAuthorInput(this)">
+                                            <button type="button" onclick="removeAuthorRow(this)" class="px-2.5 py-1.5 text-rose-500 hover:text-rose-700 rounded-lg transition" title="Remove Co-Author">
+                                                ✕
+                                            </button>
+                                        </div>
                                     @endforeach
-                                @endforeach
+                                @endif
                             </div>
+                            <p class="text-[11px] admin-muted mt-1">Maaaring maglagay ng higit sa isang author / miyembro ng research team.</p>
                         </div>
+
+                        <div>
+                            <label for="year" class="block text-xs font-bold uppercase tracking-wider admin-title mb-1.5">
+                                Publication / Defense Year <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="number" name="year" id="year" value="{{ old('year', date('Y')) }}"
+                                   min="1900" max="{{ date('Y') + 1 }}" class="admin-input" required>
+                        </div>
+                    </div>
+
+                    {{-- Abstract --}}
+                    <div>
+                        <label for="abstract" class="block text-xs font-bold uppercase tracking-wider admin-title mb-1.5">
+                            Abstract <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="abstract" id="abstract" rows="4" class="admin-input leading-relaxed"
+                                  placeholder="Provide a comprehensive summary of the research..." required>{{ old('abstract') }}</textarea>
+                    </div>
+
+                    {{-- Project Context --}}
+                    <div>
+                        <label for="project_context" class="block text-xs font-bold uppercase tracking-wider admin-title mb-1.5">
+                            Project Context <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="project_context" id="project_context" rows="3" class="admin-input leading-relaxed"
+                                  placeholder="Describe the background, context, or community setting of the project..." required>{{ old('project_context') }}</textarea>
+                    </div>
+
+                    {{-- Objectives --}}
+                    <div>
+                        <label for="objectives" class="block text-xs font-bold uppercase tracking-wider admin-title mb-1.5">
+                            Objectives of the Study <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="objectives" id="objectives" rows="3" class="admin-input leading-relaxed"
+                                  placeholder="List the specific objectives of the research..." required>{{ old('objectives') }}</textarea>
+                    </div>
+
+                    {{-- Keywords --}}
+                    <div>
+                        <label for="keywords" class="block text-xs font-bold uppercase tracking-wider admin-title mb-1.5">
+                            Keywords <span class="admin-muted font-normal lowercase">(optional, comma-separated)</span>
+                        </label>
+                        <input type="text" name="keywords" id="keywords" value="{{ old('keywords') }}"
+                               class="admin-input" placeholder="e.g. machine learning, attendance, IoT">
+                    </div>
+                </div>
+            </div>
+
+            {{-- STEP 2: Category Classification --}}
+            <div class="space-y-4 pt-4 border-t admin-border">
+                <div class="flex items-center gap-2.5 pb-2 border-b admin-border">
+                    <span class="w-6 h-6 rounded-md bg-[#0c4233] text-white font-bold text-xs inline-flex items-center justify-center">2</span>
+                    <div>
+                        <h2 class="text-base font-bold admin-title">Category Classification</h2>
+                        <p class="text-xs admin-muted">Select research categories or run AI Auto-Classification to suggest matching tags.</p>
                     </div>
                 </div>
 
-                <hr class="section-sep">
-
-                {{-- STEP 3: Multiple Files Upload --}}
-                <div style="margin-bottom:28px">
-                    <div class="flex items-center justify-between mb-3">
-                        <h2 class="flex items-center text-lg font-bold text-[#2d2b56] m-0">
-                            <span class="step-badge" style="background:#dbeafe;color:#1d4ed8">3</span>
-                            Upload Research Files <span class="req" style="color:#dc2626;margin-left:4px">*</span>
-                        </h2>
-                        <span class="text-xs px-2.5 py-1 bg-blue-50 text-blue-700 font-semibold rounded-full border border-blue-200">
-                            Multiple Files Allowed (.pdf, .docx)
-                        </span>
-                    </div>
-
-                    <p class="text-xs text-slate-500 mb-3">
-                        Maaari kang mag-upload ng higit sa isang file (hal. Main Manuscript, Appendices, Documentation). 
-                        <strong>Ang unang file (#1) ang magiging Primary Document</strong> na unang bubukas sa viewer ng ibang authorized users.
-                    </p>
-
-                    {{-- Dropzone Area --}}
-                    <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center hover:border-emerald-500 hover:bg-emerald-50/20 transition cursor-pointer relative bg-slate-50/50" onclick="document.getElementById('multiFileInput').click()">
-                        <input type="file" id="multiFileInput" multiple accept=".pdf,.docx" class="hidden" onchange="handleFileSelect(event)">
-                        <input type="file" name="files[]" id="actualFileInput" multiple class="hidden">
-                        
-                        <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-200 text-2xl flex items-center justify-center mx-auto mb-3">
-                            📂
-                        </div>
-                        <p class="text-sm font-bold text-slate-800">
-                            Click to select files, or drag and drop multiple files here
-                        </p>
-                        <p class="text-xs text-slate-400 mt-1">
-                            Accepted: PDF (.pdf) o Word (.docx) · Maximum 15MB bawat file
-                        </p>
-                    </div>
-
-                    {{-- Uploaded Files List --}}
-                    <div id="fileListContainer" class="mt-4 space-y-2" style="display:none">
-                        <div class="flex items-center justify-between text-xs font-bold text-slate-600 px-1">
-                            <span>Selected Files (Arranged by viewing sequence):</span>
-                            <span id="fileCountBadge" class="text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full font-extrabold">0 files</span>
-                        </div>
-                        <div id="fileItemsList" class="space-y-2">
-                            {{-- Populated by JavaScript --}}
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Action Buttons --}}
-                <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
-                    <a href="{{ route('admin.researches.index') }}" class="btn-cancel-custom">Cancel</a>
-                    <button type="submit" class="btn-submit-custom" id="submitBtn">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                        Upload & Publish Capstone
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
+                    <button type="button" id="classifyBtn" class="px-4 py-2.5 bg-[#0c4233] text-white hover:bg-[#115e47] rounded-xl text-xs font-bold transition inline-flex items-center justify-center gap-2 shadow-xs cursor-pointer" onclick="runClassify()">
+                        <span>🤖</span>
+                        <span id="classifyBtnText">Auto-Classify Capstone</span>
+                    </button>
+                    <button type="button" onclick="toggleManualCategories()" class="px-4 py-2.5 admin-form-subtle text-xs font-bold admin-title rounded-xl transition inline-flex items-center justify-center gap-1.5 border admin-border cursor-pointer">
+                        <span>📁</span>
+                        <span id="manualToggleBtnText">Select Categories Manually ▾</span>
                     </button>
                 </div>
-            </form>
-        </div>
+
+                {{-- AI Suggestions Panel --}}
+                <div id="classificationPanel" style="display:none;" class="admin-form-subtle p-5 space-y-4">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        <span>🤖</span>
+                        <span>AI Suggestions — Review & Confirm</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider admin-title">
+                            Categories <span class="text-rose-500">*</span>
+                        </label>
+                        <p class="text-[11px] admin-muted">Select at least one category. Suggested items are pre-checked.</p>
+                        <div id="categoryCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                            {{-- Populated dynamically --}}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2 border-t admin-border">
+                        <label class="block text-xs font-bold uppercase tracking-wider admin-title">
+                            Project Types
+                        </label>
+                        <div id="projectTypeCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                            {{-- Populated dynamically --}}
+                        </div>
+                        <div id="noProjectTypes" style="display:none;" class="p-3 admin-form-card text-center text-xs admin-muted border-dashed">
+                            No project types available under these categories.
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Manual Category Selection Panel --}}
+                <div id="manualPanel" style="display:none;" class="admin-form-subtle p-5 space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider admin-title">
+                            Categories <span class="text-rose-500">*</span>
+                        </label>
+                        <div id="manualCategoryCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                            @foreach($categories as $cat)
+                                <label class="admin-form-card p-2.5 flex items-center gap-2.5 text-xs font-semibold admin-title cursor-pointer hover:border-[#0c4233] transition">
+                                    <input type="checkbox" name="category_ids[]" value="{{ $cat->id }}" class="custom-repo-cb"
+                                           {{ in_array($cat->id, old('category_ids', [])) ? 'checked' : '' }}>
+                                    <span class="truncate">{{ $cat->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2 border-t admin-border">
+                        <label class="block text-xs font-bold uppercase tracking-wider admin-title">Project Types</label>
+                        <div id="manualProjectTypeCheckboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                            @foreach($categories as $cat)
+                                @foreach($cat->projectTypes as $pt)
+                                    <label class="admin-form-card p-2.5 flex items-center gap-2.5 text-xs font-semibold admin-title cursor-pointer hover:border-[#0c4233] transition">
+                                        <input type="checkbox" name="project_type_ids[]" value="{{ $pt->id }}" class="custom-repo-cb"
+                                               {{ in_array($pt->id, old('project_type_ids', [])) ? 'checked' : '' }}>
+                                        <span class="truncate">{{ $pt->name }}</span>
+                                        <span class="text-[10px] admin-muted">— {{ $cat->name }}</span>
+                                    </label>
+                                @endforeach
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- STEP 3: Multiple Files Upload --}}
+            <div class="space-y-4 pt-4 border-t admin-border">
+                <div class="flex items-center justify-between pb-2 border-b admin-border flex-wrap gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-6 h-6 rounded-md bg-[#0c4233] text-white font-bold text-xs inline-flex items-center justify-center">3</span>
+                        <div>
+                            <h2 class="text-base font-bold admin-title">Upload Research Files <span class="text-rose-500">*</span></h2>
+                            <p class="text-xs admin-muted">PDF or Word (.docx) files. The first file (#1) serves as the primary document.</p>
+                        </div>
+                    </div>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full admin-form-subtle admin-muted border admin-border">
+                        Multiple Files Allowed (.pdf, .docx)
+                    </span>
+                </div>
+
+                {{-- Dropzone Area --}}
+                <div id="dropZone" class="border-2 border-dashed admin-border rounded-xl p-8 text-center hover:border-emerald-600 transition cursor-pointer admin-form-subtle" onclick="document.getElementById('multiFileInput').click()">
+                    <input type="file" id="multiFileInput" multiple accept=".pdf,.docx" class="hidden" onchange="handleFileSelect(event)">
+                    <input type="file" name="files[]" id="actualFileInput" multiple class="hidden">
+                    
+                    <div class="w-10 h-10 admin-form-card flex items-center justify-center text-xl mx-auto mb-2">
+                        📂
+                    </div>
+                    <p class="text-xs sm:text-sm font-bold admin-title">
+                        Click to select files, or drag and drop files here
+                    </p>
+                    <p class="text-[11px] admin-muted mt-0.5">
+                        Supported: PDF (.pdf) or Word (.docx) · Maximum 15MB each
+                    </p>
+                </div>
+
+                {{-- Selected Files List --}}
+                <div id="fileListContainer" class="space-y-2" style="display:none;">
+                    <div class="flex items-center justify-between text-xs font-bold admin-muted px-1">
+                        <span>Selected Files (Viewing Sequence):</span>
+                        <span id="fileCountBadge" class="text-emerald-700 dark:text-emerald-300 font-mono">0 files</span>
+                    </div>
+                    <div id="fileItemsList" class="space-y-2">
+                        {{-- Populated by JavaScript --}}
+                    </div>
+                </div>
+            </div>
+
+            {{-- Form Actions --}}
+            <div class="flex items-center justify-end gap-3 pt-6 border-t admin-border">
+                <a href="{{ route('admin.researches.index') }}" class="admin-form-card px-4 py-2.5 text-xs font-bold admin-muted hover:admin-title transition">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2.5 bg-[#0c4233] text-white hover:bg-[#115e47] rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm" id="submitBtn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <span>Upload & Publish Capstone</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-// Categories and project types provided by the server
 const allCategories = @json($categories);
 
+// Toggle manual categories panel
+function toggleManualCategories() {
+    const manualPanel = document.getElementById('manualPanel');
+    const btnText = document.getElementById('manualToggleBtnText');
+    if (!manualPanel) return;
+
+    if (manualPanel.style.display === 'none' || manualPanel.style.display === '') {
+        manualPanel.style.display = 'block';
+        if (btnText) btnText.textContent = 'Hide Manual Categories ▴';
+    } else {
+        manualPanel.style.display = 'none';
+        if (btnText) btnText.textContent = 'Select Categories Manually ▾';
+    }
+}
+
+// AI Classification Runner
 function runClassify() {
     const title = document.getElementById('title').value.trim();
     const abstract = document.getElementById('abstract').value.trim();
@@ -499,14 +439,14 @@ function runClassify() {
     const objectives = document.getElementById('objectives').value.trim();
 
     if (!title || !abstract || !project_context || !objectives) {
-        alert('Please fill in the Title, Abstract, Project Context, and Objectives first before classifying.');
+        alert('Please fill in Title, Abstract, Project Context, and Objectives first before classifying.');
         return;
     }
 
     const btn = document.getElementById('classifyBtn');
     const btnText = document.getElementById('classifyBtnText');
     btn.disabled = true;
-    btnText.innerHTML = '<span class="spinner"></span> System is analyzing research...';
+    btnText.innerHTML = '<span class="spinner"></span> Analyzing research...';
 
     fetch('{{ route("admin.researches.classify") }}', {
         method: 'POST',
@@ -547,7 +487,6 @@ function showAIResults(suggestedCats, suggestedPts) {
         ...suggestedPts.map(projectType => projectType.category_id),
     ]);
 
-    // Build category checkboxes
     const catContainer = document.getElementById('categoryCheckboxes');
     catContainer.innerHTML = '';
 
@@ -555,16 +494,14 @@ function showAIResults(suggestedCats, suggestedPts) {
         const suggested = suggestedCats.find(s => s.id === cat.id);
         const isChecked = !!suggested || suggestedCategoryIds.has(cat.id);
         const label = document.createElement('label');
-        label.className = 'check-card' + (isChecked ? ' checked' : '');
+        label.className = 'admin-form-card p-2.5 flex items-center gap-2.5 text-xs font-semibold admin-title cursor-pointer hover:border-[#0c4233] transition';
         label.innerHTML = `
-            <input type="checkbox" name="category_ids[]" value="${cat.id}" ${isChecked ? 'checked' : ''}
-                   onchange="this.parentElement.classList.toggle('checked', this.checked)">
-            <span style="font-size:14px;font-weight:600;color:#374151">${cat.name}</span>
+            <input type="checkbox" name="category_ids[]" value="${cat.id}" ${isChecked ? 'checked' : ''} class="custom-repo-cb">
+            <span class="truncate">${cat.name}</span>
         `;
         catContainer.appendChild(label);
     });
 
-    // Build project type checkboxes
     const ptContainer = document.getElementById('projectTypeCheckboxes');
     ptContainer.innerHTML = '';
     let hasPts = false;
@@ -576,12 +513,11 @@ function showAIResults(suggestedCats, suggestedPts) {
                 const suggested = suggestedPts.find(s => s.id === pt.id);
                 const isChecked = !!suggested;
                 const label = document.createElement('label');
-                label.className = 'check-card' + (isChecked ? ' checked' : '');
+                label.className = 'admin-form-card p-2.5 flex items-center gap-2.5 text-xs font-semibold admin-title cursor-pointer hover:border-[#0c4233] transition';
                 label.innerHTML = `
-                    <input type="checkbox" name="project_type_ids[]" value="${pt.id}" ${isChecked ? 'checked' : ''}
-                           onchange="this.parentElement.classList.toggle('checked', this.checked)">
-                    <span style="font-size:14px;font-weight:600;color:#374151">${pt.name}</span>
-                    <span style="font-size:11px;color:#6b7280;margin-left:4px">— ${cat.name}</span>
+                    <input type="checkbox" name="project_type_ids[]" value="${pt.id}" ${isChecked ? 'checked' : ''} class="custom-repo-cb">
+                    <span class="truncate">${pt.name}</span>
+                    <span class="text-[10px] admin-muted">— ${cat.name}</span>
                 `;
                 ptContainer.appendChild(label);
             });
@@ -589,6 +525,80 @@ function showAIResults(suggestedCats, suggestedPts) {
     });
 
     document.getElementById('noProjectTypes').style.display = hasPts ? 'none' : 'block';
+}
+
+// Real-time Duplicate Title Checking
+let titleDebounceTimer = null;
+window.hasDuplicateTitle = false;
+window.duplicateMatchTitle = '';
+
+const titleInput = document.getElementById('title');
+if (titleInput) {
+    titleInput.addEventListener('input', function() {
+        clearTimeout(titleDebounceTimer);
+        const val = this.value.trim();
+        if (val.length < 4) {
+            hideDuplicateWarning();
+            return;
+        }
+
+        titleDebounceTimer = setTimeout(() => {
+            checkDuplicateTitle(val);
+        }, 350);
+    });
+
+    if (titleInput.value.trim().length >= 4) {
+        checkDuplicateTitle(titleInput.value.trim());
+    }
+}
+
+function checkDuplicateTitle(title) {
+    fetch('{{ route("admin.researches.check-exists") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ title: title })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.exists && data.research) {
+            showDuplicateWarning(data.research);
+        } else {
+            hideDuplicateWarning();
+        }
+    })
+    .catch(() => {});
+}
+
+function showDuplicateWarning(research) {
+    window.hasDuplicateTitle = true;
+    window.duplicateMatchTitle = research.title;
+    const box = document.getElementById('duplicateTitleWarning');
+    if (box) {
+        document.getElementById('dupMatchTitle').textContent = research.title;
+        document.getElementById('dupMatchAuthors').textContent = research.authors || 'Unknown';
+        document.getElementById('dupMatchYear').textContent = research.year || 'N/A';
+        const statusEl = document.getElementById('dupMatchStatus');
+        if (statusEl) {
+            statusEl.textContent = (research.status || 'pending').toUpperCase();
+            if (research.status === 'approved') {
+                statusEl.className = 'font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800';
+            } else {
+                statusEl.className = 'font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800';
+            }
+        }
+        box.style.display = 'block';
+    }
+}
+
+function hideDuplicateWarning() {
+    window.hasDuplicateTitle = false;
+    window.duplicateMatchTitle = '';
+    const box = document.getElementById('duplicateTitleWarning');
+    if (box) box.style.display = 'none';
 }
 
 // Multiple files queue management
@@ -666,24 +676,24 @@ function renderFileList() {
         const isFirst = i === 0;
         const ext = f.name.split('.').pop().toUpperCase();
         return `
-            <div class="flex items-center justify-between p-3 rounded-xl border ${isFirst ? 'bg-emerald-50/70 border-emerald-300' : 'bg-white border-slate-200'} transition shadow-xs">
+            <div class="flex items-center justify-between p-3 rounded-xl admin-form-card transition shadow-xs ${isFirst ? 'border-emerald-500/40' : ''}">
                 <div class="flex items-center gap-3 min-w-0">
-                    <span class="flex-shrink-0 text-xs font-black px-2.5 py-1 rounded-lg ${isFirst ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}">
-                        ${isFirst ? '🥇 #1 (First / Primary)' : '#' + (i + 1)}
+                    <span class="flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded-md ${isFirst ? 'bg-[#0c4233] text-white' : 'admin-form-subtle admin-muted'}">
+                        ${isFirst ? '🥇 #1 Primary' : '#' + (i + 1)}
                     </span>
                     <div class="truncate">
-                        <p class="text-xs font-bold text-slate-800 truncate">${f.name}</p>
-                        <p class="text-[10px] text-slate-400 font-semibold uppercase mt-0.5">${ext} • ${formatBytes(f.size)}</p>
+                        <p class="text-xs font-bold admin-title truncate">${f.name}</p>
+                        <p class="text-[10px] admin-muted font-medium uppercase mt-0.5">${ext} • ${formatBytes(f.size)}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0 ml-3">
-                    <button type="button" onclick="moveFile(${i}, -1)" ${i === 0 ? 'disabled' : ''} class="px-2 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md text-xs font-bold text-slate-700 transition" title="Move Up">
+                    <button type="button" onclick="moveFile(${i}, -1)" ${i === 0 ? 'disabled' : ''} class="px-2 py-1 admin-form-subtle hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed rounded-md text-xs font-bold admin-muted transition" title="Move Up">
                         ▲
                     </button>
-                    <button type="button" onclick="moveFile(${i}, 1)" ${i === uploadedFilesArray.length - 1 ? 'disabled' : ''} class="px-2 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed rounded-md text-xs font-bold text-slate-700 transition" title="Move Down">
+                    <button type="button" onclick="moveFile(${i}, 1)" ${i === uploadedFilesArray.length - 1 ? 'disabled' : ''} class="px-2 py-1 admin-form-subtle hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed rounded-md text-xs font-bold admin-muted transition" title="Move Down">
                         ▼
                     </button>
-                    <button type="button" onclick="removeFile(${i})" class="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-md text-xs font-bold transition ml-1" title="Remove File">
+                    <button type="button" onclick="removeFile(${i})" class="px-2 py-1 text-rose-500 hover:text-rose-700 rounded-md text-xs font-bold transition ml-1" title="Remove File">
                         ✕
                     </button>
                 </div>
@@ -698,14 +708,14 @@ const dropZone = document.getElementById('dropZone');
     dropZone.addEventListener(eventName, (e) => {
         e.preventDefault();
         e.stopPropagation();
-        dropZone.classList.add('border-emerald-500', 'bg-emerald-50/40');
+        dropZone.classList.add('border-emerald-600');
     });
 });
 ['dragleave', 'drop'].forEach(eventName => {
     dropZone.addEventListener(eventName, (e) => {
         e.preventDefault();
         e.stopPropagation();
-        dropZone.classList.remove('border-emerald-500', 'bg-emerald-50/40');
+        dropZone.classList.remove('border-emerald-600');
     });
 });
 dropZone.addEventListener('drop', (e) => {
@@ -722,9 +732,9 @@ function addAuthorRow(initialValue = '') {
     div.className = 'flex items-center gap-2 author-row';
     div.innerHTML = `
         <input type="text" name="authors[]" value="${initialValue}"
-               class="form-input-custom flex-1" placeholder="Co-author full name" required
+               class="admin-input flex-1" placeholder="Co-author full name" required
                oninput="handleAuthorInput(this)">
-        <button type="button" onclick="removeAuthorRow(this)" class="px-2.5 py-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition cursor-pointer" title="Remove Co-Author">
+        <button type="button" onclick="removeAuthorRow(this)" class="px-2.5 py-1.5 text-rose-500 hover:text-rose-700 rounded-lg transition" title="Remove Co-Author">
             ✕
         </button>
     `;
@@ -753,99 +763,7 @@ function handleAuthorInput(input) {
     }
 }
 
-// Toggle manual category panel
-function toggleManualCategories() {
-    const manualPanel = document.getElementById('manualPanel');
-    const btnText = document.getElementById('manualToggleBtnText');
-    if (!manualPanel) return;
-
-    if (manualPanel.style.display === 'none' || manualPanel.style.display === '') {
-        manualPanel.style.display = 'block';
-        if (btnText) btnText.textContent = 'Hide Manual Categories ▴';
-    } else {
-        manualPanel.style.display = 'none';
-        if (btnText) btnText.textContent = 'Select Categories Manually ▾';
-    }
-}
-
-// Real-time duplicate title checking
-let titleDebounceTimer = null;
-window.hasDuplicateTitle = false;
-window.duplicateMatchTitle = '';
-
-const titleInput = document.getElementById('title');
-if (titleInput) {
-    titleInput.addEventListener('input', function() {
-        clearTimeout(titleDebounceTimer);
-        const val = this.value.trim();
-        if (val.length < 4) {
-            hideDuplicateWarning();
-            return;
-        }
-
-        titleDebounceTimer = setTimeout(() => {
-            checkDuplicateTitle(val);
-        }, 350);
-    });
-
-    // Check on initial load if old title exists
-    if (titleInput.value.trim().length >= 4) {
-        checkDuplicateTitle(titleInput.value.trim());
-    }
-}
-
-function checkDuplicateTitle(title) {
-    fetch('{{ route("admin.researches.check-exists") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ title: title })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.exists && data.research) {
-            showDuplicateWarning(data.research);
-        } else {
-            hideDuplicateWarning();
-        }
-    })
-    .catch(() => {
-        // Silent catch on network interruption
-    });
-}
-
-function showDuplicateWarning(research) {
-    window.hasDuplicateTitle = true;
-    window.duplicateMatchTitle = research.title;
-    const box = document.getElementById('duplicateTitleWarning');
-    if (box) {
-        document.getElementById('dupMatchTitle').textContent = research.title;
-        document.getElementById('dupMatchAuthors').textContent = research.authors || 'Unknown';
-        document.getElementById('dupMatchYear').textContent = research.year || 'N/A';
-        const statusEl = document.getElementById('dupMatchStatus');
-        if (statusEl) {
-            statusEl.textContent = (research.status || 'pending').toUpperCase();
-            if (research.status === 'approved') {
-                statusEl.className = 'font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800';
-            } else {
-                statusEl.className = 'font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800';
-            }
-        }
-        box.style.display = 'block';
-    }
-}
-
-function hideDuplicateWarning() {
-    window.hasDuplicateTitle = false;
-    window.duplicateMatchTitle = '';
-    const box = document.getElementById('duplicateTitleWarning');
-    if (box) box.style.display = 'none';
-}
-
-// Form validation: ensure category & at least one file selected + duplicate confirmation alert
+// Form validation & duplicate alert confirmation
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
     const checked = this.querySelectorAll('input[name="category_ids[]"]:checked');
     if (checked.length === 0) {
@@ -860,7 +778,6 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
         return;
     }
 
-    // If an existing research was detected, warn the admin before publishing
     if (window.hasDuplicateTitle) {
         const proceed = confirm(
             '⚠️ BABALA / ALERT:\n\n' +
