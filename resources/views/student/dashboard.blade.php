@@ -2,565 +2,180 @@
 @section('title', 'Student Dashboard — JHCSC Capstone Portal')
 
 @section('content')
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
-    /* ── THEME DESIGN SYSTEM (LIGHT & DARK ADAPTIVE) ── */
-    :root, html[data-student-theme="light"] {
-        --sd-canvas-bg: #ffffff;
-        --sd-bg-surface: #ffffff;
-        --sd-bg-subtle: #f8fafc;
-        --sd-bg-card-hover: #ffffff;
-        --sd-border: #e2e8f0;
-        --sd-border-subtle: #f1f5f9;
-        --sd-border-grad: linear-gradient(135deg, var(--guest-accent, rgba(0, 245, 212, 0.45)) 0%, rgba(6, 182, 212, 0.35) 40%, rgba(139, 92, 246, 0.25) 100%);
-        --sd-text-headings: #0f172a;
-        --sd-text-main: #334155;
-        --sd-text-muted: #64748b;
-        --sd-accent: var(--guest-accent, #059669);
-        --sd-accent-cyan: var(--guest-accent, #0891b2);
-        --sd-accent-glow: var(--guest-accent-glow, rgba(5, 150, 105, 0.18));
-        --sd-accent-badge-bg: var(--guest-accent-glow, rgba(5, 150, 105, 0.1));
-        --sd-card-shadow: 0 4px 20px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
-        --sd-card-shadow-hover: 0 12px 30px rgba(15, 23, 42, 0.08);
-        --sd-chart-grid: #f1f5f9;
-        --sd-chart-line: var(--guest-accent, #0c4233);
-        --sd-chart-fill-start: rgba(12, 66, 51, 0.22);
-        --sd-chart-fill-end: rgba(12, 66, 51, 0.01);
-        --sd-stat-purple-bg: #f5f3ff;
-        --sd-stat-purple-text: #7c3aed;
-        --sd-stat-emerald-bg: #ecfdf5;
-        --sd-stat-emerald-text: #059669;
-        --sd-stat-indigo-bg: #eef2ff;
-        --sd-stat-indigo-text: #4f46e5;
-    }
-
-    html[data-student-theme="dark"] {
-        --sd-canvas-bg: #0b1119;
-        --sd-bg-surface: rgba(14, 23, 34, 0.94);
-        --sd-bg-subtle: rgba(8, 14, 22, 0.85);
-        --sd-bg-card-hover: rgba(18, 30, 44, 0.96);
-        --sd-border: rgba(255, 255, 255, 0.12);
-        --sd-border-subtle: rgba(255, 255, 255, 0.06);
-        --sd-border-grad: linear-gradient(135deg, var(--guest-accent, #00f5d4) 0%, #06b6d4 35%, #8b5cf6 65%, #ef4444 100%);
-        --sd-text-headings: #ffffff;
-        --sd-text-main: #f8fafc;
-        --sd-text-muted: #94a3b8;
-        --sd-accent: var(--guest-accent, #00f5d4);
-        --sd-accent-cyan: var(--guest-accent, #00f5d4);
-        --sd-accent-glow: var(--guest-accent-glow, rgba(0, 245, 212, 0.35));
-        --sd-accent-badge-bg: var(--guest-accent-glow, rgba(0, 245, 212, 0.12));
-        --sd-card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        --sd-card-shadow-hover: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 20px var(--guest-accent-glow, rgba(0, 245, 212, 0.15));
-        --sd-chart-grid: rgba(255, 255, 255, 0.06);
-        --sd-chart-line: var(--guest-accent, #00f5d4);
-        --sd-chart-fill-start: rgba(0, 245, 212, 0.28);
-        --sd-chart-fill-end: rgba(0, 245, 212, 0.01);
-        --sd-stat-purple-bg: rgba(139, 92, 246, 0.14);
-        --sd-stat-purple-text: #c084fc;
-        --sd-stat-emerald-bg: rgba(16, 185, 129, 0.14);
-        --sd-stat-emerald-text: #34d399;
-        --sd-stat-indigo-bg: rgba(99, 102, 241, 0.14);
-        --sd-stat-indigo-text: #818cf8;
-    }
-
-    /* Seamless Canvas Adaptation with Luminous Cyber Mesh Gradient */
-    .student-main-canvas {
-        border-radius: 0 !important;
-    }
-
-    html[data-student-theme="dark"] .student-main-canvas,
-    html[data-guest-theme="dark"] .student-main-canvas {
-        background-color: #0b1119 !important;
-        background-image: 
-            radial-gradient(circle at 50% 24%, rgba(16, 185, 129, 0.20) 0%, rgba(56, 189, 248, 0.10) 35%, transparent 65%),
-            radial-gradient(circle at 16% 48%, rgba(16, 185, 129, 0.18) 0%, transparent 45%),
-            radial-gradient(circle at 84% 48%, rgba(0, 245, 212, 0.12) 0%, transparent 45%),
-            radial-gradient(circle at 50% 92%, rgba(56, 189, 248, 0.10) 0%, transparent 52%),
-            radial-gradient(ellipse at 50% 45%, #152538 0%, #0b1119 100%) !important;
-        background-attachment: fixed !important;
-        border-radius: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    .sd-root {
-        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-        color: var(--sd-text-main);
-        transition: color 0.25s ease;
-    }
-
-    /* ── HEADER BADGE & GREETING ── */
-    .sd-badge-portal {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--sd-accent);
-        background: var(--sd-accent-badge-bg);
-        border: 1px solid var(--sd-accent-glow);
-        padding: 4px 12px;
-        border-radius: 9999px;
-        box-shadow: 0 0 12px var(--sd-accent-glow);
-    }
-
-    .sd-accent-text {
-        color: var(--sd-accent);
-        transition: color 0.25s ease;
-    }
-
-    /* ── THEME SWITCHER TOGGLE PILL ── */
-    .sd-theme-toggle {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--sd-bg-subtle);
-        border: 1.5px solid var(--sd-border);
-        color: var(--sd-text-headings);
-        padding: 8px 16px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.22s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .sd-theme-toggle:hover {
-        border-color: var(--sd-accent);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 16px var(--sd-accent-glow);
-    }
-
-    .sd-btn-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--sd-accent);
-        color: #ffffff;
-        padding: 8px 20px;
-        border-radius: 9999px;
-        font-size: 0.82rem;
-        font-weight: 800;
-        text-decoration: none;
-        transition: all 0.22s ease;
-        box-shadow: 0 4px 16px var(--sd-accent-glow);
-    }
-
-    html[data-student-theme="dark"] .sd-btn-primary {
-        color: #042f2e;
-    }
-
-    .sd-btn-primary:hover {
-        filter: brightness(1.1);
-        transform: translateY(-1px);
-        box-shadow: 0 6px 22px var(--sd-accent-glow);
-    }
-
-    .sd-btn-subtle {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--sd-bg-subtle);
-        border: 1px solid var(--sd-border);
-        color: var(--sd-text-main);
-        padding: 8px 16px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .sd-btn-subtle:hover {
-        border-color: var(--sd-accent);
-        color: var(--sd-accent);
-        transform: translateY(-1px);
-    }
-
-    /* ── STAT CARDS (CYBER-CLEAN GLASSMORPHISM) ── */
-    .sd-stat-card {
-        background: var(--sd-bg-surface);
-        border: 1.5px solid var(--sd-border);
-        border-radius: 22px;
-        padding: 22px 24px;
-        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        box-shadow: var(--sd-card-shadow);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .sd-stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--sd-border-grad);
-        opacity: 0;
-        transition: opacity 0.25s ease;
-    }
-
-    .sd-stat-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(0, 245, 212, 0.45);
-        box-shadow: var(--sd-card-shadow-hover);
-    }
-
-    .sd-stat-card:hover::before {
-        opacity: 1;
-    }
-
-    .sd-icon-box {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.15rem;
-        flex-shrink: 0;
-        transition: transform 0.25s ease;
-    }
-
-    .sd-stat-card:hover .sd-icon-box {
-        transform: scale(1.08) rotate(3deg);
-    }
-
-    /* ── SECTION CARDS ── */
-    .sd-section-card {
-        background: var(--sd-bg-surface);
-        border: 1.5px solid var(--sd-border);
-        border-radius: 24px;
-        padding: 24px 26px;
-        transition: all 0.25s ease;
-        box-shadow: var(--sd-card-shadow);
-    }
-
-    .sd-section-card:hover {
-        border-color: rgba(255, 255, 255, 0.18);
-        box-shadow: var(--sd-card-shadow-hover);
-    }
-
-    html[data-guest-theme="dark"] .sd-stat-card,
-    html[data-guest-theme="dark"] .sd-section-card,
-    html[data-student-theme="dark"] .sd-stat-card,
-    html[data-student-theme="dark"] .sd-section-card {
-        background: linear-gradient(rgba(14, 23, 34, 0.88), rgba(14, 23, 34, 0.88)) padding-box,
-                    linear-gradient(135deg, rgba(0, 245, 212, 0.45) 0%, rgba(6, 182, 212, 0.35) 40%, rgba(139, 92, 246, 0.25) 100%) border-box !important;
-        border: 1.5px solid transparent !important;
-        backdrop-filter: blur(16px) !important;
-        -webkit-backdrop-filter: blur(16px) !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 18px rgba(0, 245, 212, 0.12) !important;
-    }
-
-    .sd-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-bottom: 14px;
-        border-bottom: 1px solid var(--sd-border-subtle);
-        margin-bottom: 16px;
-    }
-
-    .sd-card-title {
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--sd-text-headings);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        letter-spacing: -0.01em;
-    }
-
-    /* ── STATUS BADGES (MATCHING GUEST STANDARDS) ── */
-    .badge-approved {
-        background: rgba(16, 185, 129, 0.14);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.35);
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 800;
-        font-size: 11px;
-        padding: 4px 12px;
-        border-radius: 50px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .badge-pending {
-        background: rgba(245, 158, 11, 0.14);
-        color: #f59e0b;
-        border: 1px solid rgba(245, 158, 11, 0.35);
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 800;
-        font-size: 11px;
-        padding: 4px 12px;
-        border-radius: 50px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .badge-rejected {
-        background: rgba(239, 68, 68, 0.14);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.35);
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 800;
-        font-size: 11px;
-        padding: 4px 12px;
-        border-radius: 50px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .badge-empty {
-        background: var(--sd-bg-subtle);
-        color: var(--sd-text-muted);
-        border: 1px solid var(--sd-border);
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 700;
-        font-size: 11px;
-        padding: 4px 12px;
-        border-radius: 50px;
-    }
-
-    /* ── RANKING PILLS & LIST ITEMS ── */
-    .sd-rank-pill {
-        width: 22px;
-        height: 22px;
-        border-radius: 6px;
-        background: var(--sd-bg-subtle);
-        border: 1px solid var(--sd-border);
-        color: var(--sd-text-muted);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.72rem;
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .sd-rank-top {
-        background: var(--sd-accent-badge-bg);
-        border-color: var(--sd-accent-glow);
-        color: var(--sd-accent);
-    }
-
-    .sd-list-divider {
-        border-bottom: 1px dashed var(--sd-border-subtle);
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-
-    .sd-list-divider:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
-    }
-
-    /* Submissions List Item */
-    .sd-project-item {
-        background: var(--sd-bg-subtle);
-        border: 1px solid var(--sd-border-subtle);
-        border-radius: 18px;
-        padding: 16px 20px;
-        transition: all 0.22s ease;
-    }
-
-    .sd-project-item:hover {
-        background: var(--sd-bg-card-hover);
-        border-color: var(--sd-accent);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    }
-</style>
-
-<div class="sd-root space-y-8 max-w-7xl mx-auto">
+<div class="space-y-6 max-w-7xl mx-auto pb-12">
     {{-- TOP WELCOME HEADER --}}
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b" style="border-color: var(--sd-border);">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
         <div>
-            <div class="flex items-center gap-3 mb-2 flex-wrap">
-                <span class="sd-badge-portal">
-                    🎓 Student Research Portal
-                </span>
-                <span class="inline-flex items-center gap-1.5 text-xs font-semibold" style="color: var(--sd-text-muted);">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Live Repository Session
-                </span>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Student Portal</span>
+                <span class="text-slate-300 dark:text-slate-700">/</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Dashboard</span>
             </div>
-            <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.15rem;" class="font-extrabold tracking-tight" style="color: var(--sd-text-headings);">
-                Welcome back, <span class="sd-accent-text">{{ Auth::user()->name }}</span> 👋
+            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Welcome back, {{ Auth::user()->name }} 👋
             </h1>
-            <p class="text-xs font-medium mt-1" style="color: var(--sd-text-muted);">
-                Overview of your manuscript engagement, submission status, and repository trends.
+            <p class="text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">
+                Overview of your submission status, manuscript engagement, and repository trends.
             </p>
         </div>
 
-        {{-- HEADER CONTROLS (ACTIONS) --}}
-        <div class="flex items-center gap-3 flex-wrap">
-            {{-- Quick Shortcut: Similarity Check --}}
-            <a href="{{ route('similarity-checker') }}" class="sd-btn-subtle">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Similarity Check</span>
+        {{-- HEADER ACTIONS --}}
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <a href="{{ route('similarity-checker') }}" 
+               class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <span>Similarity Checker</span>
             </a>
 
-            {{-- Quick Action: Upload Manuscript --}}
-            <a href="{{ route('student.researches.create') }}" class="sd-btn-primary">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            <a href="{{ route('student.researches.create') }}" 
+               class="px-4 py-2 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold text-xs rounded-xl transition shadow-xs inline-flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
                 <span>Upload Manuscript</span>
             </a>
         </div>
     </div>
 
     {{-- KEY METRICS SUMMARY ROW --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {{-- Card 1: My Submission Status --}}
-        <div class="sd-stat-card">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-extrabold uppercase tracking-wider" style="color: var(--sd-text-muted);">
-                    My Submission Status
-                </span>
-                <div class="sd-icon-box" style="background: var(--sd-stat-purple-bg); color: var(--sd-stat-purple-text);">
-                    📑
-                </div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span>My Submission</span>
+                <span class="text-base">📑</span>
             </div>
-            <div class="mt-3 flex items-center justify-between gap-3">
+            <div class="mt-3">
                 @php $mySubmission = $recentResearches->first(); @endphp
                 @if($mySubmission)
-                    <div class="min-w-0 flex-1">
-                        <p class="font-extrabold text-sm truncate" style="color: var(--sd-text-headings);" title="{{ $mySubmission->title }}">
+                    <div class="space-y-1">
+                        <p class="font-bold text-xs text-slate-900 dark:text-white line-clamp-1" title="{{ $mySubmission->title }}">
                             {{ $mySubmission->title }}
                         </p>
-                        <p class="text-[11px] font-semibold mt-0.5" style="color: var(--sd-text-muted);">
-                            Submitted {{ $mySubmission->created_at->format('M d, Y') }}
-                        </p>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[11px] text-slate-400 font-medium">
+                                Submitted {{ $mySubmission->created_at->format('M d, Y') }}
+                            </span>
+                            @if($mySubmission->status === 'approved')
+                                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/60 rounded-full text-[10px] font-bold">Approved</span>
+                            @elseif($mySubmission->status === 'rejected')
+                                <span class="px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200/60 rounded-full text-[10px] font-bold">Needs Revision</span>
+                            @else
+                                <span class="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200/60 rounded-full text-[10px] font-bold">In Review</span>
+                            @endif
+                        </div>
                     </div>
-                    @if($mySubmission->status === 'approved')
-                        <span class="badge-approved shrink-0">Approved</span>
-                    @elseif($mySubmission->status === 'rejected')
-                        <span class="badge-rejected shrink-0">⚠️ Rejected</span>
-                    @else
-                        <span class="badge-pending shrink-0">⏳ In Review</span>
-                    @endif
                 @else
-                    <div>
-                        <p class="font-extrabold text-sm" style="color: var(--sd-text-muted);">No Submission</p>
-                        <p class="text-[11px] font-medium" style="color: var(--sd-text-muted);">Ready to upload paper</p>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-xs text-slate-700 dark:text-slate-300">No Submission</p>
+                            <p class="text-[11px] text-slate-400">Ready to upload paper</p>
+                        </div>
+                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full text-[10px] font-bold">No Upload</span>
                     </div>
-                    <span class="badge-empty shrink-0">No Upload</span>
                 @endif
             </div>
         </div>
 
-        {{-- Card 2: Reader Engagement --}}
-        <div class="sd-stat-card">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-extrabold uppercase tracking-wider" style="color: var(--sd-text-muted);">
-                    My Manuscript Views
-                </span>
-                <div class="sd-icon-box" style="background: var(--sd-stat-emerald-bg); color: var(--sd-stat-emerald-text);">
-                    👁️
-                </div>
+        {{-- Card 2: Reader Engagement (My Manuscript Views) --}}
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span>Manuscript Views</span>
+                <span class="text-base">👁️</span>
             </div>
             <div class="mt-3 flex items-baseline justify-between">
-                <p class="text-2xl font-extrabold" style="color: var(--sd-accent);">
+                <p class="text-2xl font-extrabold text-[#0c4233] dark:text-emerald-400 tracking-tight font-mono">
                     {{ number_format($myTotalViews ?? 0) }}
                 </p>
-                <span class="text-[11px] font-bold" style="color: var(--sd-text-muted);">
-                    Total View
-                </span>
+                <span class="text-[11px] text-slate-400 font-medium">Total views</span>
             </div>
         </div>
 
         {{-- Card 3: Repository Catalog --}}
-        <div class="sd-stat-card">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-extrabold uppercase tracking-wider" style="color: var(--sd-text-muted);">
-                    Capstone Repository
-                </span>
-                <div class="sd-icon-box" style="background: var(--sd-stat-indigo-bg); color: var(--sd-stat-indigo-text);">
-                    📚
-                </div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span>Repository Catalog</span>
+                <span class="text-base">📚</span>
             </div>
             <div class="mt-3 flex items-baseline justify-between">
-                <p class="text-2xl font-extrabold" style="color: var(--sd-text-headings);">
+                <p class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight font-mono">
                     {{ number_format($analytics['approved_researches']) }}
                 </p>
-                <span class="text-[11px] font-bold" style="color: var(--sd-text-muted);">
-                    Number of Studies
-                </span>
+                <span class="text-[11px] text-slate-400 font-medium">Approved studies</span>
             </div>
         </div>
     </div>
 
     {{-- MAIN 2-COLUMN GRID --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {{-- LEFT COLUMN: SUBMISSION DETAIL --}}
-        <div class="lg:col-span-2 space-y-6">
-            {{-- MY RECENT SUBMISSION DETAIL CARD --}}
-            <div class="sd-section-card space-y-4">
-                <div class="sd-card-header">
-                    <h3 class="sd-card-title">
-                        <span>📑</span> My Capstone Project
-                    </h3>
-                    <a href="{{ route('student.researches.index') }}" class="text-xs font-extrabold hover:underline" style="color: var(--sd-accent);">
-                        Upload Status →
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- LEFT COLUMN: MY RECENT SUBMISSIONS --}}
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <h2 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>📑</span>
+                        <span>My Capstone Project</span>
+                    </h2>
+                    <a href="{{ route('student.researches.index') }}" class="text-xs font-bold text-[#0c4233] dark:text-emerald-400 hover:underline">
+                        View All Submissions →
                     </a>
                 </div>
 
                 @if($recentResearches->count() > 0)
                     <div class="space-y-3">
                         @foreach($recentResearches as $research)
-                            <div class="sd-project-item flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                                <div class="space-y-1 min-w-0 flex-1">
+                            <div class="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700 transition flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                                <div class="space-y-1.5 min-w-0 flex-1">
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full" style="background: var(--sd-stat-purple-bg); color: var(--sd-stat-purple-text);">
-                                            {{ $research->category->name ?? 'Uncategorized' }}
-                                        </span>
+                                        @if($research->category)
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+                                                {{ $research->category->name }}
+                                            </span>
+                                        @endif
                                         @if($research->status === 'approved')
-                                            <span class="badge-approved text-[10px] py-0 px-2">Approved</span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">Approved</span>
                                         @elseif($research->status === 'rejected')
-                                            <span class="badge-rejected text-[10px] py-0 px-2">⚠️ Needs Revision</span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-800 border border-rose-200/60">Needs Revision</span>
                                         @else
-                                            <span class="badge-pending text-[10px] py-0 px-2">⏳ Pending Review</span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/60">In Review</span>
                                         @endif
                                     </div>
 
-                                    <h4 class="font-extrabold text-sm line-clamp-1" style="color: var(--sd-text-headings);">
-                                        <a href="{{ route('student.researches.show', $research) }}" class="hover:underline transition">
+                                    <h3 class="font-bold text-xs text-slate-900 dark:text-white line-clamp-1">
+                                        <a href="{{ route('student.researches.show', $research) }}" class="hover:text-emerald-700 dark:hover:text-emerald-400 transition">
                                             {{ $research->title }}
                                         </a>
-                                    </h4>
-                                    <p class="text-[11px]" style="color: var(--sd-text-muted);">
-                                        Submitted {{ $research->created_at->format('M d, Y') }} · Authors: <strong>{{ $research->authors }}</strong>
-                                    </p>
+                                    </h3>
+
+                                    <div class="flex items-center gap-3 text-[11px] text-slate-400 flex-wrap">
+                                        <span>Submitted: <strong class="text-slate-600 dark:text-slate-300 font-medium">{{ $research->created_at->format('M d, Y') }}</strong></span>
+                                        <span>·</span>
+                                        <span>Authors: <strong class="text-slate-600 dark:text-slate-300 font-medium">{{ $research->authors }}</strong></span>
+                                    </div>
                                 </div>
 
-                                <a href="{{ route('student.researches.show', $research) }}" class="sd-btn-subtle shrink-0 text-xs">
-                                    View Manuscript ➔
+                                <a href="{{ route('student.researches.show', $research) }}" 
+                                   class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition inline-flex items-center gap-1 shrink-0 w-fit">
+                                    View Manuscript →
                                 </a>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div class="py-10 text-center space-y-3">
-                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-2xl mx-auto" style="background: var(--sd-stat-purple-bg); color: var(--sd-stat-purple-text); border: 1px solid var(--sd-border);">
+                    <div class="py-12 text-center space-y-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 flex items-center justify-center mx-auto text-base">
                             📂
                         </div>
                         <div>
-                            <p class="text-sm font-bold" style="color: var(--sd-text-headings);">No capstone manuscript submitted yet</p>
-                            <p class="text-xs mt-0.5" style="color: var(--sd-text-muted);">Share your research with the JHCSC academic community.</p>
+                            <h3 class="font-bold text-xs text-slate-900 dark:text-white">No Capstone Manuscript Submitted Yet</h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5 max-w-sm mx-auto">
+                                Share your capstone research paper with the institutional repository catalog.
+                            </p>
                         </div>
-                        <a href="{{ route('student.researches.create') }}" class="sd-btn-primary mt-2">
+                        <a href="{{ route('student.researches.create') }}" 
+                           class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold text-xs rounded-xl transition shadow-xs">
                             <span>Upload Your Manuscript</span>
                         </a>
                     </div>
@@ -568,234 +183,85 @@
             </div>
         </div>
 
-        {{-- RIGHT SIDEBAR: REPOSITORY TRENDS & SEARCHES --}}
-        <div class="space-y-6">
-            {{-- 🔥 TOP SEARCHED TOPICS --}}
-            <div class="sd-section-card space-y-4">
-                <div class="sd-card-header">
-                    <h3 class="sd-card-title text-sm">
-                        <span>🔥</span> Popular Search Topics
-                    </h3>
-                </div>
-                <div class="space-y-2.5">
+        {{-- RIGHT COLUMN: REPOSITORY TRENDS --}}
+        <div class="space-y-4">
+            {{-- Popular Search Topics --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs space-y-3">
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <span>🔥</span>
+                    <span>Popular Search Topics</span>
+                </h3>
+                <div class="space-y-2">
                     @forelse($mostSearched as $index => $search)
-                        <div class="sd-list-divider flex items-center justify-between gap-3">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <span class="sd-rank-pill {{ $index === 0 ? 'sd-rank-top' : '' }}">
-                                    #{{ $index + 1 }}
+                        <div class="flex items-center justify-between gap-2 text-xs py-1 {{ !$loop->last ? 'border-b border-slate-100/80 dark:border-slate-800/60' : '' }}">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold {{ $index === 0 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">
+                                    {{ $index + 1 }}
                                 </span>
-                                <span class="font-bold text-xs truncate" style="color: var(--sd-text-headings);">
+                                <span class="font-medium text-slate-800 dark:text-slate-200 truncate">
                                     "{{ $search->query }}"
                                 </span>
                             </div>
-                            <span class="px-2.5 py-0.5 font-mono text-[10px] font-extrabold rounded-full shrink-0" style="background: var(--sd-stat-indigo-bg); color: var(--sd-stat-indigo-text);">
-                                {{ number_format($search->total) }} searches
+                            <span class="font-mono text-[10px] font-bold text-slate-400 shrink-0">
+                                {{ number_format($search->total) }}
                             </span>
                         </div>
                     @empty
-                        <div class="py-3 text-center text-xs" style="color: var(--sd-text-muted);">
-                            No search logs recorded yet.
-                        </div>
+                        <p class="text-xs text-slate-400 text-center py-2">No searches logged yet.</p>
                     @endforelse
                 </div>
             </div>
 
-            {{-- 📖 TOP READ CAPSTONES --}}
-            <div class="sd-section-card space-y-4">
-                <div class="sd-card-header">
-                    <h3 class="sd-card-title text-sm">
-                        <span>📖</span> Top Read Capstones
-                    </h3>
-                </div>
-                <div class="space-y-3">
+            {{-- Top Read Capstones --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs space-y-3">
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <span>📖</span>
+                    <span>Top Read Capstones</span>
+                </h3>
+                <div class="space-y-2.5">
                     @forelse($topStudies as $index => $study)
-                        <div class="sd-list-divider space-y-1.5">
+                        <div class="space-y-1 text-xs py-1 {{ !$loop->last ? 'border-b border-slate-100/80 dark:border-slate-800/60' : '' }}">
                             <div class="flex items-start gap-2">
-                                <span class="sd-rank-pill {{ $index === 0 ? 'sd-rank-top' : '' }} mt-0.5">
-                                    #{{ $index + 1 }}
+                                <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 mt-0.5 {{ $index === 0 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">
+                                    {{ $index + 1 }}
                                 </span>
-                                <a href="{{ route('repository.show', $study->id) }}" class="font-extrabold text-xs line-clamp-2 hover:underline transition flex-1" style="color: var(--sd-text-headings);">
+                                <a href="{{ route('repository.show', $study->id) }}" class="font-bold text-slate-900 dark:text-white hover:text-emerald-700 dark:hover:text-emerald-400 line-clamp-1 flex-1">
                                     {{ $study->title }}
                                 </a>
                             </div>
-                            <div class="flex items-center justify-between text-[10px] pl-7" style="color: var(--sd-text-muted);">
-                                <span>{{ $study->category->name ?? 'Uncategorized' }}</span>
-                                <span class="font-extrabold px-2 py-0.5 rounded-full" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
-                                    👁️ {{ number_format($study->views_count) }} views
+                            <div class="flex items-center justify-between text-[10px] text-slate-400 pl-7">
+                                <span class="truncate">{{ $study->category->name ?? 'Uncategorized' }}</span>
+                                <span class="font-mono font-bold text-slate-500 dark:text-slate-400 shrink-0">
+                                    {{ number_format($study->views_count) }} views
                                 </span>
                             </div>
                         </div>
                     @empty
-                        <div class="py-3 text-center text-xs" style="color: var(--sd-text-muted);">
-                            No published studies available.
-                        </div>
+                        <p class="text-xs text-slate-400 text-center py-2">No studies published yet.</p>
                     @endforelse
                 </div>
             </div>
 
-            {{-- 📁 MOST EXPLORED CATEGORIES --}}
-            <div class="sd-section-card space-y-4">
-                <div class="sd-card-header">
-                    <h3 class="sd-card-title text-sm">
-                        <span>📁</span> Popular Categories
-                    </h3>
-                </div>
-                <div class="space-y-2">
+            {{-- Popular Categories --}}
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs space-y-3">
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <span>📁</span>
+                    <span>Popular Categories</span>
+                </h3>
+                <div class="space-y-1.5">
                     @forelse($mostExploredCategories as $cat)
-                        <div class="flex items-center justify-between p-2.5 rounded-xl border transition hover:translate-x-1" style="background: var(--sd-bg-subtle); border-color: var(--sd-border-subtle);">
-                            <span class="font-bold text-xs truncate" style="color: var(--sd-text-headings);">
-                                {{ $cat->name }}
-                            </span>
-                            <span class="font-mono text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shrink-0" style="background: var(--sd-stat-purple-bg); color: var(--sd-stat-purple-text);">
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs">
+                            <span class="font-medium text-slate-800 dark:text-slate-200 truncate">{{ $cat->name }}</span>
+                            <span class="font-mono text-[10px] font-bold text-slate-400 shrink-0">
                                 {{ number_format($cat->search_logs_count) }} queries
                             </span>
                         </div>
                     @empty
-                        <div class="text-xs text-center py-3" style="color: var(--sd-text-muted);">
-                            No category logs available.
-                        </div>
+                        <p class="text-xs text-slate-400 text-center py-2">No category logs available.</p>
                     @endforelse
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-{{-- THEME SWITCHER & CHART SCRIPT --}}
-<script>
-    let studentChartInstance = null;
-    const chartMonths = {!! json_encode($months ?? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']) !!};
-    const chartViewsData = {!! json_encode($monthlyViewsData ?? [0, 0, 0, 0, 0, 0]) !!};
-
-    function initOrUpdateChart(theme) {
-        const currentTheme = theme || document.documentElement.getAttribute('data-guest-theme') || 'dark';
-        const isDark = currentTheme === 'dark' || currentTheme === 'oled';
-        const ctx = document.getElementById('capstoneAnalyticsChart');
-        if (!ctx) return;
-
-        const activeAccent = getComputedStyle(document.documentElement).getPropertyValue('--guest-accent').trim() || (isDark ? '#00f5d4' : '#059669');
-        const activeGlow = getComputedStyle(document.documentElement).getPropertyValue('--guest-accent-glow').trim() || (isDark ? 'rgba(0, 245, 212, 0.15)' : 'rgba(5, 150, 105, 0.12)');
-        const lineColor = activeAccent;
-        const fillColor = isDark ? (activeGlow.indexOf('rgba') !== -1 ? activeGlow.replace(/0\.\d+\)/, '0.15)') : 'rgba(0, 245, 212, 0.12)') : 'rgba(5, 150, 105, 0.08)';
-        const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : '#f1f5f9';
-        const tickColor = isDark ? '#94a3b8' : '#64748b';
-
-        if (studentChartInstance) {
-            studentChartInstance.data.datasets[0].borderColor = lineColor;
-            studentChartInstance.data.datasets[0].backgroundColor = fillColor;
-            studentChartInstance.data.datasets[0].pointBackgroundColor = lineColor;
-            studentChartInstance.options.scales.x.ticks.color = tickColor;
-            studentChartInstance.options.scales.y.ticks.color = tickColor;
-            studentChartInstance.options.scales.y.grid.color = gridColor;
-            studentChartInstance.update();
-            return;
-        }
-
-        studentChartInstance = new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: chartMonths,
-                datasets: [{
-                    label: 'My Manuscript Views',
-                    data: chartViewsData,
-                    borderColor: lineColor,
-                    backgroundColor: fillColor,
-                    fill: true,
-                    tension: 0.4,
-                    borderWidth: 2.5,
-                    pointBackgroundColor: lineColor,
-                    pointRadius: 4,
-                    pointHoverRadius: 7,
-                    pointHoverBorderColor: '#ffffff',
-                    pointHoverBorderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(12, 66, 51, 0.95)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        padding: 10,
-                        cornerRadius: 10,
-                        displayColors: false
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: tickColor, font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '600' } }
-                    },
-                    y: {
-                        grid: { color: gridColor },
-                        ticks: { color: tickColor, font: { family: "'JetBrains Mono', monospace", size: 11, weight: '600' }, precision: 0 },
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
-
-    function applyStudentTheme(theme) {
-        document.documentElement.setAttribute('data-student-theme', theme);
-        document.documentElement.setAttribute('data-guest-theme', theme);
-
-        const icon = document.getElementById('studentThemeIcon');
-        const text = document.getElementById('studentThemeText');
-        if (icon && text) {
-            if (theme === 'dark') {
-                icon.textContent = '🌙';
-                text.textContent = 'Cyber Dark';
-            } else if (theme === 'sepia') {
-                icon.textContent = '📜';
-                text.textContent = 'Warm Sepia';
-            } else if (theme === 'oled') {
-                icon.textContent = '🖤';
-                text.textContent = 'OLED Black';
-            } else if (theme === 'custom') {
-                icon.textContent = '🎨';
-                text.textContent = 'Custom Canvas';
-            } else {
-                icon.textContent = '☀️';
-                text.textContent = 'Light Mode';
-            }
-        }
-
-        initOrUpdateChart(theme);
-    }
-
-    function toggleStudentTheme() {
-        if (window.openGuestThemeModal) {
-            window.openGuestThemeModal();
-        } else if (window.selectThemeMode) {
-            const current = document.documentElement.getAttribute('data-guest-theme') || 'dark';
-            window.selectThemeMode(current === 'dark' ? 'light' : 'dark');
-        }
-    }
-
-    window.addEventListener('studentThemeChanged', function(e) {
-        if (e.detail && e.detail.theme) {
-            applyStudentTheme(e.detail.theme);
-        }
-        initOrUpdateChart(e.detail ? e.detail.theme : null);
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            const raw = localStorage.getItem('capstone_guest_display_theme');
-            if (raw) {
-                const s = JSON.parse(raw);
-                if (s.mode) {
-                    applyStudentTheme(s.mode);
-                    return;
-                }
-            }
-        } catch(e) {}
-        const savedTheme = localStorage.getItem('student_theme_mode') || 'dark';
-        applyStudentTheme(savedTheme);
-    });
-</script>
 @endsection
