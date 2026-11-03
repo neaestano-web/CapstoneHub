@@ -56,25 +56,38 @@ class GenerateEmbeddings extends Command
             try {
                 $titleEmbedding = $ai->generateEmbedding($research->title);
 
-                $content = $research->title . ' ' . $research->objectives . ' ' . $research->abstract;
+                $content = $research->title . ' ' . ($research->project_context ? $research->project_context . ' ' : '') . $research->objectives . ' ' . $research->abstract;
                 $contentEmbedding = $ai->generateEmbedding($content);
 
-                $objectiveEmbedding = $ai->generateEmbedding($research->objectives);
+                $objectiveEmbedding = !empty($research->objectives)
+                    ? $ai->generateEmbedding($research->objectives)
+                    : [];
 
-                ResearchEmbedding::updateOrCreate(
-                    ['research_id' => $research->id],
-                    [
-                        'title_embedding' => json_encode($titleEmbedding['embedding']),
-                        'content_embedding' => json_encode($contentEmbedding['embedding']),
-                        'objective_embedding' => json_encode($objectiveEmbedding['embedding'])
-                    ]
-                );
+                $contextEmbedding = !empty($research->project_context)
+                    ? $ai->generateEmbedding($research->project_context)
+                    : [];
+
+                $titleVector = !empty($titleEmbedding['embedding']) ? json_encode($titleEmbedding['embedding']) : null;
+                $contentVector = !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null;
+                $objectiveVector = !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null;
+                $contextVector = !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null;
+
+                if ($titleVector || $contentVector || $objectiveVector || $contextVector) {
+                    ResearchEmbedding::updateOrCreate(
+                        ['research_id' => $research->id],
+                        [
+                            'title_embedding'     => $titleVector,
+                            'content_embedding'   => $contentVector,
+                            'objective_embedding' => $objectiveVector,
+                            'context_embedding'   => $contextVector,
+                        ]
+                    );
+                }
 
                 $bar->advance();
-            } catch (\Exception $e) {
-                $this->error("\nFailed to generate embedding for Research ID {$research->id}. Ensure AI Python service is running.");
-                $this->error($e->getMessage());
-                return;
+            } catch (\Throwable $e) {
+                $this->warn("\nNotice: Skipped embedding for Research ID {$research->id}: " . $e->getMessage());
+                $bar->advance();
             }
         }
 

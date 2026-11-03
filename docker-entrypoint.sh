@@ -22,6 +22,9 @@ php artisan storage:link || true
 # Run pending database migrations automatically
 php artisan migrate --force || true
 
+# Pre-generate missing embeddings for approved researches in the background
+php artisan embeddings:generate > /dev/null 2>&1 &
+
 # Cache Laravel configuration, routes, and views for high performance
 php artisan config:cache || true
 php artisan route:cache || true

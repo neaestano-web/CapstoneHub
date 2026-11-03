@@ -209,13 +209,15 @@ class ResearchController extends Controller
                 $objectiveEmbedding = $ai->generateEmbedding($research->objectives);
                 $contextEmbedding = !empty($research->project_context) ? $ai->generateEmbedding($research->project_context) : null;
 
-                ResearchEmbedding::create([
-                    'research_id'         => $research->id,
-                    'title_embedding'     => json_encode($titleEmbedding['embedding']),
-                    'content_embedding'   => json_encode($contentEmbedding['embedding']),
-                    'objective_embedding' => json_encode($objectiveEmbedding['embedding']),
-                    'context_embedding'   => $contextEmbedding ? json_encode($contextEmbedding['embedding']) : null,
-                ]);
+                ResearchEmbedding::updateOrCreate(
+                    ['research_id' => $research->id],
+                    [
+                        'title_embedding'     => !empty($titleEmbedding['embedding']) ? json_encode($titleEmbedding['embedding']) : null,
+                        'content_embedding'   => !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null,
+                        'objective_embedding' => !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null,
+                        'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
+                    ]
+                );
             } catch (\Exception $e) {
                 // AI service unavailable — semantic search won't work for this item
             }
@@ -259,28 +261,15 @@ class ResearchController extends Controller
                 ? $ai->generateEmbedding($research->project_context)
                 : null;
 
-            ResearchEmbedding::create([
-
-                'research_id' => $research->id,
-
-                'title_embedding' =>
-                    json_encode(
-                        $titleEmbedding['embedding']
-                    ),
-
-                'content_embedding' =>
-                    json_encode(
-                        $contentEmbedding['embedding']
-                    ),
-
-                'objective_embedding' =>
-                    json_encode(
-                        $objectiveEmbedding['embedding']
-                    ),
-
-                'context_embedding' =>
-                    $contextEmbedding ? json_encode($contextEmbedding['embedding']) : null
-            ]);
+            ResearchEmbedding::updateOrCreate(
+                ['research_id' => $research->id],
+                [
+                    'title_embedding'     => !empty($titleEmbedding['embedding']) ? json_encode($titleEmbedding['embedding']) : null,
+                    'content_embedding'   => !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null,
+                    'objective_embedding' => !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null,
+                    'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
+                ]
+            );
         } catch (\Exception $e) {
             // AI service is not available, continue without embeddings
             // Semantic search will not work for this research
