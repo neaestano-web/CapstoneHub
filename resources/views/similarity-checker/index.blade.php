@@ -201,5 +201,18 @@
 
     document.addEventListener('DOMContentLoaded', updateSimCounters);
     updateSimCounters();
+
+    // Proactive background warm-up for Render AI service while user is viewing/typing
+    (function wakeAIService() {
+        const aiUrl = @json(config('services.ai.url', 'https://capstone-ai-fqz3.onrender.com'));
+        if (aiUrl) {
+            try {
+                fetch(aiUrl.replace(/\/$/, '') + '/', { mode: 'no-cors', cache: 'no-cache' }).catch(function() {});
+            } catch (e) {}
+        }
+        try {
+            fetch('{{ route("ai.warmup") }}', { cache: 'no-cache' }).catch(function() {});
+        } catch (e) {}
+    })();
 </script>
 @endsection

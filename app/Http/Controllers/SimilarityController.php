@@ -13,6 +13,25 @@ class SimilarityController extends Controller
         return view('similarity-checker.index');
     }
 
+    /**
+     * Proactively warm up / ping the Python AI service in the background.
+     */
+    public function warmup()
+    {
+        $aiUrl = rtrim((string) config('services.ai.url', env('AI_SERVICE_URL', 'https://capstone-ai-fqz3.onrender.com')), '/');
+
+        try {
+            // Send quick non-blocking trigger (2-second timeout) to start Render container cold start
+            \Illuminate\Support\Facades\Http::timeout(2)
+                ->connectTimeout(2)
+                ->get($aiUrl . '/');
+        } catch (\Throwable $e) {
+            // Ignore timeout — the incoming connection triggers the Render wake-up cycle
+        }
+
+        return response()->json(['status' => 'waking', 'url' => $aiUrl]);
+    }
+
     public function check(
         Request $request,
         AIService $ai

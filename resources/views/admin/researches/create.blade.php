@@ -731,5 +731,18 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
         return;
     }
 });
+
+// Proactive background warm-up for Render AI service while user fills upload form
+(function wakeAIService() {
+    const aiUrl = @json(config('services.ai.url', 'https://capstone-ai-fqz3.onrender.com'));
+    if (aiUrl) {
+        try {
+            fetch(aiUrl.replace(/\/$/, '') + '/', { mode: 'no-cors', cache: 'no-cache' }).catch(function() {});
+        } catch (e) {}
+    }
+    try {
+        fetch('{{ route("ai.warmup") }}', { cache: 'no-cache' }).catch(function() {});
+    } catch (e) {}
+})();
 </script>
 @endsection

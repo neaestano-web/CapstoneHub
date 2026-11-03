@@ -31,12 +31,28 @@ def get_embedding(text):
     return embeddings[0].tolist()
 
 
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
+
+
 @app.route('/')
 def home():
     return jsonify({
         "status": "AI Service Running",
         "engine": "FastEmbed ONNX (Ultra-lightweight)",
         "model": "all-MiniLM-L6-v2"
+    })
+
+
+@app.route('/health')
+def health():
+    return jsonify({
+        "status": "healthy",
+        "service": "AI FastEmbed ONNX Service"
     })
 
 

@@ -133,6 +133,7 @@ Route::redirect('/title-checker', '/similarity-checker');
 
 Route::get('/similarity-checker', [SimilarityController::class, 'index'])->name('similarity-checker');
 Route::post('/similarity-checker', [SimilarityController::class, 'check'])->name('similarity-checker.check');
+Route::get('/ai-warmup', [SimilarityController::class, 'warmup'])->name('ai.warmup');
 
 Route::middleware('auth')->group(function () {
     Route::get('/semantic-search', [SemanticSearchController::class, 'index'])->name('semantic-search');
