@@ -74,7 +74,7 @@
                         type="checkbox" 
                         name="remember" 
                         class="auth-checkbox"
-                        {{ old('remember') ? 'checked' : 'checked' }}
+                        {{ old('remember') ? 'checked' : '' }}
                     >
                     <span>Remember me</span>
                 </label>
