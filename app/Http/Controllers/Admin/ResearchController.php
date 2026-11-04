@@ -354,6 +354,60 @@ class ResearchController extends Controller
     }
 
     /**
+     * Update project cards details (Project Context, Objective, Abstract, Keywords).
+     */
+    public function updateDetails(Request $request, Research $research, AIService $ai)
+    {
+        $request->validate([
+            'project_context' => 'nullable|string',
+            'objectives'      => 'nullable|string',
+            'abstract'        => 'nullable|string',
+            'keywords'        => 'nullable|string',
+        ]);
+
+        $dataToUpdate = [];
+        if ($request->has('project_context')) {
+            $dataToUpdate['project_context'] = $request->input('project_context');
+        }
+        if ($request->has('objectives')) {
+            $dataToUpdate['objectives'] = $request->input('objectives');
+        }
+        if ($request->has('abstract')) {
+            $dataToUpdate['abstract'] = $request->input('abstract');
+        }
+        if ($request->has('keywords')) {
+            $dataToUpdate['keywords'] = $request->input('keywords');
+        }
+
+        if (!empty($dataToUpdate)) {
+            $research->update($dataToUpdate);
+
+            // Re-sync embeddings so semantic search stays accurate
+            try {
+                if ($ai) {
+                    $content = $research->title . ' ' . ($research->project_context ? $research->project_context . ' ' : '') . $research->objectives . ' ' . $research->abstract;
+                    $contentEmbedding = $ai->generateEmbedding($content);
+                    $objectiveEmbedding = $ai->generateEmbedding($research->objectives);
+                    $contextEmbedding = !empty($research->project_context) ? $ai->generateEmbedding($research->project_context) : null;
+
+                    ResearchEmbedding::updateOrCreate(
+                        ['research_id' => $research->id],
+                        [
+                            'content_embedding'   => !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null,
+                            'objective_embedding' => !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null,
+                            'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
+                        ]
+                    );
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('AI Embedding update on details edit failed: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('success', 'Matagumpay na na-update ang impormasyon ng proyekto!');
+    }
+
+    /**
      * Re-attach / Update the manuscript file(s) for an existing research record without creating duplicates.
      */
     public function updateFiles(Request $request, Research $research)

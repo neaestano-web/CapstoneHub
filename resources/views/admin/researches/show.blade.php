@@ -693,6 +693,7 @@
 
         <div x-data="{ 
             activeDetailModal: null, 
+            activeEditCard: null,
             modalIcons: { 
                 context: '🏢', 
                 objectives: '🎯', 
@@ -732,7 +733,15 @@
                     </div>
 
                     <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                        <span class="text-[11px] font-medium text-slate-400">Click to expand</span>
+                        <button type="button" 
+                                @click.stop="activeEditCard = 'context'" 
+                                class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 px-2 py-0.5 rounded-md border border-slate-200 transition cursor-pointer"
+                                title="Edit Project Context">
+                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
                         <span class="text-emerald-700 font-bold text-[11px] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
                             Expand ↗
                         </span>
@@ -763,7 +772,15 @@
                     </div>
 
                     <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                        <span class="text-[11px] font-medium text-slate-400">Click to expand</span>
+                        <button type="button" 
+                                @click.stop="activeEditCard = 'objectives'" 
+                                class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 px-2 py-0.5 rounded-md border border-slate-200 transition cursor-pointer"
+                                title="Edit Objective">
+                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
                         <span class="text-emerald-700 font-bold text-[11px] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
                             Expand ↗
                         </span>
@@ -788,7 +805,15 @@
                     </div>
 
                     <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                        <span class="text-[11px] font-medium text-slate-400">Click to expand</span>
+                        <button type="button" 
+                                @click.stop="activeEditCard = 'abstract'" 
+                                class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 px-2 py-0.5 rounded-md border border-slate-200 transition cursor-pointer"
+                                title="Edit Abstract">
+                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
                         <span class="text-emerald-700 font-bold text-[11px] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
                             Expand ↗
                         </span>
@@ -826,7 +851,15 @@
                     </div>
 
                     <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                        <span class="text-[11px] font-medium text-slate-400">Click to expand</span>
+                        <button type="button" 
+                                @click.stop="activeEditCard = 'keywords'" 
+                                class="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 px-2 py-0.5 rounded-md border border-slate-200 transition cursor-pointer"
+                                title="Edit Keywords">
+                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
                         <span class="text-emerald-700 font-bold text-[11px] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
                             Expand ↗
                         </span>
@@ -870,14 +903,25 @@
                                     x-text="modalTitles[activeDetailModal]"></h3>
                             </div>
                         </div>
-                        <button type="button" 
-                                @click="activeDetailModal = null" 
-                                class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition shrink-0"
-                                title="Close (Esc)">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button type="button" 
+                                    @click="activeEditCard = activeDetailModal; activeDetailModal = null" 
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-200 transition cursor-pointer"
+                                    title="Edit this card">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                <span>Edit Card</span>
+                            </button>
+                            <button type="button" 
+                                    @click="activeDetailModal = null" 
+                                    class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition shrink-0"
+                                    title="Close (Esc)">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Modal Scrollable Body with complete unabridged content (Guaranteed Scrollable) --}}
@@ -966,6 +1010,152 @@
                         </button>
                     </div>
 
+                </div>
+            </div>
+
+            {{-- EDIT DETAIL CARD MODAL --}}
+            <div x-show="activeEditCard !== null" 
+                 x-cloak
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @keydown.escape.window="activeEditCard = null"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-md overflow-y-auto"
+                 style="display: none;">
+
+                <div x-show="activeEditCard !== null"
+                     x-transition:enter="transition ease-out duration-250"
+                     x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+                     @click.outside="activeEditCard = null"
+                     class="centered-detail-modal bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 flex flex-col overflow-hidden my-auto"
+                     style="max-height: 90vh; height: auto;">
+                    
+                    <form action="{{ route('admin.researches.updateDetails', $research) }}" method="POST" class="flex flex-col flex-1 min-h-0">
+                        @csrf
+                        @method('PATCH')
+
+                        {{-- Modal Header --}}
+                        <div class="flex items-center justify-between px-6 py-4 sm:px-7 border-b border-slate-100 shrink-0 bg-white">
+                            <div class="flex items-center gap-3 min-w-0 pr-2">
+                                <span class="text-2xl shrink-0" x-text="modalIcons[activeEditCard]"></span>
+                                <div class="min-w-0">
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block mb-1">
+                                        Edit Mode
+                                    </span>
+                                    <h3 class="font-extrabold text-base sm:text-lg text-slate-900 truncate">
+                                        Edit <span x-text="modalTitles[activeEditCard]"></span>
+                                    </h3>
+                                </div>
+                            </div>
+                            <button type="button" 
+                                    @click="activeEditCard = null" 
+                                    class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition shrink-0"
+                                    title="Close (Esc)">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        {{-- Quick Tabs to switch between the 4 cards --}}
+                        <div class="px-6 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto shrink-0">
+                            <button type="button" 
+                                    @click="activeEditCard = 'context'" 
+                                    :class="activeEditCard === 'context' ? 'bg-[#0c4233] text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'"
+                                    class="px-3 py-1 rounded-lg text-xs font-bold transition shrink-0 border border-slate-200/80 cursor-pointer">
+                                🏢 Context
+                            </button>
+                            <button type="button" 
+                                    @click="activeEditCard = 'objectives'" 
+                                    :class="activeEditCard === 'objectives' ? 'bg-[#0c4233] text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'"
+                                    class="px-3 py-1 rounded-lg text-xs font-bold transition shrink-0 border border-slate-200/80 cursor-pointer">
+                                🎯 Objective
+                            </button>
+                            <button type="button" 
+                                    @click="activeEditCard = 'abstract'" 
+                                    :class="activeEditCard === 'abstract' ? 'bg-[#0c4233] text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'"
+                                    class="px-3 py-1 rounded-lg text-xs font-bold transition shrink-0 border border-slate-200/80 cursor-pointer">
+                                📝 Abstract
+                            </button>
+                            <button type="button" 
+                                    @click="activeEditCard = 'keywords'" 
+                                    :class="activeEditCard === 'keywords' ? 'bg-[#0c4233] text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'"
+                                    class="px-3 py-1 rounded-lg text-xs font-bold transition shrink-0 border border-slate-200/80 cursor-pointer">
+                                🏷️ Keywords
+                            </button>
+                        </div>
+
+                        {{-- Modal Body: Inputs for all cards (active one shown, others kept as inputs so nothing is lost) --}}
+                        <div class="p-6 sm:p-7 overflow-y-auto flex-1 space-y-4">
+                            {{-- Context Form --}}
+                            <div x-show="activeEditCard === 'context'" class="space-y-2">
+                                <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                                    Project Context
+                                </label>
+                                <p class="text-[11px] text-slate-500">I-edit ang background, suliranin, o konteksto ng proyekto.</p>
+                                <textarea name="project_context" rows="10"
+                                          placeholder="Ilagay ang Project Context..."
+                                          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('project_context', $research->project_context) }}</textarea>
+                            </div>
+
+                            {{-- Objectives Form --}}
+                            <div x-show="activeEditCard === 'objectives'" class="space-y-2">
+                                <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                                    Objective
+                                </label>
+                                <p class="text-[11px] text-slate-500">Tukuyin ang pangkalahatan at partikular na layunin ng pag-aaral.</p>
+                                <textarea name="objectives" rows="10"
+                                          placeholder="Ilagay ang Objective..."
+                                          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('objectives', $research->objectives) }}</textarea>
+                            </div>
+
+                            {{-- Abstract Form --}}
+                            <div x-show="activeEditCard === 'abstract'" class="space-y-2">
+                                <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                                    Abstract
+                                </label>
+                                <p class="text-[11px] text-slate-500">Buod ng buong pag-aaral, teknolohiya, metodolohiya, at resulta.</p>
+                                <textarea name="abstract" rows="10"
+                                          placeholder="Ilagay ang Abstract..."
+                                          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('abstract', $research->abstract) }}</textarea>
+                            </div>
+
+                            {{-- Keywords Form --}}
+                            <div x-show="activeEditCard === 'keywords'" class="space-y-2">
+                                <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                                    Keywords
+                                </label>
+                                <p class="text-[11px] text-slate-500">Paghiwalayin ang bawat keyword gamit ang kuwit o comma (hal. Web Application, SMS Notification, Food Ordering).</p>
+                                <textarea name="keywords" rows="5"
+                                          placeholder="e.g. Web-Based System, Online Ordering, SMS Notification"
+                                          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('keywords', $research->keywords) }}</textarea>
+                            </div>
+                        </div>
+
+                        {{-- Modal Footer --}}
+                        <div class="px-6 py-3.5 sm:px-7 border-t border-slate-100 flex items-center justify-between text-xs shrink-0 bg-slate-50/70 rounded-b-2xl">
+                            <button type="button" 
+                                    @click="activeEditCard = null" 
+                                    class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer">
+                                Kanselahin
+                            </button>
+                            <button type="submit" 
+                                    class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>I-save ang Pagbabago</span>
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
             </div>
         </div>
