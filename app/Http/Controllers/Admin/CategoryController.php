@@ -91,10 +91,12 @@ class CategoryController extends Controller
             'description' => 'nullable|string|max:1000',
         ]);
 
-        $category->update([
-            'name' => $request->name,
-            'description' => $request->description,
-        ]);
+        $categoryData = ['name' => $request->name];
+        if ($request->has('description')) {
+            $categoryData['description'] = $request->description;
+        }
+
+        $category->update($categoryData);
 
         // Delete project types if any
         if ($request->has('delete_project_types') && is_array($request->delete_project_types)) {

@@ -56,14 +56,6 @@
                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs font-semibold text-[#2d2b56] outline-none focus:border-[#0c4233] focus:bg-white transition">
             </div>
 
-            <div>
-                <label for="description" class="block text-xs font-extrabold text-[#2d2b56] uppercase tracking-wider mb-2">
-                    Category Description
-                </label>
-                <textarea name="description" id="description" rows="4"
-                          class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs font-medium text-[#2d2b56] outline-none focus:border-[#0c4233] focus:bg-white transition">{{ old('description', $category->description) }}</textarea>
-            </div>
-
             {{-- Existing Sub-Project Types --}}
             <div class="pt-4 border-t border-slate-100 space-y-4">
                 <div class="flex items-center justify-between">
