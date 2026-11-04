@@ -550,16 +550,11 @@
                 {{ $research->title }}
             </h1>
 
-            {{-- 4-Column Key Info Grid --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3 border-t border-slate-100">
+            {{-- 3-Column Key Info Grid --}}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100">
                 <div class="min-meta-block">
                     <span class="min-meta-label">Researchers / Authors</span>
                     <span class="min-meta-val truncate" title="{{ $research->authors }}">{{ $research->authors ?? 'SCS Researchers' }}</span>
-                </div>
-
-                <div class="min-meta-block">
-                    <span class="min-meta-label">Faculty Adviser</span>
-                    <span class="min-meta-val truncate" title="{{ $research->adviser }}">{{ $research->adviser ?? 'None specified' }}</span>
                 </div>
 
                 <div class="min-meta-block">

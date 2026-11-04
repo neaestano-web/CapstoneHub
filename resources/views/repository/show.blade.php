@@ -814,7 +814,7 @@
             </h1>
         </div>
 
-        <!-- Meta Cards Grid: Authors & Adviser -->
+        <!-- Meta Cards Grid: Authors -->
         <div class="meta-cards-grid">
             <div class="meta-card">
                 <div class="meta-card-icon">
@@ -829,20 +829,6 @@
                     <span class="meta-card-label">Researchers / Authors</span>
                     <span class="meta-card-value">{{ $research->authors ?? 'SCS Researchers' }}</span>
                     <span class="meta-card-sub">Student Researchers, School of Computing Studies</span>
-                </div>
-            </div>
-
-            <div class="meta-card">
-                <div class="meta-card-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                    </svg>
-                </div>
-                <div class="meta-card-content">
-                    <span class="meta-card-label">Faculty Adviser</span>
-                    <span class="meta-card-value">{{ $research->adviser ?? 'School of Computing Studies Faculty' }}</span>
-                    <span class="meta-card-sub">Capstone Project Adviser</span>
                 </div>
             </div>
         </div>
