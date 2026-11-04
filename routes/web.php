@@ -91,6 +91,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/researches/{research}/reject', [AdminResearchController::class, 'reject'])->name('researches.reject');
     Route::patch('/researches/{research}/category', [AdminResearchController::class, 'updateCategory'])->name('researches.updateCategory');
     Route::post('/researches/{research}/update-files', [AdminResearchController::class, 'updateFiles'])->name('researches.updateFiles');
+    Route::post('/researches/{research}/reorder-files', [AdminResearchController::class, 'reorderFiles'])->name('researches.reorderFiles');
     Route::delete('/researches/{research}', [AdminResearchController::class, 'destroy'])->name('researches.destroy');
 
     Route::resource('users', UserController::class);

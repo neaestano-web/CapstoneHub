@@ -1126,15 +1126,15 @@
 
 {{-- RE-ATTACH / UPDATE MANUSCRIPT MODAL --}}
 <div class="modal-backdrop-custom" id="updateFileModal">
-    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-auto" onclick="event.stopPropagation()">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
         
         {{-- Modal Header --}}
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-emerald-50/50">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-emerald-50/50 shrink-0">
             <div class="flex items-center gap-2.5">
                 <span class="text-xl">📎</span>
                 <div>
-                    <h3 class="font-extrabold text-sm text-slate-900">Update / Re-attach Manuscript File</h3>
-                    <p class="text-[11px] text-slate-500 font-medium">I-upload ang file nang hindi madodoble ang record sa TiDB Cloud</p>
+                    <h3 class="font-extrabold text-sm text-slate-900">Ayusin / I-upload ang Manuscript File(s)</h3>
+                    <p class="text-[11px] text-slate-500 font-medium">Ayusin ang pagkakasunod-sunod upang piliin kung alin ang unang mag-view</p>
                 </div>
             </div>
             <button type="button" onclick="closeUpdateFileModal()" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
@@ -1144,56 +1144,372 @@
             </button>
         </div>
 
-        {{-- Form --}}
-        <form action="{{ route('admin.researches.updateFiles', $research) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" onsubmit="document.getElementById('btnSubmitUpdateFile').disabled = true; document.getElementById('btnSubmitUpdateFile').innerText = 'Nag-a-upload...';">
-            @csrf
-
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Target Research Record:</span>
-                <p class="text-xs font-bold text-slate-900 truncate" title="{{ $research->title }}">{{ $research->title }}</p>
-                <p class="text-[11px] text-slate-400">ID: #{{ $research->id }} &bull; Year: {{ $research->year }}</p>
-            </div>
-
-            <div class="space-y-1.5">
-                <label for="modal_update_files" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Pumili ng Bago o Re-attached File(s) <span class="text-rose-500">*</span>
-                </label>
-                <input type="file" 
-                       name="files[]" 
-                       id="modal_update_files" 
-                       multiple 
-                       accept=".pdf,.docx" 
-                       required
-                       class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100 border border-slate-200 rounded-xl cursor-pointer bg-white p-2">
-                <p class="text-[11px] text-slate-400">Tumatanggap ng PDF (.pdf) o Word (.docx) hanggang 30MB bawat file. Puwede ring higit sa isang file.</p>
-            </div>
-
-            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 space-y-0.5">
-                <span class="font-bold flex items-center gap-1">ℹ️ Paalala / Note:</span>
-                <p>Direktang ikakabit ang file sa kasalukuyang record. <strong>Hindi magbabago o madodoble ang record sa TiDB Cloud</strong> (mananatili ang Project Context, Objective, Abstract, at Keywords).</p>
-            </div>
-
-            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer">
-                    Kanselahin
+        {{-- Optional Tabs (shown if research already has attached files) --}}
+        @if($isMultiFile)
+            <div class="flex items-center border-b border-slate-200 bg-slate-50 px-6 pt-2 shrink-0 gap-2">
+                <button type="button" 
+                        id="btnTabUpload" 
+                        onclick="switchUpdateTab('upload')" 
+                        class="px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-[#0c4233] text-white cursor-pointer">
+                    📤 Re-upload / Bagong Files
                 </button>
-                <button type="submit" id="btnSubmitUpdateFile" class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
-                    <span>📤</span> I-upload at I-save ang File
+                <button type="button" 
+                        id="btnTabReorder" 
+                        onclick="switchUpdateTab('reorder')" 
+                        class="px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
+                    📑 Isaayos ang Kasalukuyang Files ({{ $attachedFiles->count() }})
                 </button>
             </div>
-        </form>
+        @endif
+
+        {{-- Modal Scrollable Body --}}
+        <div class="p-6 overflow-y-auto flex-1 space-y-4">
+
+            {{-- TAB 1: UPLOAD / RE-ATTACH NEW FILES WITH RE-ORDERING QUEUE --}}
+            <div id="updateTabUpload" class="space-y-4">
+                <form action="{{ route('admin.researches.updateFiles', $research) }}" 
+                      method="POST" 
+                      enctype="multipart/form-data" 
+                      id="formUploadNewFiles" 
+                      class="space-y-4" 
+                      onsubmit="return validateAndSubmitUploadForm(event)">
+                    @csrf
+
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Target Research Record:</span>
+                        <p class="text-xs font-bold text-slate-900 truncate" title="{{ $research->title }}">{{ $research->title }}</p>
+                        <p class="text-[11px] text-slate-400">ID: #{{ $research->id }} &bull; Year: {{ $research->year }}</p>
+                    </div>
+
+                    {{-- Dropzone / Picker Area --}}
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                            Pumili ng mga File (PDF / Word) <span class="text-rose-500">*</span>
+                        </label>
+                        <div id="modalDropZone" 
+                             onclick="document.getElementById('modalPickerInput').click()" 
+                             class="border-2 border-dashed border-slate-300 hover:border-emerald-600 rounded-xl p-5 text-center cursor-pointer transition bg-slate-50/50 hover:bg-emerald-50/40">
+                            <span class="text-3xl block mb-1">📂</span>
+                            <p class="text-xs font-bold text-slate-800">I-click para pumili ng file(s) o i-drag & drop dito</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Tumatanggap ng PDF (.pdf) o Word (.docx) hanggang 30MB bawat file</p>
+                        </div>
+                        <input type="file" id="modalPickerInput" multiple accept=".pdf,.docx" class="hidden" onchange="handleModalFilesSelected(this.files)">
+                        <input type="file" name="files[]" id="modalActualFilesInput" multiple class="hidden">
+                    </div>
+
+                    {{-- File Queue & Arrangement List --}}
+                    <div id="modalFileListContainer" style="display: none;" class="space-y-2 pt-1">
+                        <div class="flex items-center justify-between pb-1">
+                            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <span>📋</span>
+                                <span>Naka-ayos na Pagkakasunod-sunod:</span>
+                            </span>
+                            <span id="modalFileCountBadge" class="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full"></span>
+                        </div>
+
+                        <div class="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-950 flex items-start gap-2">
+                            <span class="text-sm shrink-0">💡</span>
+                            <span>Ang file na nasa <strong>#1 (🥇 Primary)</strong> ang unang lilitaw sa viewer at sa guest preview. Gamitin ang <strong>▲ (Move Up)</strong> at <strong>▼ (Move Down)</strong> upang maiayos ang tamang pagkakasunod-sunod.</span>
+                        </div>
+
+                        <div id="modalFileListItems" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
+                        <div class="pt-1">
+                            <button type="button" 
+                                    onclick="document.getElementById('modalPickerInput').click()" 
+                                    class="w-full py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span>➕</span> Magdagdag pa ng File sa Listahan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 space-y-0.5">
+                        <span class="font-bold flex items-center gap-1">ℹ️ Paalala / Note:</span>
+                        <p><strong>Hindi madodoble ang record sa TiDB Cloud.</strong> Papalitan lamang nito ang file link habang pinananatili ang Project Context, Objective, Abstract, at Keywords.</p>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer">
+                            Kanselahin
+                        </button>
+                        <button type="submit" id="btnSubmitUpdateFile" disabled class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+                            <span>📤</span> I-upload at I-save ang Naka-ayos na Files
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {{-- TAB 2: REORDER EXISTING ATTACHED FILES (IF ALREADY MULTI-FILE) --}}
+            @if($isMultiFile)
+                <div id="updateTabReorder" style="display: none;" class="space-y-4">
+                    <form action="{{ route('admin.researches.reorderFiles', $research) }}" method="POST" class="space-y-3" onsubmit="document.getElementById('btnSubmitReorder').disabled = true; document.getElementById('btnSubmitReorder').innerText = 'Isinasaayos...';">
+                        @csrf
+
+                        <div class="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-950 flex items-start gap-2">
+                            <span class="text-sm shrink-0">💡</span>
+                            <span>I-click ang <strong>▲ (Pataas)</strong> o <strong>▼ (Pababa)</strong> upang ilipat kung aling kasalukuyang file ang gustong unang mag-view (#1). Pagkatapos, pindutin ang Save. Hindi na kailangang mag-upload muli!</span>
+                        </div>
+
+                        <div class="space-y-2 max-h-72 overflow-y-auto pr-1" id="existingFilesContainer">
+                            @foreach($attachedFiles as $idx => $f)
+                                <div class="existing-file-row flex items-center justify-between p-3 rounded-xl border {{ $idx === 0 ? 'border-emerald-500 bg-emerald-50/40 shadow-xs' : 'border-slate-200 bg-slate-50/60' }} transition" data-file-id="{{ $f->id }}">
+                                    <input type="hidden" name="order[]" value="{{ $f->id }}">
+                                    <div class="flex items-center gap-3 min-w-0 pr-2">
+                                        <span class="existing-file-badge shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md {{ $idx === 0 ? 'bg-[#0c4233] text-white' : 'bg-slate-200 text-slate-700' }}">
+                                            {{ $idx === 0 ? '🥇 #1 Unang Mag-view' : '#' . ($idx + 1) }}
+                                        </span>
+                                        <p class="text-xs font-bold text-slate-900 truncate" title="{{ $f->original_name }}">{{ $f->original_name }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button type="button" onclick="moveExistingFile(this, -1)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md text-xs font-bold transition cursor-pointer" title="Ilipat Pataas">
+                                            ▲
+                                        </button>
+                                        <button type="button" onclick="moveExistingFile(this, 1)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md text-xs font-bold transition cursor-pointer" title="Ilipat Pababa">
+                                            ▼
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                            <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer">
+                                Kanselahin
+                            </button>
+                            <button type="submit" id="btnSubmitReorder" class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                <span>💾</span> I-save ang Bagong Pagkakasunod-sunod
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @endif
+
+        </div>
 
     </div>
 </div>
 
 <script>
+let modalFilesArray = [];
+
 function openUpdateFileModal() {
     const m = document.getElementById('updateFileModal');
-    if (m) m.classList.add('active');
+    if (m) {
+        m.classList.add('active');
+        initModalDropzone();
+    }
 }
+
 function closeUpdateFileModal() {
     const m = document.getElementById('updateFileModal');
     if (m) m.classList.remove('active');
+}
+
+function switchUpdateTab(tabName) {
+    const tabUpload = document.getElementById('updateTabUpload');
+    const tabReorder = document.getElementById('updateTabReorder');
+    const btnUpload = document.getElementById('btnTabUpload');
+    const btnReorder = document.getElementById('btnTabReorder');
+
+    if (tabName === 'upload') {
+        if (tabUpload) tabUpload.style.display = 'block';
+        if (tabReorder) tabReorder.style.display = 'none';
+        if (btnUpload) {
+            btnUpload.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-[#0c4233] text-white cursor-pointer';
+        }
+        if (btnReorder) {
+            btnReorder.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer';
+        }
+    } else {
+        if (tabUpload) tabUpload.style.display = 'none';
+        if (tabReorder) tabReorder.style.display = 'block';
+        if (btnReorder) {
+            btnReorder.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-[#0c4233] text-white cursor-pointer';
+        }
+        if (btnUpload) {
+            btnUpload.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer';
+        }
+    }
+}
+
+function handleModalFilesSelected(files) {
+    if (!files || files.length === 0) return;
+    for (let i = 0; i < files.length; i++) {
+        modalFilesArray.push(files[i]);
+    }
+    const picker = document.getElementById('modalPickerInput');
+    if (picker) picker.value = '';
+    syncModalActualInput();
+    renderModalFileList();
+}
+
+function moveModalFile(index, direction) {
+    const target = index + direction;
+    if (target < 0 || target >= modalFilesArray.length) return;
+    const temp = modalFilesArray[index];
+    modalFilesArray[index] = modalFilesArray[target];
+    modalFilesArray[target] = temp;
+    syncModalActualInput();
+    renderModalFileList();
+}
+
+function removeModalFile(index) {
+    modalFilesArray.splice(index, 1);
+    syncModalActualInput();
+    renderModalFileList();
+}
+
+function syncModalActualInput() {
+    const dt = new DataTransfer();
+    for (const file of modalFilesArray) {
+        dt.items.add(file);
+    }
+    const input = document.getElementById('modalActualFilesInput');
+    if (input) {
+        input.files = dt.files;
+    }
+}
+
+function formatModalSize(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function renderModalFileList() {
+    const container = document.getElementById('modalFileListContainer');
+    const list = document.getElementById('modalFileListItems');
+    const badge = document.getElementById('modalFileCountBadge');
+    const submitBtn = document.getElementById('btnSubmitUpdateFile');
+
+    if (!container || !list) return;
+
+    if (modalFilesArray.length === 0) {
+        container.style.display = 'none';
+        list.innerHTML = '';
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+    }
+
+    container.style.display = 'block';
+    if (badge) badge.textContent = modalFilesArray.length + (modalFilesArray.length === 1 ? ' file' : ' files');
+    if (submitBtn) submitBtn.disabled = false;
+
+    list.innerHTML = modalFilesArray.map((f, i) => {
+        const isFirst = i === 0;
+        const ext = f.name.split('.').pop().toUpperCase();
+        return `
+            <div class="flex items-center justify-between p-3 rounded-xl border ${isFirst ? 'border-emerald-500 bg-emerald-50/40 shadow-xs' : 'border-slate-200 bg-slate-50/60'} transition">
+                <div class="flex items-center gap-3 min-w-0 pr-2">
+                    <span class="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md ${isFirst ? 'bg-[#0c4233] text-white' : 'bg-slate-200 text-slate-700'}">
+                        ${isFirst ? '🥇 #1 Unang Mag-view' : '#' + (i + 1)}
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-slate-900 truncate" title="${f.name}">${f.name}</p>
+                        <p class="text-[10px] text-slate-400 font-semibold uppercase">${ext} &bull; ${formatModalSize(f.size)}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" 
+                            onclick="moveModalFile(${i}, -1)" 
+                            ${i === 0 ? 'disabled' : ''} 
+                            class="px-2 py-1 rounded-md text-xs font-bold transition ${i === 0 ? 'opacity-30 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
+                            title="Ilipat Pataas">
+                        ▲
+                    </button>
+                    <button type="button" 
+                            onclick="moveModalFile(${i}, 1)" 
+                            ${i === modalFilesArray.length - 1 ? 'disabled' : ''} 
+                            class="px-2 py-1 rounded-md text-xs font-bold transition ${i === modalFilesArray.length - 1 ? 'opacity-30 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
+                            title="Ilipat Pababa">
+                        ▼
+                    </button>
+                    <button type="button" 
+                            onclick="removeModalFile(${i})" 
+                            class="p-1 rounded-md text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition cursor-pointer ml-1" 
+                            title="Tanggalin">
+                        ✕
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function validateAndSubmitUploadForm(e) {
+    if (modalFilesArray.length === 0) {
+        e.preventDefault();
+        alert('Pumili po ng kahit isang PDF o Word file bago mag-upload.');
+        return false;
+    }
+    syncModalActualInput();
+    const btn = document.getElementById('btnSubmitUpdateFile');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Nag-a-upload at nagsi-synchronize...';
+    }
+    return true;
+}
+
+function moveExistingFile(btn, direction) {
+    const row = btn.closest('.existing-file-row');
+    if (!row) return;
+    const parent = row.parentElement;
+    if (direction === -1 && row.previousElementSibling) {
+        parent.insertBefore(row, row.previousElementSibling);
+    } else if (direction === 1 && row.nextElementSibling) {
+        parent.insertBefore(row.nextElementSibling, row);
+    }
+    updateExistingFileBadges();
+}
+
+function updateExistingFileBadges() {
+    const rows = document.querySelectorAll('.existing-file-row');
+    rows.forEach((r, idx) => {
+        const badge = r.querySelector('.existing-file-badge');
+        if (badge) {
+            if (idx === 0) {
+                badge.className = 'existing-file-badge shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#0c4233] text-white';
+                badge.textContent = '🥇 #1 Unang Mag-view';
+                r.className = 'existing-file-row flex items-center justify-between p-3 rounded-xl border border-emerald-500 bg-emerald-50/40 shadow-xs transition';
+            } else {
+                badge.className = 'existing-file-badge shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700';
+                badge.textContent = '#' + (idx + 1);
+                r.className = 'existing-file-row flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50/60 transition';
+            }
+        }
+    });
+}
+
+let dropzoneInitialized = false;
+function initModalDropzone() {
+    if (dropzoneInitialized) return;
+    const mDrop = document.getElementById('modalDropZone');
+    if (mDrop) {
+        ['dragenter', 'dragover'].forEach(evt => {
+            mDrop.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                mDrop.classList.add('border-emerald-600', 'bg-emerald-50/50');
+            });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            mDrop.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                mDrop.classList.remove('border-emerald-600', 'bg-emerald-50/50');
+            });
+        });
+        mDrop.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                handleModalFilesSelected(dt.files);
+            }
+        });
+        dropzoneInitialized = true;
+    }
 }
 function openRejectModal(id, title) {
     document.getElementById('modalResearchTitle').textContent = title;

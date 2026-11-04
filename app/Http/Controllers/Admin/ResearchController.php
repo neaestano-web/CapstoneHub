@@ -432,6 +432,42 @@ class ResearchController extends Controller
     }
 
     /**
+     * Re-order existing attached files for an already uploaded research.
+     */
+    public function reorderFiles(Request $request, Research $research)
+    {
+        $request->validate([
+            'order' => 'required|array|min:1',
+            'order.*' => 'exists:research_files,id',
+        ]);
+
+        $firstPath = null;
+        foreach ($request->order as $newIndex => $fileId) {
+            $file = $research->files()->where('id', $fileId)->first();
+            if ($file) {
+                $file->update(['sort_order' => $newIndex + 1]);
+                if ($newIndex === 0) {
+                    $firstPath = $file->file_path;
+                }
+            }
+        }
+
+        if ($firstPath) {
+            $research->update(['pdf_path' => $firstPath]);
+        }
+
+        // Clean cached merged and preview PDFs so new order takes effect immediately
+        $pdfCacheFiles = \Storage::disk('public')->files('researches/pdf_cache');
+        foreach ($pdfCacheFiles as $cf) {
+            if (str_contains($cf, "page1_preview_{$research->id}_") || str_contains($cf, "merged_{$research->id}_")) {
+                \Storage::disk('public')->delete($cf);
+            }
+        }
+
+        return back()->with('success', 'Matagumpay na naisaayos ang pagkakasunod-sunod ng mga file!');
+    }
+
+    /**
      * Reject the specified research.
      */
     public function reject(Request $request, Research $research)
