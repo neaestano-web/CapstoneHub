@@ -19,9 +19,15 @@
             <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
                 <span>{{ $category->name }}</span>
             </h1>
-            <p class="text-slate-500 text-xs font-medium mt-0.5">
-                Category overview and approved capstone manuscript records.
-            </p>
+            @if($category->description)
+                <p class="text-slate-600 text-xs font-medium mt-1 leading-relaxed max-w-2xl">
+                    {{ $category->description }}
+                </p>
+            @else
+                <p class="text-slate-400 text-xs font-medium mt-0.5">
+                    Category overview and approved capstone manuscript records.
+                </p>
+            @endif
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
