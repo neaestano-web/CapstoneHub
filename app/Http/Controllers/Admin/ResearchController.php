@@ -144,98 +144,157 @@ class ResearchController extends Controller
      */
     public function store(Request $request, AIService $ai)
     {
-        $request->validate([
-            'title'              => 'required|string|max:255',
-            'abstract'           => 'required|string',
-            'project_context'    => 'required|string',
-            'objectives'         => 'required|string',
-            'keywords'           => 'nullable|string',
-            'authors'            => 'required',
-            'year'               => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'category_ids'       => 'required|array|min:1',
-            'category_ids.*'     => 'exists:research_categories,id',
-            'project_type_ids'   => 'nullable|array',
-            'project_type_ids.*' => 'exists:project_types,id',
-            'files'              => 'nullable|array|min:1',
-            'files.*'            => 'mimes:pdf,docx|max:15360',
-            'pdf'                => 'nullable|mimes:pdf,docx|max:15360',
-        ]);
-
-        $rawAuthors = $request->input('authors');
-        if (is_array($rawAuthors)) {
-            $authorsList = array_values(array_filter(array_map('trim', $rawAuthors)));
-            $authorsString = implode(', ', $authorsList);
-        } else {
-            $authorsString = trim((string) $rawAuthors);
-        }
-
-        if (empty($authorsString)) {
-            return back()->withErrors(['authors' => 'Please provide at least one author.'])->withInput();
-        }
-
-        $uploadedFiles = $request->file('files') ?? [];
-        if (empty($uploadedFiles) && $request->hasFile('pdf')) {
-            $uploadedFiles = [$request->file('pdf')];
-        }
-
-        if (empty($uploadedFiles)) {
-            return back()->withErrors(['files' => 'Please upload at least one PDF or DOCX file.'])->withInput();
-        }
-
-        // Check if an existing research with the same or matching title already exists
-        $existing = Research::findExistingByTitle($request->title);
-
-        $categoryIds = array_values(array_unique($request->category_ids));
-        $primaryCategoryId = $categoryIds[0] ?? null;
-        // Admin uploads are published directly to the repository.
-        $shouldPublish = true;
-
-        $research = Research::create([
-            'user_id'              => auth()->id(),
-            'research_category_id' => $primaryCategoryId,
-            'title'                => $request->title,
-            'abstract'             => $request->abstract,
-            'project_context'      => $request->project_context,
-            'objectives'           => $request->objectives,
-            'keywords'             => $request->keywords,
-            'authors'              => $authorsString,
-            'year'                 => $request->year,
-            'pdf_path'             => '',
-            'status'               => $shouldPublish ? 'approved' : 'pending',
-            'approved_at'         => $shouldPublish ? now() : null,
-        ]);
-
-        $firstPath = null;
-        foreach ($uploadedFiles as $index => $file) {
-            $path = $file->store('researches', 'public');
-            if ($index === 0) {
-                $firstPath = $path;
-            }
-            $research->files()->create([
-                'file_path'     => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'mime_type'     => $file->getClientMimeType(),
-                'file_size'     => $file->getSize(),
-                'sort_order'    => $index + 1,
+        try {
+            $request->validate([
+                'title'              => 'required|string|max:255',
+                'abstract'           => 'required|string',
+                'project_context'    => 'required|string',
+                'objectives'         => 'required|string',
+                'keywords'           => 'nullable|string',
+                'authors'            => 'required',
+                'year'               => 'required|integer|min:1900|max:' . (date('Y') + 1),
+                'category_ids'       => 'required|array|min:1',
+                'category_ids.*'     => 'exists:research_categories,id',
+                'project_type_ids'   => 'nullable|array',
+                'project_type_ids.*' => 'exists:project_types,id',
+                'files'              => 'nullable|array|min:1',
+                'files.*'            => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:15360',
+                'pdf'                => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:15360',
             ]);
+
+            $rawAuthors = $request->input('authors');
+            if (is_array($rawAuthors)) {
+                $authorsList = array_values(array_filter(array_map('trim', $rawAuthors)));
+                $authorsString = implode(', ', $authorsList);
+            } else {
+                $authorsString = trim((string) $rawAuthors);
+            }
+
+            if (empty($authorsString)) {
+                return back()->withErrors(['authors' => 'Please provide at least one author.'])->withInput();
+            }
+
+            $uploadedFiles = $request->file('files') ?? [];
+            if (empty($uploadedFiles) && $request->hasFile('pdf')) {
+                $uploadedFiles = [$request->file('pdf')];
+            }
+
+            if (empty($uploadedFiles)) {
+                return back()->withErrors(['files' => 'Please upload at least one PDF or DOCX file.'])->withInput();
+            }
+
+            // Check if an existing research with the same or matching title already exists
+            $existing = Research::findExistingByTitle($request->title);
+
+            $categoryIds = array_values(array_unique($request->category_ids));
+            $primaryCategoryId = $categoryIds[0] ?? null;
+            // Admin uploads are published directly to the repository.
+            $shouldPublish = true;
+
+            $research = Research::create([
+                'user_id'              => auth()->id(),
+                'research_category_id' => $primaryCategoryId,
+                'title'                => $request->title,
+                'abstract'             => $request->abstract,
+                'project_context'      => $request->project_context,
+                'objectives'           => $request->objectives,
+                'keywords'             => $request->keywords,
+                'authors'              => $authorsString,
+                'year'                 => $request->year,
+                'pdf_path'             => '',
+                'status'               => $shouldPublish ? 'approved' : 'pending',
+                'approved_at'         => $shouldPublish ? now() : null,
+            ]);
+
+            $firstPath = null;
+            foreach ($uploadedFiles as $index => $file) {
+                $path = $file->store('researches', 'public');
+                if ($index === 0) {
+                    $firstPath = $path;
+                }
+                $research->files()->create([
+                    'file_path'     => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type'     => $file->getClientMimeType(),
+                    'file_size'     => $file->getSize(),
+                    'sort_order'    => $index + 1,
+                ]);
+            }
+
+            $research->update(['pdf_path' => $firstPath]);
+
+            // Sync many-to-many relationships
+            $research->categories()->sync($categoryIds);
+            if ($request->project_type_ids) {
+                $research->projectTypes()->sync(array_values(array_unique($request->project_type_ids)));
+            }
+
+            // Generate embeddings if publishing immediately (fail-fast: does not block or fail upload if AI is cold or offline)
+            if ($shouldPublish) {
+                try {
+                    @set_time_limit(120);
+                    $titleEmbedding = $ai->generateEmbedding($research->title);
+                    if (!empty($titleEmbedding['embedding'])) {
+                        $content = $research->title . ' ' . ($research->project_context ? $research->project_context . ' ' : '') . $research->objectives . ' ' . $research->abstract;
+                        $contentEmbedding = $ai->generateEmbedding($content);
+                        $objectiveEmbedding = $ai->generateEmbedding($research->objectives);
+                        $contextEmbedding = !empty($research->project_context) ? $ai->generateEmbedding($research->project_context) : null;
+
+                        ResearchEmbedding::updateOrCreate(
+                            ['research_id' => $research->id],
+                            [
+                                'title_embedding'     => !empty($titleEmbedding['embedding']) ? json_encode($titleEmbedding['embedding']) : null,
+                                'content_embedding'   => !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null,
+                                'objective_embedding' => !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null,
+                                'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
+                            ]
+                        );
+                    }
+                } catch (\Throwable $e) {
+                    \Log::warning('AI embedding skipped during admin upload: ' . $e->getMessage());
+                }
+            }
+
+            $catNames = \App\Models\ResearchCategory::whereIn('id', $categoryIds)->pluck('name')->implode(', ');
+            $fileCount = count($uploadedFiles);
+
+            // If title already existed in repository, attach warning alert to the session
+            if ($existing) {
+                session()->flash('warning', "⚠️ Paalala / Warning: Ang na-upload at na-publish na capstone ay may katulad na umiiral nang pamagat sa repository: \"{$existing->title}\" ({$existing->year}).");
+            }
+
+            return redirect()->route('admin.researches.index')
+                ->with('success', "Capstone uploaded and published successfully with {$fileCount} file(s)! Classified under: {$catNames}.");
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Log::error('Admin research upload failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->withInput()->with('error', 'Upload failed: ' . $e->getMessage());
         }
+    }
 
-        $research->update(['pdf_path' => $firstPath]);
+    public function approve(
+        Research $research,
+        AIService $ai
+    )
+    {
+        try {
+            @set_time_limit(120);
+            $titleEmbedding = $ai->generateEmbedding($research->title);
 
-        // Sync many-to-many relationships
-        $research->categories()->sync($categoryIds);
-        if ($request->project_type_ids) {
-            $research->projectTypes()->sync(array_values(array_unique($request->project_type_ids)));
-        }
+            if (!empty($titleEmbedding['embedding'])) {
+                $content = $research->title . ' ' .
+                    ($research->project_context ? $research->project_context . ' ' : '') .
+                    $research->objectives . ' ' .
+                    $research->abstract;
 
-        // Generate embeddings if publishing immediately
-        if ($shouldPublish) {
-            try {
-                $titleEmbedding = $ai->generateEmbedding($research->title);
-                $content = $research->title . ' ' . ($research->project_context ? $research->project_context . ' ' : '') . $research->objectives . ' ' . $research->abstract;
                 $contentEmbedding = $ai->generateEmbedding($content);
                 $objectiveEmbedding = $ai->generateEmbedding($research->objectives);
-                $contextEmbedding = !empty($research->project_context) ? $ai->generateEmbedding($research->project_context) : null;
+                $contextEmbedding = !empty($research->project_context)
+                    ? $ai->generateEmbedding($research->project_context)
+                    : null;
 
                 ResearchEmbedding::updateOrCreate(
                     ['research_id' => $research->id],
@@ -246,66 +305,9 @@ class ResearchController extends Controller
                         'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
                     ]
                 );
-            } catch (\Exception $e) {
-                // AI service unavailable — semantic search won't work for this item
             }
-        }
-
-        $catNames = \App\Models\ResearchCategory::whereIn('id', $categoryIds)->pluck('name')->implode(', ');
-        $fileCount = count($uploadedFiles);
-
-        // If title already existed in repository, attach warning alert to the session
-        if ($existing) {
-            session()->flash('warning', "⚠️ Paalala / Warning: Ang na-upload at na-publish na capstone ay may katulad na umiiral nang pamagat sa repository: \"{$existing->title}\" ({$existing->year}).");
-        }
-
-        return redirect()->route('admin.researches.index')
-            ->with('success', "Capstone uploaded and published successfully with {$fileCount} file(s)! Classified under: {$catNames}.");
-    }
-
-    public function approve(
-        Research $research,
-        AIService $ai
-    )
-    {
-        try {
-            $titleEmbedding =
-                $ai->generateEmbedding(
-                    $research->title
-                );
-
-            $content =
-                $research->title . ' ' .
-                ($research->project_context ? $research->project_context . ' ' : '') .
-                $research->objectives . ' ' .
-                $research->abstract;
-
-            $contentEmbedding =
-                $ai->generateEmbedding(
-                    $content
-                );
-
-            $objectiveEmbedding =
-                $ai->generateEmbedding(
-                    $research->objectives
-                );
-
-            $contextEmbedding = !empty($research->project_context)
-                ? $ai->generateEmbedding($research->project_context)
-                : null;
-
-            ResearchEmbedding::updateOrCreate(
-                ['research_id' => $research->id],
-                [
-                    'title_embedding'     => !empty($titleEmbedding['embedding']) ? json_encode($titleEmbedding['embedding']) : null,
-                    'content_embedding'   => !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null,
-                    'objective_embedding' => !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null,
-                    'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
-                ]
-            );
-        } catch (\Exception $e) {
-            // AI service is not available, continue without embeddings
-            // Semantic search will not work for this research
+        } catch (\Throwable $e) {
+            \Log::warning('AI embedding skipped during approve: ' . $e->getMessage());
         }
 
         $research->update([

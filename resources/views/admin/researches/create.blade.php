@@ -285,7 +285,7 @@
                     </button>
                     <button type="button" onclick="toggleManualCategories()" class="px-4 py-2.5 admin-form-subtle text-xs font-bold admin-title rounded-xl transition inline-flex items-center justify-center gap-1.5 border admin-border cursor-pointer">
                         <span>📁</span>
-                        <span id="manualToggleBtnText">Select Categories Manually ▾</span>
+                        <span id="manualToggleBtnText">Hide Manual Categories ▴</span>
                     </button>
                 </div>
 
@@ -320,7 +320,7 @@
                 </div>
 
                 {{-- Manual Category Selection Panel --}}
-                <div id="manualPanel" style="display:none;" class="admin-form-subtle p-5 space-y-4">
+                <div id="manualPanel" style="display:block;" class="admin-form-subtle p-5 space-y-4">
                     <div class="space-y-2">
                         <label class="block text-xs font-bold uppercase tracking-wider admin-title">
                             Categories <span class="text-rose-500">*</span>
@@ -765,10 +765,16 @@ function handleAuthorInput(input) {
 
 // Form validation & duplicate alert confirmation
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    syncActualInput();
+
     const checked = this.querySelectorAll('input[name="category_ids[]"]:checked');
     if (checked.length === 0) {
         e.preventDefault();
-        alert('Please select at least one category. Click "Auto-Classify" first or select manually.');
+        alert('Please select at least one category before submitting.');
+        const manualPanel = document.getElementById('manualPanel');
+        if (manualPanel && manualPanel.style.display === 'none') {
+            manualPanel.style.display = 'block';
+        }
         return;
     }
 
@@ -793,6 +799,12 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
             }
             return;
         }
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> <span>Uploading & Publishing...</span>';
     }
 });
 
