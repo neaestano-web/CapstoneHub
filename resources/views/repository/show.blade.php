@@ -1081,35 +1081,7 @@
     {{-- GUEST USERS ONLY: MANUSCRIPT PREVIEW (FIRST PAGE ONLY OF FIRST UPLOADED FILE) --}}
     @guest
         @if($research->pdf_path || ($research->files && $research->files->count() > 0))
-            @php
-                $firstFile = $research->files ? $research->files->sortBy('sort_order')->first() : null;
-                $firstFileName = $firstFile?->original_name ?? basename($research->pdf_path);
-            @endphp
-            <div class="detail-card-cyber p-6 space-y-4">
-                {{-- Preview Top Bar --}}
-                <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-700/60">
-                    <div class="flex items-center gap-2 text-xs text-slate-300">
-                        <span class="text-base">📄</span>
-                        <span class="font-extrabold text-white">First Page Preview:</span>
-                        <span class="text-[11px] text-emerald-400 font-semibold bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>🥇 First Uploaded File — Page 1 Only</span>
-                        </span>
-                        <span class="text-[11px] text-slate-400 hidden sm:inline truncate max-w-xs">
-                            ({{ Str::limit($firstFileName, 35) }})
-                        </span>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <span class="text-[11px] text-amber-400 font-bold bg-amber-950/60 border border-amber-500/30 px-2.5 py-1 rounded-full flex items-center gap-1">
-                            🔒 Guest Mode: Page 1 Only
-                        </span>
-                        <a href="{{ route('repository.full', $research->id) }}" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold rounded-full transition shadow-xs inline-flex items-center gap-1.5">
-                            <span>🔑</span> Sign In for Full Manuscript
-                        </a>
-                    </div>
-                </div>
-
+            <div class="detail-card-cyber p-4 sm:p-6">
                 {{-- Interactive 1-Page Viewer Container --}}
                 <div class="relative w-full rounded-2xl overflow-hidden border border-slate-700/80 shadow-inner bg-slate-900 select-none"
                      style="height: 740px;"
