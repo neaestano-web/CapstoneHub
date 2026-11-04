@@ -202,17 +202,39 @@
     document.addEventListener('DOMContentLoaded', updateSimCounters);
     updateSimCounters();
 
-    // Proactive background warm-up for Render AI service while user is viewing/typing
-    (function wakeAIService() {
+    // Proactive AI Wake-up & Heartbeat: Keeps Render AI service awake ONLY while user is on this similarity page
+    (function initAIKeepAlive() {
         const aiUrl = @json(config('services.ai.url', 'https://capstone-ai-fqz3.onrender.com'));
-        if (aiUrl) {
+        const warmupRoute = '{{ route("ai.warmup") }}';
+
+        function pingAI() {
+            if (aiUrl) {
+                try {
+                    fetch(aiUrl.replace(/\/$/, '') + '/', { mode: 'no-cors', cache: 'no-cache' }).catch(function() {});
+                } catch (e) {}
+            }
             try {
-                fetch(aiUrl.replace(/\/$/, '') + '/', { mode: 'no-cors', cache: 'no-cache' }).catch(function() {});
+                fetch(warmupRoute, { cache: 'no-cache' }).catch(function() {});
             } catch (e) {}
         }
-        try {
-            fetch('{{ route("ai.warmup") }}', { cache: 'no-cache' }).catch(function() {});
-        } catch (e) {}
+
+        // 1. Immediate wake-up ping upon opening the similarity page
+        pingAI();
+
+        // 2. Heartbeat every 3.5 minutes (210,000 ms) to keep AI awake while user remains on this page
+        const heartbeatInterval = setInterval(pingAI, 210000);
+
+        // 3. Re-ping when tab becomes visible again
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                pingAI();
+            }
+        });
+
+        // 4. Clean up interval when navigating away so Render can sleep naturally after 15 mins
+        window.addEventListener('beforeunload', function() {
+            clearInterval(heartbeatInterval);
+        });
     })();
 </script>
 @endsection
