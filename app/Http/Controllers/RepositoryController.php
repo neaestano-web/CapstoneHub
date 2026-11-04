@@ -34,9 +34,21 @@ class RepositoryController extends Controller
         $query  = $isAuth ? trim($request->input('query') ?? $request->input('search') ?? '') : '';
 
         $categoryId = $request->integer('category') ?: null;
-        $categories = ResearchCategory::withCount([
+        $categories = ResearchCategory::where(function ($q) {
+            $q->whereHas('classifiedResearches', fn ($r) => $r->where('status', 'approved'))
+              ->orWhereHas('researches', fn ($r) => $r->where('status', 'approved'));
+        })
+        ->withCount([
             'classifiedResearches as classified_researches_count' => fn ($researches) => $researches->where('status', 'approved'),
-        ])->orderBy('id', 'asc')->get();
+            'researches as direct_researches_count' => fn ($researches) => $researches->where('status', 'approved'),
+        ])->orderBy('name', 'asc')->get();
+
+        foreach ($categories as $cat) {
+            $cat->classified_researches_count = max(
+                (int) ($cat->classified_researches_count ?? 0),
+                (int) ($cat->direct_researches_count ?? 0)
+            );
+        }
 
         if ($categoryId && ! $categories->contains('id', $categoryId)) {
             $categoryId = null;
@@ -122,6 +134,7 @@ class RepositoryController extends Controller
             $selectedAuthors    = [];
             $sort               = $request->input('sort', 'newest');
             $authorsList        = $this->getAuthorsList();
+            $yearsList          = $this->getYearsList();
             $recommendations    = collect();
 
             return view($this->resolveView(), [
@@ -136,6 +149,7 @@ class RepositoryController extends Controller
                 'selectedAuthors'    => $selectedAuthors,
                 'selectedSort'       => $sort,
                 'authorsList'        => $authorsList,
+                'yearsList'          => $yearsList,
             ]);
         }
 
@@ -233,8 +247,9 @@ class RepositoryController extends Controller
 
         $researches = $dbQuery->paginate(9)->withQueryString();
 
-        // ── Dynamic Authors List for Filter ─────────────────────────────
+        // ── Dynamic Authors & Years List for Filter ─────────────────────
         $authorsList = $this->getAuthorsList();
+        $yearsList   = $this->getYearsList();
 
         // ── Recommendations: latest 3 from other categories ──────────────────
         $recommendations = Research::where('status', 'approved')
@@ -252,6 +267,7 @@ class RepositoryController extends Controller
             'selectedAuthors'    => $selectedAuthors,
             'selectedSort'       => $sort,
             'authorsList'        => $authorsList,
+            'yearsList'          => $yearsList,
             'query'              => '',
             'searchMode'         => 'browse',
             'recommendations'    => $recommendations,
@@ -370,5 +386,25 @@ class RepositoryController extends Controller
         $authorsList = $authorsList->unique(fn ($a) => mb_strtolower($a))->sort(SORT_NATURAL | SORT_FLAG_CASE)->values();
 
         return $authorsList;
+    }
+
+    /**
+     * Get dynamic list of distinct years for approved researches.
+     */
+    private function getYearsList()
+    {
+        $approvedResearches = Research::where('status', 'approved')
+            ->get(['year', 'approved_at']);
+
+        $years = collect();
+        foreach ($approvedResearches as $research) {
+            if (!empty($research->year)) {
+                $years->push((string) $research->year);
+            } elseif ($research->approved_at) {
+                $years->push((string) $research->approved_at->year);
+            }
+        }
+
+        return $years->filter()->unique()->sortDesc()->values();
     }
 }

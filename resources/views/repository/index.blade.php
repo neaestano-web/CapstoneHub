@@ -752,30 +752,57 @@
                 <!-- SECTION 1: CATEGORY -->
                 <div class="filter-section" id="sectionCategory">
                     <div class="filter-section-title" onclick="toggleFilterSection('sectionCategory')">
-                        <span>CATEGORY</span>
+                        <span>CATEGORY ({{ $categories->count() }})</span>
                         <svg class="filter-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="18 15 12 9 6 15"></polyline>
                         </svg>
                     </div>
 
                     <div class="filter-items">
-                        @php
-                            $topCategories = $categories->take(8);
-                        @endphp
+                        @if($categories->isEmpty())
+                            <p style="font-size: 0.78rem; color: #94a3b8; padding: 0.25rem 0; font-style: italic;">
+                                No categories yet
+                            </p>
+                        @else
+                            @php
+                                $topCategories = $categories->take(8);
+                            @endphp
 
-                        @foreach($topCategories as $cat)
-                            <label class="filter-item-label">
-                                <input 
-                                    type="checkbox" 
-                                    name="categories[]" 
-                                    value="{{ $cat->id }}" 
-                                    class="custom-checkbox filter-category-cb"
-                                    {{ in_array($cat->id, $selectedCategories ?? []) ? 'checked' : '' }}
-                                    onchange="document.getElementById('browseFilterForm').submit()"
-                                >
-                                <span>{{ $cat->name }}</span>
-                            </label>
-                        @endforeach
+                            @foreach($topCategories as $cat)
+                                <label class="filter-item-label" title="{{ $cat->name }}">
+                                    <input 
+                                        type="checkbox" 
+                                        name="categories[]" 
+                                        value="{{ $cat->id }}" 
+                                        class="custom-checkbox filter-category-cb"
+                                        {{ in_array($cat->id, $selectedCategories ?? []) ? 'checked' : '' }}
+                                        onchange="document.getElementById('browseFilterForm').submit()"
+                                    >
+                                    <span class="truncate">{{ $cat->name }}</span>
+                                </label>
+                            @endforeach
+
+                            @if($categories->count() > 8)
+                                <div id="moreCategoriesList" style="display: none; margin-top: 0.35rem;">
+                                    @foreach($categories->skip(8) as $cat)
+                                        <label class="filter-item-label" title="{{ $cat->name }}">
+                                            <input 
+                                                type="checkbox" 
+                                                name="categories[]" 
+                                                value="{{ $cat->id }}" 
+                                                class="custom-checkbox filter-category-cb"
+                                                {{ in_array($cat->id, $selectedCategories ?? []) ? 'checked' : '' }}
+                                                onchange="document.getElementById('browseFilterForm').submit()"
+                                            >
+                                            <span class="truncate">{{ $cat->name }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <span class="filter-show-more" id="showMoreCategoriesBtn" onclick="toggleMoreCategories()">
+                                    + Show More ({{ $categories->count() - 8 }} more)
+                                </span>
+                            @endif
+                        @endif
                     </div>
                 </div>
 
@@ -851,30 +878,34 @@
                 <!-- SECTION 3: YEAR -->
                 <div class="filter-section" id="sectionYear">
                     <div class="filter-section-title" onclick="toggleFilterSection('sectionYear')">
-                        <span>YEAR</span>
+                        <span>YEAR ({{ ($yearsList ?? collect())->count() }})</span>
                         <svg class="filter-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="18 15 12 9 6 15"></polyline>
                         </svg>
                     </div>
 
-                    <div class="filter-items filter-grid-2col">
-                        @php
-                            $presetYears = ['2026', '2023', '2025', '2022', '2024', 'Older'];
-                        @endphp
-
-                        @foreach($presetYears as $yr)
-                            <label class="filter-item-label">
-                                <input 
-                                    type="checkbox" 
-                                    name="years[]" 
-                                    value="{{ strtolower($yr) }}" 
-                                    class="custom-checkbox filter-year-cb"
-                                    {{ in_array(strtolower($yr), array_map('strtolower', $selectedYears ?? [])) ? 'checked' : '' }}
-                                    onchange="document.getElementById('browseFilterForm').submit()"
-                                >
-                                <span>{{ $yr }}</span>
-                            </label>
-                        @endforeach
+                    <div class="filter-items">
+                        @if(($yearsList ?? collect())->isEmpty())
+                            <p style="font-size: 0.78rem; color: #94a3b8; padding: 0.25rem 0; font-style: italic;">
+                                No years yet
+                            </p>
+                        @else
+                            <div class="filter-grid-2col">
+                                @foreach($yearsList as $yr)
+                                    <label class="filter-item-label">
+                                        <input 
+                                            type="checkbox" 
+                                            name="years[]" 
+                                            value="{{ $yr }}" 
+                                            class="custom-checkbox filter-year-cb"
+                                            {{ in_array((string)$yr, array_map('strval', $selectedYears ?? [])) ? 'checked' : '' }}
+                                            onchange="document.getElementById('browseFilterForm').submit()"
+                                        >
+                                        <span>{{ $yr }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -1062,6 +1093,20 @@
         if (moreList) {
             if (moreList.style.display === 'none') {
                 moreList.style.display = 'grid';
+                if (btn) btn.innerText = '- Show Less';
+            } else {
+                moreList.style.display = 'none';
+                if (btn) btn.innerText = '+ Show More';
+            }
+        }
+    }
+
+    function toggleMoreCategories() {
+        const moreList = document.getElementById('moreCategoriesList');
+        const btn = document.getElementById('showMoreCategoriesBtn');
+        if (moreList) {
+            if (moreList.style.display === 'none') {
+                moreList.style.display = 'block';
                 if (btn) btn.innerText = '- Show Less';
             } else {
                 moreList.style.display = 'none';
