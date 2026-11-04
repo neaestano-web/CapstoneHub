@@ -643,67 +643,52 @@
         margin: 0 auto 1.5rem;
     }
 
-    /* ===== PAGINATION ===== */
-    /* ===== FIXED BOTTOM FLOATING PAGINATION BAR ===== */
-    .custom-pagination-bar {
-        position: fixed;
-        bottom: 18px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 110;
-        display: inline-flex;
-        align-items: center;
+    /* ===== INFINITE SCROLL LOADER & SENTINEL ===== */
+    .infinite-scroll-sentinel {
+        width: 100%;
+        padding: 2.5rem 0 3.5rem 0;
+        display: flex;
         justify-content: center;
-        gap: 4px;
-        padding: 5px 10px;
-        background: rgba(10, 18, 28, 0.94);
-        border: 1.5px solid rgba(0, 245, 212, 0.35);
-        border-radius: 9999px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 18px rgba(0, 245, 212, 0.2);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-        margin: 0;
-        max-width: calc(100vw - 24px);
+        align-items: center;
+        text-align: center;
     }
 
-    .pag-btn {
+    .infinite-scroll-loader {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        min-width: 26px;
-        height: 26px;
-        padding: 0 0.5rem;
+        gap: 0.75rem;
+        padding: 0.65rem 1.35rem;
+        background: rgba(10, 18, 28, 0.92);
+        border: 1.5px solid rgba(0, 245, 212, 0.4);
         border-radius: 9999px;
-        font-size: 0.74rem;
-        font-weight: 600;
-        text-decoration: none;
-        color: #cbd5e1;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .pag-btn:hover {
-        background: rgba(0, 245, 212, 0.18);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         color: #00f5d4;
-        border-color: rgba(0, 245, 212, 0.45);
-        transform: translateY(-1px);
-    }
-
-    .pag-btn.active {
-        background: #00f5d4;
-        color: #042f2e;
-        border-color: #00f5d4;
-        box-shadow: 0 0 12px rgba(0, 245, 212, 0.55);
-        font-weight: 800;
-    }
-
-    .pag-dots {
-        color: #64748b;
-        padding: 0 3px;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         font-weight: 700;
+        letter-spacing: 0.02em;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 245, 212, 0.25);
+    }
+
+    .infinite-scroll-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2.5px solid rgba(0, 245, 212, 0.25);
+        border-top-color: #00f5d4;
+        border-radius: 50%;
+        animation: infiniteScrollSpin 0.75s linear infinite;
+    }
+
+    @keyframes infiniteScrollSpin {
+        to { transform: rotate(360deg); }
+    }
+
+    .infinite-scroll-end {
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        letter-spacing: 0.01em;
     }
 </style>
 
@@ -976,102 +961,21 @@
                         </button>
                     </div>
 
-                    @foreach($researches as $index => $research)
-                        <div class="capstone-card project-card-item" 
-                             data-title="{{ strtolower($research->title) }}" 
-                             data-authors="{{ strtolower($research->authors ?? '') }}"
-                             data-abstract="{{ strtolower($research->abstract ?? '') }}"
-                             data-category="{{ strtolower($research->category->name ?? '') }}">
-                            
-                            <div class="card-top-content">
-                                <!-- Title -->
-                                <a href="{{ route('repository.show', $research->id) }}" class="card-title-link">
-                                    {{ $research->title }}
-                                </a>
-
-                                <!-- Author & Year Row -->
-                                <div class="card-meta-row">
-                                    <span class="card-author-name" title="{{ $research->authors ?? 'Student Researcher' }}">
-                                        {{ $research->authors ?? 'SCS Researchers' }}
-                                    </span>
-                                    <span class="card-year-badge">
-                                        {{ $research->year ?: ($research->approved_at ? $research->approved_at->format('Y') : ($research->created_at ? $research->created_at->format('Y') : '2026')) }}
-                                    </span>
-                                </div>
-
-                                <!-- Abstract Snippet -->
-                                <p class="card-abstract-text">
-                                    {{ $research->abstract ?? $research->objectives ?? 'This capstone focuses on developing modern software solutions and technological architectures for institutional automation.' }}
-                                </p>
-                            </div>
-
-                            <!-- Footer Row: Stats + Solid Green View Project Button -->
-                            <div class="card-footer-row">
-                                <div class="card-stats-info">
-                                    <span class="card-stat-item" title="Views">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                            <circle cx="12" cy="12" r="3"/>
-                                        </svg>
-                                        {{ number_format($research->views_count ?? 0) }}
-                                    </span>
-                                    <span class="card-stat-item" title="Downloads">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                            <polyline points="7 10 12 15 17 10"/>
-                                            <line x1="12" y1="15" x2="12" y2="3"/>
-                                        </svg>
-                                        {{ number_format($research->approved_downloads_count ?? 0) }}
-                                    </span>
-                                </div>
-                                <a href="{{ route('repository.show', $research->id) }}" class="btn-view-project">
-                                    View Project
-                                </a>
-                            </div>
-
-                        </div>
-                    @endforeach
+                    @include('repository.partials.card-items', ['researches' => $researches])
                 @endif
             </div>
 
-            <!-- Custom Pagination -->
-            <div class="custom-pagination-bar">
-                @if($researches->hasPages())
-                    @if($researches->onFirstPage())
-                        <span class="pag-btn" style="opacity: 0.4; cursor: not-allowed;">‹ Previous</span>
-                    @else
-                        <a href="{{ $researches->previousPageUrl() }}" class="pag-btn">‹ Previous</a>
+            <!-- Infinite Scroll Sentinel & Loader -->
+            <div id="infiniteScrollSentinel" class="infinite-scroll-sentinel">
+                <div id="infiniteScrollLoader" class="infinite-scroll-loader" style="display: none;">
+                    <div class="infinite-scroll-spinner"></div>
+                    <span>Loading more projects...</span>
+                </div>
+                <div id="infiniteScrollEnd" class="infinite-scroll-end" style="{{ isset($researches) && method_exists($researches, 'hasMorePages') && $researches->hasMorePages() ? 'display: none;' : '' }}">
+                    @if(isset($researches) && method_exists($researches, 'total') && $researches->total() > 9)
+                        <span>✓ All {{ number_format($researches->total()) }} projects loaded</span>
                     @endif
-
-                    @foreach(range(1, min(5, $researches->lastPage())) as $page)
-                        @if($page == $researches->currentPage())
-                            <span class="pag-btn active">{{ $page }}</span>
-                        @else
-                            <a href="{{ $researches->url($page) }}" class="pag-btn">{{ $page }}</a>
-                        @endif
-                    @endforeach
-
-                    @if($researches->lastPage() > 5)
-                        <span class="pag-dots">...</span>
-                        <a href="{{ $researches->url($researches->lastPage()) }}" class="pag-btn">{{ $researches->lastPage() }}</a>
-                    @endif
-
-                    @if($researches->hasMorePages())
-                        <a href="{{ $researches->nextPageUrl() }}" class="pag-btn">Next ›</a>
-                    @else
-                        <span class="pag-btn" style="opacity: 0.4; cursor: not-allowed;">Next ›</span>
-                    @endif
-                @else
-                    <span class="pag-btn" style="opacity: 0.4; cursor: not-allowed;">‹ Previous</span>
-                    <span class="pag-btn active">1</span>
-                    <span class="pag-btn" style="opacity: 0.65;">2</span>
-                    <span class="pag-btn" style="opacity: 0.65;">3</span>
-                    <span class="pag-btn" style="opacity: 0.65;">4</span>
-                    <span class="pag-btn" style="opacity: 0.65;">5</span>
-                    <span class="pag-dots">...</span>
-                    <span class="pag-btn" style="opacity: 0.65;">120</span>
-                    <span class="pag-btn" style="opacity: 0.4; cursor: not-allowed;">Next ›</span>
-                @endif
+                </div>
             </div>
 
         </main>
@@ -1121,11 +1025,123 @@
         window.location.href = url.toString();
     }
 
+    // ==========================================
+    // AUTO INFINITE SCROLL ON SCROLL
+    // ==========================================
+    (function initInfiniteScroll() {
+        let nextPageUrl = @json(isset($researches) && method_exists($researches, 'hasMorePages') && $researches->hasMorePages() ? $researches->nextPageUrl() : null);
+        let isLoading = false;
+        let hasMore = Boolean(nextPageUrl);
+
+        const grid = document.getElementById('capstoneCardsGrid');
+        const sentinel = document.getElementById('infiniteScrollSentinel');
+        const loader = document.getElementById('infiniteScrollLoader');
+        const endMessage = document.getElementById('infiniteScrollEnd');
+
+        if (!grid || !sentinel) return;
+
+        async function loadNextPage() {
+            if (!hasMore || isLoading || !nextPageUrl) return;
+
+            isLoading = true;
+            if (loader) loader.style.display = 'inline-flex';
+            if (endMessage) endMessage.style.display = 'none';
+
+            try {
+                const response = await fetch(nextPageUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-Infinite-Scroll': '1',
+                        'Accept': 'application/json, text/html'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network error loading more projects');
+                }
+
+                const contentType = response.headers.get('content-type') || '';
+                let newCardsHtml = '';
+
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    newCardsHtml = data.html || '';
+                    hasMore = Boolean(data.hasMore);
+                    nextPageUrl = data.nextPageUrl || null;
+                } else {
+                    const htmlText = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    const cardNodes = doc.querySelectorAll('#capstoneCardsGrid .project-card-item');
+                    cardNodes.forEach(node => {
+                        newCardsHtml += node.outerHTML;
+                    });
+                    const currentUrlObj = new URL(nextPageUrl, window.location.origin);
+                    const curPage = parseInt(currentUrlObj.searchParams.get('page') || '1', 10);
+                    currentUrlObj.searchParams.set('page', curPage + 1);
+                    nextPageUrl = cardNodes.length > 0 ? currentUrlObj.toString() : null;
+                    hasMore = Boolean(cardNodes.length > 0);
+                }
+
+                if (newCardsHtml.trim() !== '') {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = newCardsHtml;
+                    while (temp.firstChild) {
+                        grid.appendChild(temp.firstChild);
+                    }
+
+                    // Re-run search/filter if user currently has filter input
+                    if (typeof runCardFilter === 'function') {
+                        runCardFilter();
+                    }
+                } else {
+                    hasMore = false;
+                }
+
+            } catch (err) {
+                console.error('Error auto-loading projects:', err);
+                hasMore = false;
+            } finally {
+                isLoading = false;
+                if (loader) loader.style.display = 'none';
+                if (!hasMore && endMessage) {
+                    endMessage.innerHTML = '<span>✓ All projects loaded</span>';
+                    endMessage.style.display = 'block';
+                }
+            }
+        }
+
+        // IntersectionObserver for auto loading projects as user scrolls down
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        loadNextPage();
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '450px 0px',
+                threshold: 0.01
+            });
+
+            observer.observe(sentinel);
+        } else {
+            // Scroll event fallback
+            window.addEventListener('scroll', function() {
+                if (isLoading || !hasMore) return;
+                const rect = sentinel.getBoundingClientRect();
+                if (rect.top <= window.innerHeight + 450) {
+                    loadNextPage();
+                }
+            }, { passive: true });
+        }
+    })();
+
     // Quick filter search box toggle & realtime filter
     const filterSearchToggle = document.getElementById('filterSearchToggle');
     const filterSearchBox = document.getElementById('filterSearchBox');
     const filterKeywordInput = document.getElementById('filterKeywordInput');
-    const projectCards = document.querySelectorAll('.project-card-item');
 
     if (filterSearchToggle && filterSearchBox) {
         filterSearchToggle.addEventListener('click', function() {
@@ -1155,53 +1171,55 @@
         }
     };
 
-    if (filterKeywordInput) {
-        function runCardFilter() {
-            const rawVal = filterKeywordInput.value.trim();
-            const normalizedQuery = normalizeSearchText(rawVal);
-            const tokens = normalizedQuery.split(' ').filter(Boolean);
+    function runCardFilter() {
+        if (!filterKeywordInput) return;
+        const rawVal = filterKeywordInput.value.trim();
+        const normalizedQuery = normalizeSearchText(rawVal);
+        const tokens = normalizedQuery.split(' ').filter(Boolean);
 
-            let visibleCount = 0;
+        let visibleCount = 0;
+        const projectCards = document.querySelectorAll('.project-card-item');
 
-            projectCards.forEach(card => {
-                if (tokens.length === 0) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                    return;
+        projectCards.forEach(card => {
+            if (tokens.length === 0) {
+                card.style.display = 'flex';
+                visibleCount++;
+                return;
+            }
+
+            const title = normalizeSearchText(card.getAttribute('data-title'));
+            const authors = normalizeSearchText(card.getAttribute('data-authors'));
+            const abstract = normalizeSearchText(card.getAttribute('data-abstract'));
+            const category = normalizeSearchText(card.getAttribute('data-category'));
+
+            const haystack = `${title} ${authors} ${abstract} ${category}`;
+
+            // Every token in query must match
+            const isMatch = tokens.every(token => haystack.includes(token));
+
+            if (isMatch) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const noResultsEl = document.getElementById('clientSearchNoResults');
+        const noResultsDesc = document.getElementById('clientSearchNoResultsDesc');
+        if (noResultsEl) {
+            if (visibleCount === 0 && tokens.length > 0) {
+                noResultsEl.style.display = 'block';
+                if (noResultsDesc) {
+                    noResultsDesc.textContent = `No projects matching "${rawVal}". Try searching by author surname, project keyword, or title.`;
                 }
-
-                const title = normalizeSearchText(card.getAttribute('data-title'));
-                const authors = normalizeSearchText(card.getAttribute('data-authors'));
-                const abstract = normalizeSearchText(card.getAttribute('data-abstract'));
-                const category = normalizeSearchText(card.getAttribute('data-category'));
-
-                const haystack = `${title} ${authors} ${abstract} ${category}`;
-
-                // Every token in query must match
-                const isMatch = tokens.every(token => haystack.includes(token));
-
-                if (isMatch) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            const noResultsEl = document.getElementById('clientSearchNoResults');
-            const noResultsDesc = document.getElementById('clientSearchNoResultsDesc');
-            if (noResultsEl) {
-                if (visibleCount === 0 && tokens.length > 0) {
-                    noResultsEl.style.display = 'block';
-                    if (noResultsDesc) {
-                        noResultsDesc.textContent = `No projects matching "${rawVal}". Try searching by author surname, project keyword, or title.`;
-                    }
-                } else {
-                    noResultsEl.style.display = 'none';
-                }
+            } else {
+                noResultsEl.style.display = 'none';
             }
         }
+    }
 
+    if (filterKeywordInput) {
         filterKeywordInput.addEventListener('input', runCardFilter);
 
         // Run initially if keyword input has existing value

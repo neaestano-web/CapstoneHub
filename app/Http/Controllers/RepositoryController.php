@@ -247,6 +247,17 @@ class RepositoryController extends Controller
 
         $researches = $dbQuery->paginate(9)->withQueryString();
 
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Infinite-Scroll')) {
+            $html = view('repository.partials.card-items', compact('researches'))->render();
+            return response()->json([
+                'html' => $html,
+                'hasMore' => $researches->hasMorePages(),
+                'nextPageUrl' => $researches->nextPageUrl(),
+                'currentPage' => $researches->currentPage(),
+                'total' => $researches->total(),
+            ]);
+        }
+
         // ── Dynamic Authors & Years List for Filter ─────────────────────
         $authorsList = $this->getAuthorsList();
         $yearsList   = $this->getYearsList();
