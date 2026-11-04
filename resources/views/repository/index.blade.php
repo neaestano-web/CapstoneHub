@@ -789,39 +789,27 @@
                     </div>
 
                     <div class="filter-items">
-                        @php
-                            $hasHiddenSelectedAuthor = false;
-                            if (!empty($selectedAuthors) && $authorsList->count() > 6) {
-                                $hiddenAuthors = $authorsList->skip(6);
-                                foreach ($selectedAuthors as $sa) {
-                                    if ($hiddenAuthors->contains($sa)) {
-                                        $hasHiddenSelectedAuthor = true;
-                                        break;
+                        @if($authorsList->isEmpty())
+                            <p style="font-size: 0.78rem; color: #94a3b8; padding: 0.25rem 0; font-style: italic;">
+                                No authors yet
+                            </p>
+                        @else
+                            @php
+                                $hasHiddenSelectedAuthor = false;
+                                if (!empty($selectedAuthors) && $authorsList->count() > 6) {
+                                    $hiddenAuthors = $authorsList->skip(6);
+                                    foreach ($selectedAuthors as $sa) {
+                                        if ($hiddenAuthors->contains($sa)) {
+                                            $hasHiddenSelectedAuthor = true;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            $authorsToShow = $authorsList->take(6);
-                        @endphp
+                                $authorsToShow = $authorsList->take(6);
+                            @endphp
 
-                        <div class="filter-grid-2col">
-                            @foreach($authorsToShow as $author)
-                                <label class="filter-item-label" title="{{ $author }}">
-                                    <input 
-                                        type="checkbox" 
-                                        name="authors[]" 
-                                        value="{{ $author }}" 
-                                        class="custom-checkbox filter-author-cb"
-                                        {{ in_array($author, $selectedAuthors ?? []) ? 'checked' : '' }}
-                                        onchange="document.getElementById('browseFilterForm').submit()"
-                                    >
-                                    <span class="truncate">{{ $author }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-
-                        @if($authorsList->count() > 6)
-                            <div class="filter-grid-2col" id="moreAuthorsList" style="display: {{ $hasHiddenSelectedAuthor ? 'grid' : 'none' }}; margin-top: 0.4rem;">
-                                @foreach($authorsList->skip(6) as $author)
+                            <div class="filter-grid-2col">
+                                @foreach($authorsToShow as $author)
                                     <label class="filter-item-label" title="{{ $author }}">
                                         <input 
                                             type="checkbox" 
@@ -835,9 +823,27 @@
                                     </label>
                                 @endforeach
                             </div>
-                            <span class="filter-show-more" id="showMoreAuthorsBtn" onclick="toggleMoreAuthors()">
-                                {{ $hasHiddenSelectedAuthor ? '- Show Less' : '+ Show More (' . ($authorsList->count() - 6) . ' more)' }}
-                            </span>
+
+                            @if($authorsList->count() > 6)
+                                <div class="filter-grid-2col" id="moreAuthorsList" style="display: {{ $hasHiddenSelectedAuthor ? 'grid' : 'none' }}; margin-top: 0.4rem;">
+                                    @foreach($authorsList->skip(6) as $author)
+                                        <label class="filter-item-label" title="{{ $author }}">
+                                            <input 
+                                                type="checkbox" 
+                                                name="authors[]" 
+                                                value="{{ $author }}" 
+                                                class="custom-checkbox filter-author-cb"
+                                                {{ in_array($author, $selectedAuthors ?? []) ? 'checked' : '' }}
+                                                onchange="document.getElementById('browseFilterForm').submit()"
+                                            >
+                                            <span class="truncate">{{ $author }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <span class="filter-show-more" id="showMoreAuthorsBtn" onclick="toggleMoreAuthors()">
+                                    {{ $hasHiddenSelectedAuthor ? '- Show Less' : '+ Show More (' . ($authorsList->count() - 6) . ' more)' }}
+                                </span>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -911,14 +917,20 @@
             <div class="capstone-cards-grid" id="capstoneCardsGrid">
                 @if($researches->isEmpty())
                     <div class="empty-state-card">
-                        <div class="empty-code">// STATUS: 0_PROJECTS_FOUND</div>
-                        <h2 class="empty-title">No Capstone Projects Match Your Criteria</h2>
-                        <p class="empty-desc">
-                            Try adjusting your category, author, or year filters to browse more archived research works.
-                        </p>
-                        <a href="{{ route('repository.index') }}" class="btn-view-project" style="display: inline-flex;">
-                            Browse All Projects
-                        </a>
+                        @if(!empty($selectedCategories) || !empty($selectedYears) || !empty($selectedAuthors) || request('keyword') || request('search') || request('q'))
+                            <h2 class="empty-title">No Capstone Projects Match Your Criteria</h2>
+                            <p class="empty-desc">
+                                Try adjusting your category, author, or year filters to browse more archived research works.
+                            </p>
+                            <a href="{{ route('repository.index') }}" class="btn-view-project" style="display: inline-flex;">
+                                Clear Filters
+                            </a>
+                        @else
+                            <h2 class="empty-title">No Capstone Projects Available Yet</h2>
+                            <p class="empty-desc">
+                                There are currently no approved capstone projects in the repository. New submissions will appear here once approved.
+                            </p>
+                        @endif
                     </div>
                 @else
                     <!-- Dynamic Client-Side Search Empty State -->

@@ -369,10 +369,6 @@ class RepositoryController extends Controller
 
         $authorsList = $authorsList->unique(fn ($a) => mb_strtolower($a))->sort(SORT_NATURAL | SORT_FLAG_CASE)->values();
 
-        if ($authorsList->count() < 4) {
-            $authorsList = collect(['A. Santos, J. Cruz', 'K. Alcantara', 'M. Bautista', 'M. Reyes', 'R. Garcia']);
-        }
-
         return $authorsList;
     }
 }
