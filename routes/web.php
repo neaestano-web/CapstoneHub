@@ -107,7 +107,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Download Requests Management
     Route::get('/download-requests', [AdminDownloadRequestController::class, 'index'])->name('download-requests.index');
     Route::patch('/download-requests/{downloadRequest}/approve', [AdminDownloadRequestController::class, 'approve'])->name('download-requests.approve');
-    Route::patch('/download-requests/{downloadRequest}/reject', [AdminDownloadRequestController::class, 'reject'])->name('download-requests.reject');
 
 });
 
