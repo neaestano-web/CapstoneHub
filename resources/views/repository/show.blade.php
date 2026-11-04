@@ -856,14 +856,14 @@
                 objectives: '🎯'
             },
             modalTags: {
-                abstract: 'Research Abstract',
+                abstract: 'Abstract',
                 context: 'Project Context',
-                objectives: 'Study Objectives'
+                objectives: 'Objective'
             },
             modalTitles: {
-                abstract: 'Abstract Overview',
-                context: 'Project Context & Background',
-                objectives: 'Objectives of the Study'
+                abstract: 'Abstract',
+                context: 'Project Context',
+                objectives: 'Objective'
             }
         }" id="projectDetailsSection">
 
@@ -873,7 +873,7 @@
                 <div @click="activeDetailModal = 'abstract'; document.body.style.overflow = 'hidden'" 
                      onclick="openDetailModal('abstract')"
                      class="research-mini-card"
-                     title="Click to view full Abstract Overview">
+                     title="Click to view full Abstract">
                     <div class="space-y-2">
                         <div class="mini-card-badge-row">
                             <span class="mini-card-badge">
@@ -883,10 +883,10 @@
                             <span class="mini-card-arrow">↗</span>
                         </div>
                         <h3 class="mini-card-title">
-                            Abstract Overview
+                            Abstract
                         </h3>
                         <p class="mini-card-preview">
-                            {{ $research->abstract ? Str::limit(trim(strip_tags($research->abstract)), 140) : 'No abstract overview provided for this research project.' }}
+                            {{ $research->abstract ? Str::limit(trim(strip_tags($research->abstract)), 140) : 'No abstract provided for this research project.' }}
                         </p>
                     </div>
                     <div class="mini-card-footer">
@@ -901,7 +901,7 @@
                 <div @click="activeDetailModal = 'context'; document.body.style.overflow = 'hidden'" 
                      onclick="openDetailModal('context')"
                      class="research-mini-card"
-                     title="Click to view full Project Context & Setting">
+                     title="Click to view full Project Context">
                     <div class="space-y-2">
                         <div class="mini-card-badge-row">
                             <span class="mini-card-badge">
@@ -911,7 +911,7 @@
                             <span class="mini-card-arrow">↗</span>
                         </div>
                         <h3 class="mini-card-title">
-                            Project Context & Setting
+                            Project Context
                         </h3>
                         <p class="mini-card-preview">
                             {{ $research->project_context ? Str::limit(trim(strip_tags($research->project_context)), 140) : 'No project context or setting provided for this research project.' }}
@@ -929,17 +929,17 @@
                 <div @click="activeDetailModal = 'objectives'; document.body.style.overflow = 'hidden'" 
                      onclick="openDetailModal('objectives')"
                      class="research-mini-card"
-                     title="Click to view full Objectives of the Study">
+                     title="Click to view full Objective">
                     <div class="space-y-2">
                         <div class="mini-card-badge-row">
                             <span class="mini-card-badge">
                                 <span>🎯</span>
-                                <span>Objectives</span>
+                                <span>Objective</span>
                             </span>
                             <span class="mini-card-arrow">↗</span>
                         </div>
                         <h3 class="mini-card-title">
-                            Objectives of the Study
+                            Objective
                         </h3>
                         <p class="mini-card-preview">
                             {{ $research->objectives ? Str::limit(trim(strip_tags($research->objectives)), 140) : 'No specific study objectives provided for this research project.' }}
@@ -1054,7 +1054,7 @@
                         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                         <line x1="7" y1="7" x2="7.01" y2="7"></line>
                     </svg>
-                    Keywords & Classifications
+                    Keywords
                 </h3>
                 <div class="keywords-row">
                     @foreach(array_map('trim', explode(',', $research->keywords)) as $kw)
@@ -1421,12 +1421,12 @@
                 if (el) el.style.display = (t === type ? 'block' : 'none');
             });
             const titles = {
-                abstract: 'Abstract Overview',
-                context: 'Project Context & Setting',
-                objectives: 'Objectives of the Study'
+                abstract: 'Abstract',
+                context: 'Project Context',
+                objectives: 'Objective'
             };
             const icons = { abstract: '📝', context: '🏢', objectives: '🎯' };
-            const tags = { abstract: 'Research Abstract', context: 'Project Context', objectives: 'Study Objectives' };
+            const tags = { abstract: 'Abstract', context: 'Project Context', objectives: 'Objective' };
             const titleEl = document.getElementById('modal-dyn-title');
             const iconEl = document.getElementById('modal-dyn-icon');
             const tagEl = document.getElementById('modal-dyn-tag');

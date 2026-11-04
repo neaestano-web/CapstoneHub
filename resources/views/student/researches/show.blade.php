@@ -148,7 +148,7 @@
 
             <div class="section-card p-8 space-y-4">
                 <h3 class="font-extrabold text-base text-[#2d2b56] flex items-center gap-2">
-                    <span>🎯</span> Study Objectives
+                    <span>🎯</span> Objective
                 </h3>
                 <p class="text-xs text-slate-600 leading-relaxed font-normal whitespace-pre-line">
                     {{ $research->objectives }}

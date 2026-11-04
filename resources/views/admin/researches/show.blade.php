@@ -702,23 +702,23 @@
             }, 
             modalTags: { 
                 context: 'Project Context', 
-                objectives: 'Scope & Objectives', 
-                abstract: 'Research Abstract', 
-                keywords: 'Tags & Terms' 
+                objectives: 'Objective', 
+                abstract: 'Abstract', 
+                keywords: 'Keywords' 
             }, 
             modalTitles: { 
-                context: 'Project Context & Setting', 
-                objectives: 'Objectives of the Study & Problem Scope', 
-                abstract: 'Abstract Overview', 
-                keywords: 'Classifications & Keywords' 
+                context: 'Project Context', 
+                objectives: 'Objective', 
+                abstract: 'Abstract', 
+                keywords: 'Keywords' 
             } 
         }">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
                 
-                {{-- 1. PROJECT CONTEXT & SETTING CARD --}}
+                {{-- 1. PROJECT CONTEXT CARD --}}
                 <div @click="activeDetailModal = 'context'" 
                      class="capstone-detail-card group"
-                     title="Click to view full Project Context & Setting">
+                     title="Click to view full Project Context">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
@@ -729,7 +729,7 @@
                         </div>
 
                         <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Project Context & Setting
+                            Project Context
                         </h3>
 
                         <p class="text-xs text-slate-500 leading-relaxed line-clamp-3 font-normal">
@@ -745,21 +745,21 @@
                     </div>
                 </div>
 
-                {{-- 2. OBJECTIVES OF THE STUDY & PROBLEM SCOPE CARD --}}
+                {{-- 2. OBJECTIVE CARD --}}
                 <div @click="activeDetailModal = 'objectives'" 
                      class="capstone-detail-card group"
-                     title="Click to view full Objectives & Scope">
+                     title="Click to view full Objective">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
-                                <span>Objectives</span>
+                                <span>Objective</span>
                             </span>
                             <span class="text-xs text-slate-400 group-hover:text-emerald-700 transition">🎯</span>
                         </div>
 
                         <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Objectives & Scope
+                            Objective
                         </h3>
 
                         <p class="text-xs text-slate-500 leading-relaxed line-clamp-3 font-normal">
@@ -781,10 +781,10 @@
                     </div>
                 </div>
 
-                {{-- 3. ABSTRACT OVERVIEW CARD --}}
+                {{-- 3. ABSTRACT CARD --}}
                 <div @click="activeDetailModal = 'abstract'" 
                      class="capstone-detail-card group"
-                     title="Click to view full Abstract Overview">
+                     title="Click to view full Abstract">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
@@ -795,11 +795,11 @@
                         </div>
 
                         <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Abstract Overview
+                            Abstract
                         </h3>
 
                         <p class="text-xs text-slate-500 leading-relaxed line-clamp-3 font-normal">
-                            {{ count($abstractBlocks) > 0 ? $abstractBlocks[0]['text'] : ($research->abstract ?: 'No abstract overview available for this project.') }}
+                            {{ count($abstractBlocks) > 0 ? $abstractBlocks[0]['text'] : ($research->abstract ?: 'No abstract available for this project.') }}
                         </p>
                     </div>
 
@@ -811,10 +811,10 @@
                     </div>
                 </div>
 
-                {{-- 4. CLASSIFICATIONS & KEYWORDS CARD --}}
+                {{-- 4. KEYWORDS CARD --}}
                 <div @click="activeDetailModal = 'keywords'" 
                      class="capstone-detail-card group"
-                     title="Click to view full Classifications & Keywords">
+                     title="Click to view full Keywords">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
@@ -825,7 +825,7 @@
                         </div>
 
                         <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Classifications & Keywords
+                            Keywords
                         </h3>
 
                         @if(count($keywordList) > 0)
