@@ -725,16 +725,11 @@
                      title="Click to view full Project Context">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
-                                <span>Context</span>
-                            </span>
-                            <span class="text-xs text-slate-400 group-hover:text-emerald-700 transition">🏢</span>
+                            <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
+                                Project Context
+                            </h3>
+                            <span class="text-sm text-slate-400 group-hover:text-emerald-700 transition">🏢</span>
                         </div>
-
-                        <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Project Context
-                        </h3>
 
                         <p class="text-xs text-slate-500 leading-relaxed line-clamp-3 font-normal">
                             {{ count($contextBlocks) > 0 ? $contextBlocks[0]['text'] : ($research->project_context ?: 'No context provided for this research project.') }}
@@ -755,16 +750,11 @@
                      title="Click to view full Objective">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
-                                <span>Objective</span>
-                            </span>
-                            <span class="text-xs text-slate-400 group-hover:text-emerald-700 transition">🎯</span>
+                            <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
+                                Objective
+                            </h3>
+                            <span class="text-sm text-slate-400 group-hover:text-emerald-700 transition">🎯</span>
                         </div>
-
-                        <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Objective
-                        </h3>
 
                         <p class="text-xs text-slate-500 leading-relaxed line-clamp-3 font-normal">
                             @if(count($objectiveBlocks) > 1)
@@ -791,16 +781,11 @@
                      title="Click to view full Abstract">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
-                                <span>Abstract</span>
-                            </span>
-                            <span class="text-xs text-slate-400 group-hover:text-emerald-700 transition">📝</span>
+                            <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
+                                Abstract
+                            </h3>
+                            <span class="text-sm text-slate-400 group-hover:text-emerald-700 transition">📝</span>
                         </div>
-
-                        <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Abstract
-                        </h3>
 
                         <p class="text-xs text-slate-500 leading-relaxed line-clamp-3 font-normal">
                             {{ count($abstractBlocks) > 0 ? $abstractBlocks[0]['text'] : ($research->abstract ?: 'No abstract available for this project.') }}
@@ -821,16 +806,11 @@
                      title="Click to view full Keywords">
                     <div class="space-y-2.5">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
-                                <span>Keywords</span>
-                            </span>
-                            <span class="text-xs text-slate-400 group-hover:text-emerald-700 transition">🏷️</span>
+                            <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
+                                Keywords
+                            </h3>
+                            <span class="text-sm text-slate-400 group-hover:text-emerald-700 transition">🏷️</span>
                         </div>
-
-                        <h3 class="text-xs font-bold text-slate-900 group-hover:text-emerald-800 transition-colors uppercase tracking-wider line-clamp-1">
-                            Keywords
-                        </h3>
 
                         @if(count($keywordList) > 0)
                             <div class="flex flex-wrap gap-1 max-h-[60px] overflow-hidden">

@@ -876,15 +876,11 @@
                      title="Click to view full Abstract">
                     <div class="space-y-2">
                         <div class="mini-card-badge-row">
-                            <span class="mini-card-badge">
-                                <span>📝</span>
-                                <span>Abstract</span>
-                            </span>
+                            <h3 class="mini-card-title m-0">
+                                <span>📝</span> Abstract
+                            </h3>
                             <span class="mini-card-arrow">↗</span>
                         </div>
-                        <h3 class="mini-card-title">
-                            Abstract
-                        </h3>
                         <p class="mini-card-preview">
                             {{ $research->abstract ? Str::limit(trim(strip_tags($research->abstract)), 140) : 'No abstract provided for this research project.' }}
                         </p>
@@ -904,15 +900,11 @@
                      title="Click to view full Project Context">
                     <div class="space-y-2">
                         <div class="mini-card-badge-row">
-                            <span class="mini-card-badge">
-                                <span>🏢</span>
-                                <span>Context</span>
-                            </span>
+                            <h3 class="mini-card-title m-0">
+                                <span>🏢</span> Project Context
+                            </h3>
                             <span class="mini-card-arrow">↗</span>
                         </div>
-                        <h3 class="mini-card-title">
-                            Project Context
-                        </h3>
                         <p class="mini-card-preview">
                             {{ $research->project_context ? Str::limit(trim(strip_tags($research->project_context)), 140) : 'No project context or setting provided for this research project.' }}
                         </p>
@@ -932,15 +924,11 @@
                      title="Click to view full Objective">
                     <div class="space-y-2">
                         <div class="mini-card-badge-row">
-                            <span class="mini-card-badge">
-                                <span>🎯</span>
-                                <span>Objective</span>
-                            </span>
+                            <h3 class="mini-card-title m-0">
+                                <span>🎯</span> Objective
+                            </h3>
                             <span class="mini-card-arrow">↗</span>
                         </div>
-                        <h3 class="mini-card-title">
-                            Objective
-                        </h3>
                         <p class="mini-card-preview">
                             {{ $research->objectives ? Str::limit(trim(strip_tags($research->objectives)), 140) : 'No specific study objectives provided for this research project.' }}
                         </p>
