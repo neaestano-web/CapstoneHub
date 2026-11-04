@@ -592,6 +592,10 @@ function addFilesToQueue(files) {
             alert('File "' + f.name + '" is not supported. Please select PDF or DOCX files only.');
             continue;
         }
+        if (f.size > 30 * 1024 * 1024) {
+            alert('File "' + f.name + '" exceeds the 30MB size limit (' + formatBytes(f.size) + '). Please choose a smaller document.');
+            continue;
+        }
         if (!uploadedFilesArray.some(existing => existing.name === f.name && existing.size === f.size)) {
             uploadedFilesArray.push(f);
         }

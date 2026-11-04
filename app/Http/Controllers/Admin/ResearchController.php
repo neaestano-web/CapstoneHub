@@ -158,8 +158,12 @@ class ResearchController extends Controller
                 'project_type_ids'   => 'nullable|array',
                 'project_type_ids.*' => 'exists:project_types,id',
                 'files'              => 'nullable|array|min:1',
-                'files.*'            => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:15360',
-                'pdf'                => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:15360',
+                'files.*'            => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+                'pdf'                => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+            ], [
+                'files.*.uploaded'   => 'Hindi ma-upload ang dokumento. Maaaring lumagpas ito sa file upload limit (30MB) o tinanggihan ng server. Subukang i-compress o pumili ng mas maliit na file.',
+                'files.*.max'        => 'Masyadong malaki ang file. Ang pinakamalaking sukat ay 30MB bawat file.',
+                'files.*.mimes'      => 'Tanging PDF (.pdf) o Word (.docx) files lamang ang pinapayagan.',
             ]);
 
             $rawAuthors = $request->input('authors');

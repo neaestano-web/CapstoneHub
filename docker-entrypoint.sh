@@ -9,6 +9,7 @@ sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:${PORT}>/" /etc/apache2/sites-avai
 # Ensure storage subdirectories exist with proper permissions
 mkdir -p /var/www/html/storage/app/private/id-pictures \
          /var/www/html/storage/app/public/id-pictures \
+         /var/www/html/storage/app/public/researches \
          /var/www/html/storage/framework/cache/data \
          /var/www/html/storage/framework/sessions \
          /var/www/html/storage/framework/views \
