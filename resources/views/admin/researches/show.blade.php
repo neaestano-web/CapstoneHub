@@ -477,6 +477,10 @@
                     </button>
                 @endif
 
+                <button type="button" onclick="openUpdateFileModal()" class="btn-top-secondary" title="Re-attach or replace manuscript file">
+                    <span>📎</span> Re-attach File
+                </button>
+
                 @if($hasAnyDocument)
                     <a href="{{ route('repository.download', $research->id) }}" class="btn-top-secondary" title="Download Manuscript PDF">
                         <span>📥</span> Download PDF
@@ -1001,13 +1005,19 @@
                     </h3>
                 </div>
 
-                @if($hasAnyDocument)
-                    <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <button type="button" 
+                            onclick="openUpdateFileModal()" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] transition shadow-xs cursor-pointer"
+                            title="Upload bago o re-attach na file para sa research na ito">
+                        <span>📎</span> Re-attach / Update File
+                    </button>
+                    @if($hasAnyDocument)
                         <a href="{{ route('document.pdf', $research->id) }}" target="_blank" class="text-xs font-bold text-emerald-800 hover:text-emerald-950 transition">
                             Open in New Tab ↗
                         </a>
-                    </div>
-                @endif
+                    @endif
+                </div>
             </div>
 
             @if($hasAnyDocument)
@@ -1114,7 +1124,77 @@
     </div>
 </div>
 
+{{-- RE-ATTACH / UPDATE MANUSCRIPT MODAL --}}
+<div class="modal-backdrop-custom" id="updateFileModal">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-auto" onclick="event.stopPropagation()">
+        
+        {{-- Modal Header --}}
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-emerald-50/50">
+            <div class="flex items-center gap-2.5">
+                <span class="text-xl">📎</span>
+                <div>
+                    <h3 class="font-extrabold text-sm text-slate-900">Update / Re-attach Manuscript File</h3>
+                    <p class="text-[11px] text-slate-500 font-medium">I-upload ang file nang hindi madodoble ang record sa TiDB Cloud</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeUpdateFileModal()" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        {{-- Form --}}
+        <form action="{{ route('admin.researches.updateFiles', $research) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4" onsubmit="document.getElementById('btnSubmitUpdateFile').disabled = true; document.getElementById('btnSubmitUpdateFile').innerText = 'Nag-a-upload...';">
+            @csrf
+
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Target Research Record:</span>
+                <p class="text-xs font-bold text-slate-900 truncate" title="{{ $research->title }}">{{ $research->title }}</p>
+                <p class="text-[11px] text-slate-400">ID: #{{ $research->id }} &bull; Year: {{ $research->year }}</p>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="modal_update_files" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Pumili ng Bago o Re-attached File(s) <span class="text-rose-500">*</span>
+                </label>
+                <input type="file" 
+                       name="files[]" 
+                       id="modal_update_files" 
+                       multiple 
+                       accept=".pdf,.docx" 
+                       required
+                       class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100 border border-slate-200 rounded-xl cursor-pointer bg-white p-2">
+                <p class="text-[11px] text-slate-400">Tumatanggap ng PDF (.pdf) o Word (.docx) hanggang 30MB bawat file. Puwede ring higit sa isang file.</p>
+            </div>
+
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 space-y-0.5">
+                <span class="font-bold flex items-center gap-1">ℹ️ Paalala / Note:</span>
+                <p>Direktang ikakabit ang file sa kasalukuyang record. <strong>Hindi magbabago o madodoble ang record sa TiDB Cloud</strong> (mananatili ang Project Context, Objective, Abstract, at Keywords).</p>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer">
+                    Kanselahin
+                </button>
+                <button type="submit" id="btnSubmitUpdateFile" class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+                    <span>📤</span> I-upload at I-save ang File
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
 <script>
+function openUpdateFileModal() {
+    const m = document.getElementById('updateFileModal');
+    if (m) m.classList.add('active');
+}
+function closeUpdateFileModal() {
+    const m = document.getElementById('updateFileModal');
+    if (m) m.classList.remove('active');
+}
 function openRejectModal(id, title) {
     document.getElementById('modalResearchTitle').textContent = title;
     document.getElementById('rejectForm').action = '{{ url("admin/researches") }}/' + id + '/reject';

@@ -354,6 +354,84 @@ class ResearchController extends Controller
     }
 
     /**
+     * Re-attach / Update the manuscript file(s) for an existing research record without creating duplicates.
+     */
+    public function updateFiles(Request $request, Research $research)
+    {
+        $request->validate([
+            'files'   => 'nullable|array|min:1',
+            'files.*' => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+            'pdf'     => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+        ], [
+            'files.*.uploaded' => 'Hindi ma-upload ang dokumento. Maaaring lumagpas ito sa file upload limit (30MB) o tinanggihan ng server. Subukang i-compress o pumili ng mas maliit na file.',
+            'files.*.max'      => 'Masyadong malaki ang file. Ang pinakamalaking sukat ay 30MB bawat file.',
+            'files.*.mimes'    => 'Tanging PDF (.pdf) o Word (.docx) files lamang ang pinapayagan.',
+        ]);
+
+        $uploadedFiles = [];
+        if ($request->hasFile('files')) {
+            $uploadedFiles = (array) $request->file('files');
+        } elseif ($request->hasFile('pdf')) {
+            $uploadedFiles = [$request->file('pdf')];
+        }
+
+        if (empty($uploadedFiles)) {
+            return back()->with('error', 'Pumili po ng kahit isang PDF o Word file na i-a-attach.');
+        }
+
+        // 1. Delete old physical files and related cache
+        foreach ($research->files as $f) {
+            if ($f->file_path && \Storage::disk('public')->exists($f->file_path)) {
+                \Storage::disk('public')->delete($f->file_path);
+            }
+            $cachedPdf = 'researches/pdf_cache/' . pathinfo($f->file_path, PATHINFO_FILENAME) . '.pdf';
+            if (\Storage::disk('public')->exists($cachedPdf)) {
+                \Storage::disk('public')->delete($cachedPdf);
+            }
+            $f->delete();
+        }
+
+        if ($research->pdf_path && \Storage::disk('public')->exists($research->pdf_path)) {
+            \Storage::disk('public')->delete($research->pdf_path);
+        }
+
+        // Clean any merged or preview cached PDFs for this research
+        $pdfCacheFiles = \Storage::disk('public')->files('researches/pdf_cache');
+        foreach ($pdfCacheFiles as $cf) {
+            if (str_contains($cf, "page1_preview_{$research->id}_") || str_contains($cf, "merged_{$research->id}_")) {
+                \Storage::disk('public')->delete($cf);
+            }
+        }
+
+        // 2. Store newly uploaded files
+        $firstPath = null;
+        foreach ($uploadedFiles as $index => $file) {
+            $path = $file->store('researches', 'public');
+            if ($index === 0) {
+                $firstPath = $path;
+            }
+            $research->files()->create([
+                'file_path'     => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type'     => $file->getClientMimeType(),
+                'file_size'     => $file->getSize(),
+                'sort_order'    => $index + 1,
+            ]);
+        }
+
+        // 3. Update research primary pdf_path
+        $research->update([
+            'pdf_path' => $firstPath,
+        ]);
+
+        $count = count($uploadedFiles);
+        return back()->with(
+            'success',
+            "Matagumpay na na-attach at na-update ang {$count} manuscript file(s) para sa \"{$research->title}\" nang hindi nadoble ang database record!"
+        );
+    }
+
+    /**
      * Reject the specified research.
      */
     public function reject(Request $request, Research $research)
