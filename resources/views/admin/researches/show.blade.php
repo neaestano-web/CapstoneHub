@@ -1289,41 +1289,53 @@
     </div>
 </div>
 
-{{-- RE-ATTACH / UPDATE MANUSCRIPT MODAL --}}
+{{-- RE-ATTACH / UPDATE MANUSCRIPT MODAL (MINIMAL UI) --}}
 <div class="modal-backdrop-custom" id="updateFileModal">
-    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200/90 overflow-hidden my-auto max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
         
         {{-- Modal Header --}}
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-emerald-50/50 shrink-0">
-            <div class="flex items-center gap-2.5">
-                <span class="text-xl">📎</span>
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200/60">
+                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                    </svg>
+                </div>
                 <div>
                     <h3 class="font-extrabold text-sm text-slate-900">Ayusin / I-upload ang Manuscript File(s)</h3>
-                    <p class="text-[11px] text-slate-500 font-medium">Ayusin ang pagkakasunod-sunod upang piliin kung alin ang unang mag-view</p>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">Ayusin ang pagkakasunod-sunod upang piliin kung alin ang unang mag-view</p>
                 </div>
             </div>
-            <button type="button" onclick="closeUpdateFileModal()" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
+            <button type="button" onclick="closeUpdateFileModal()" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer" title="Isara">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
         </div>
 
-        {{-- Optional Tabs (shown if research already has attached files) --}}
+        {{-- Optional Modern Segmented Tabs (shown if research already has attached files) --}}
         @if($isMultiFile)
-            <div class="flex items-center border-b border-slate-200 bg-slate-50 px-6 pt-2 shrink-0 gap-2">
-                <button type="button" 
-                        id="btnTabUpload" 
-                        onclick="switchUpdateTab('upload')" 
-                        class="px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-[#0c4233] text-white cursor-pointer">
-                    📤 Re-upload / Bagong Files
-                </button>
-                <button type="button" 
-                        id="btnTabReorder" 
-                        onclick="switchUpdateTab('reorder')" 
-                        class="px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
-                    📑 Isaayos ang Kasalukuyang Files ({{ $attachedFiles->count() }})
-                </button>
+            <div class="px-6 pt-3.5 pb-1 shrink-0">
+                <div class="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200/60">
+                    <button type="button" 
+                            id="btnTabUpload" 
+                            onclick="switchUpdateTab('upload')" 
+                            class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow-xs cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200/60">
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                        <span>Re-upload / Bagong Files</span>
+                    </button>
+                    <button type="button" 
+                            id="btnTabReorder" 
+                            onclick="switchUpdateTab('reorder')" 
+                            class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5 border border-transparent">
+                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                        <span>Isaayos ang Kasalukuyang Files ({{ $attachedFiles->count() }})</span>
+                    </button>
+                </div>
             </div>
         @endif
 
@@ -1340,23 +1352,31 @@
                       onsubmit="return validateAndSubmitUploadForm(event)">
                     @csrf
 
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Target Research Record:</span>
-                        <p class="text-xs font-bold text-slate-900 truncate" title="{{ $research->title }}">{{ $research->title }}</p>
-                        <p class="text-[11px] text-slate-400">ID: #{{ $research->id }} &bull; Year: {{ $research->year }}</p>
+                    <div class="px-3.5 py-2.5 bg-slate-50/80 rounded-xl border border-slate-200/80 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target Research</span>
+                            <p class="text-xs font-bold text-slate-800 truncate" title="{{ $research->title }}">{{ $research->title }}</p>
+                        </div>
+                        <span class="shrink-0 text-[11px] font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                            ID #{{ $research->id }} &bull; {{ $research->year }}
+                        </span>
                     </div>
 
-                    {{-- Dropzone / Picker Area --}}
+                    {{-- Dropzone / Picker Area (Minimal Clean) --}}
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-1.5">
                             Pumili ng mga File (PDF / Word) <span class="text-rose-500">*</span>
                         </label>
                         <div id="modalDropZone" 
                              onclick="document.getElementById('modalPickerInput').click()" 
-                             class="border-2 border-dashed border-slate-300 hover:border-emerald-600 rounded-xl p-5 text-center cursor-pointer transition bg-slate-50/50 hover:bg-emerald-50/40">
-                            <span class="text-3xl block mb-1">📂</span>
-                            <p class="text-xs font-bold text-slate-800">I-click para pumili ng file(s) o i-drag & drop dito</p>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Tumatanggap ng PDF (.pdf) o Word (.docx) hanggang 30MB bawat file</p>
+                             class="border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 bg-slate-50/50 hover:bg-emerald-50/20 group">
+                            <div class="w-11 h-11 rounded-xl bg-white text-slate-400 group-hover:text-emerald-600 group-hover:scale-105 transition-all shadow-xs flex items-center justify-center mx-auto mb-2 border border-slate-100">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                            </div>
+                            <p class="text-xs font-bold text-slate-800 group-hover:text-emerald-900 transition-colors">I-click para pumili ng file(s) o i-drag & drop dito</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5 font-medium">Tumatanggap ng PDF (.pdf) o Word (.docx) hanggang 30MB bawat file</p>
                         </div>
                         <input type="file" id="modalPickerInput" multiple accept=".pdf,.docx" class="hidden" onchange="handleModalFilesSelected(this.files)">
                         <input type="file" name="files[]" id="modalActualFilesInput" multiple class="hidden">
@@ -1366,15 +1386,19 @@
                     <div id="modalFileListContainer" style="display: none;" class="space-y-2 pt-1">
                         <div class="flex items-center justify-between pb-1">
                             <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                <span>📋</span>
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                                </svg>
                                 <span>Naka-ayos na Pagkakasunod-sunod:</span>
                             </span>
-                            <span id="modalFileCountBadge" class="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full"></span>
+                            <span id="modalFileCountBadge" class="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200"></span>
                         </div>
 
-                        <div class="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-950 flex items-start gap-2">
-                            <span class="text-sm shrink-0">💡</span>
-                            <span>Ang file na nasa <strong>#1 (🥇 Primary)</strong> ang unang lilitaw sa viewer at sa guest preview. Gamitin ang <strong>▲ (Move Up)</strong> at <strong>▼ (Move Down)</strong> upang maiayos ang tamang pagkakasunod-sunod.</span>
+                        <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] text-slate-600 flex items-start gap-2">
+                            <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Ang file na nasa <strong>#1 Primary</strong> ang unang lilitaw sa viewer at sa guest preview. Gamitin ang <strong>▲</strong> at <strong>▼</strong> upang maiayos ang tamang pagkakasunod-sunod.</span>
                         </div>
 
                         <div id="modalFileListItems" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
@@ -1382,23 +1406,35 @@
                         <div class="pt-1">
                             <button type="button" 
                                     onclick="document.getElementById('modalPickerInput').click()" 
-                                    class="w-full py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition flex items-center justify-center gap-1.5 cursor-pointer">
-                                <span>➕</span> Magdagdag pa ng File sa Listahan
+                                    class="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-xl text-xs font-bold text-slate-700 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                <span>Magdagdag pa ng File sa Listahan</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 space-y-0.5">
-                        <span class="font-bold flex items-center gap-1">ℹ️ Paalala / Note:</span>
-                        <p><strong>Hindi madodoble ang record sa TiDB Cloud.</strong> Papalitan lamang nito ang file link habang pinananatili ang Project Context, Objective, Abstract, at Keywords.</p>
+                    {{-- Minimal Note Strip --}}
+                    <div class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 leading-relaxed">
+                        <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <strong class="text-slate-800 font-bold">Paalala:</strong> Hindi madodoble ang record sa TiDB Cloud. Papalitan lamang nito ang attached file link habang pinananatili ang Project Context, Objective, Abstract, at Keywords.
+                        </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                        <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer">
+                    {{-- Footer Buttons --}}
+                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                        <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer">
                             Kanselahin
                         </button>
                         <button type="submit" id="btnSubmitUpdateFile" disabled class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
-                            <span>📤</span> I-upload at I-save ang Naka-ayos na Files
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            <span>I-upload at I-save ang Files</span>
                         </button>
                     </div>
                 </form>
@@ -1410,26 +1446,28 @@
                     <form action="{{ route('admin.researches.reorderFiles', $research) }}" method="POST" class="space-y-3" onsubmit="document.getElementById('btnSubmitReorder').disabled = true; document.getElementById('btnSubmitReorder').innerText = 'Isinasaayos...';">
                         @csrf
 
-                        <div class="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-xl text-[11px] text-emerald-950 flex items-start gap-2">
-                            <span class="text-sm shrink-0">💡</span>
-                            <span>I-click ang <strong>▲ (Pataas)</strong> o <strong>▼ (Pababa)</strong> upang ilipat kung aling kasalukuyang file ang gustong unang mag-view (#1). Pagkatapos, pindutin ang Save. Hindi na kailangang mag-upload muli!</span>
+                        <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] text-slate-600 flex items-start gap-2">
+                            <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                            </svg>
+                            <span>I-click ang <strong>▲ (Pataas)</strong> o <strong>▼ (Pababa)</strong> upang ilipat kung aling kasalukuyang file ang gustong unang mag-view (#1). Hindi na kailangang mag-upload muli.</span>
                         </div>
 
                         <div class="space-y-2 max-h-72 overflow-y-auto pr-1" id="existingFilesContainer">
                             @foreach($attachedFiles as $idx => $f)
-                                <div class="existing-file-row flex items-center justify-between p-3 rounded-xl border {{ $idx === 0 ? 'border-emerald-500 bg-emerald-50/40 shadow-xs' : 'border-slate-200 bg-slate-50/60' }} transition" data-file-id="{{ $f->id }}">
+                                <div class="existing-file-row flex items-center justify-between p-2.5 rounded-xl border {{ $idx === 0 ? 'border-emerald-500 bg-emerald-50/30 shadow-xs' : 'border-slate-200/80 bg-white hover:bg-slate-50/50' }} transition" data-file-id="{{ $f->id }}">
                                     <input type="hidden" name="order[]" value="{{ $f->id }}">
-                                    <div class="flex items-center gap-3 min-w-0 pr-2">
-                                        <span class="existing-file-badge shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md {{ $idx === 0 ? 'bg-[#0c4233] text-white' : 'bg-slate-200 text-slate-700' }}">
+                                    <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                        <span class="existing-file-badge shrink-0 text-[10px] font-extrabold px-2 py-0.5 rounded-md {{ $idx === 0 ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
                                             {{ $idx === 0 ? '🥇 #1 Unang Mag-view' : '#' . ($idx + 1) }}
                                         </span>
                                         <p class="text-xs font-bold text-slate-900 truncate" title="{{ $f->original_name }}">{{ $f->original_name }}</p>
                                     </div>
                                     <div class="flex items-center gap-1 shrink-0">
-                                        <button type="button" onclick="moveExistingFile(this, -1)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md text-xs font-bold transition cursor-pointer" title="Ilipat Pataas">
+                                        <button type="button" onclick="moveExistingFile(this, -1)" class="w-7 h-7 inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition cursor-pointer" title="Ilipat Pataas">
                                             ▲
                                         </button>
-                                        <button type="button" onclick="moveExistingFile(this, 1)" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md text-xs font-bold transition cursor-pointer" title="Ilipat Pababa">
+                                        <button type="button" onclick="moveExistingFile(this, 1)" class="w-7 h-7 inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition cursor-pointer" title="Ilipat Pababa">
                                             ▼
                                         </button>
                                     </div>
@@ -1437,12 +1475,15 @@
                             @endforeach
                         </div>
 
-                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                            <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition cursor-pointer">
+                        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                            <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer">
                                 Kanselahin
                             </button>
                             <button type="submit" id="btnSubmitReorder" class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
-                                <span>💾</span> I-save ang Bagong Pagkakasunod-sunod
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>I-save ang Pagkakasunod-sunod</span>
                             </button>
                         </div>
                     </form>
@@ -1476,24 +1517,19 @@ function switchUpdateTab(tabName) {
     const btnUpload = document.getElementById('btnTabUpload');
     const btnReorder = document.getElementById('btnTabReorder');
 
+    const activeClass = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow-xs cursor-pointer flex items-center justify-center gap-1.5 border border-slate-200/60';
+    const inactiveClass = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5 border border-transparent';
+
     if (tabName === 'upload') {
         if (tabUpload) tabUpload.style.display = 'block';
         if (tabReorder) tabReorder.style.display = 'none';
-        if (btnUpload) {
-            btnUpload.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-[#0c4233] text-white cursor-pointer';
-        }
-        if (btnReorder) {
-            btnReorder.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer';
-        }
+        if (btnUpload) btnUpload.className = activeClass;
+        if (btnReorder) btnReorder.className = inactiveClass;
     } else {
         if (tabUpload) tabUpload.style.display = 'none';
         if (tabReorder) tabReorder.style.display = 'block';
-        if (btnReorder) {
-            btnReorder.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-[#0c4233] text-white cursor-pointer';
-        }
-        if (btnUpload) {
-            btnUpload.className = 'px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer';
-        }
+        if (btnReorder) btnReorder.className = activeClass;
+        if (btnUpload) btnUpload.className = inactiveClass;
     }
 }
 
@@ -1566,9 +1602,9 @@ function renderModalFileList() {
         const isFirst = i === 0;
         const ext = f.name.split('.').pop().toUpperCase();
         return `
-            <div class="flex items-center justify-between p-3 rounded-xl border ${isFirst ? 'border-emerald-500 bg-emerald-50/40 shadow-xs' : 'border-slate-200 bg-slate-50/60'} transition">
-                <div class="flex items-center gap-3 min-w-0 pr-2">
-                    <span class="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md ${isFirst ? 'bg-[#0c4233] text-white' : 'bg-slate-200 text-slate-700'}">
+            <div class="flex items-center justify-between p-2.5 rounded-xl border ${isFirst ? 'border-emerald-500 bg-emerald-50/30 shadow-xs' : 'border-slate-200/80 bg-white hover:bg-slate-50/50'} transition">
+                <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                    <span class="shrink-0 text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isFirst ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
                         ${isFirst ? '🥇 #1 Unang Mag-view' : '#' + (i + 1)}
                     </span>
                     <div class="min-w-0">
@@ -1580,20 +1616,20 @@ function renderModalFileList() {
                     <button type="button" 
                             onclick="moveModalFile(${i}, -1)" 
                             ${i === 0 ? 'disabled' : ''} 
-                            class="px-2 py-1 rounded-md text-xs font-bold transition ${i === 0 ? 'opacity-30 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
+                            class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-xs font-bold transition ${i === 0 ? 'opacity-25 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
                             title="Ilipat Pataas">
                         ▲
                     </button>
                     <button type="button" 
                             onclick="moveModalFile(${i}, 1)" 
                             ${i === modalFilesArray.length - 1 ? 'disabled' : ''} 
-                            class="px-2 py-1 rounded-md text-xs font-bold transition ${i === modalFilesArray.length - 1 ? 'opacity-30 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
+                            class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-xs font-bold transition ${i === modalFilesArray.length - 1 ? 'opacity-25 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
                             title="Ilipat Pababa">
                         ▼
                     </button>
                     <button type="button" 
                             onclick="removeModalFile(${i})" 
-                            class="p-1 rounded-md text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition cursor-pointer ml-1" 
+                            class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition cursor-pointer ml-1" 
                             title="Tanggalin">
                         ✕
                     </button>
