@@ -1099,9 +1099,9 @@
                                 <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                                     Project Context
                                 </label>
-                                <p class="text-[11px] text-slate-500">I-edit ang background, suliranin, o konteksto ng proyekto.</p>
+                                <p class="text-[11px] text-slate-500">Edit the project background, problem statement, or context.</p>
                                 <textarea name="project_context" rows="10"
-                                          placeholder="Ilagay ang Project Context..."
+                                          placeholder="Enter Project Context..."
                                           class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('project_context', $research->project_context) }}</textarea>
                             </div>
 
@@ -1110,9 +1110,9 @@
                                 <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                                     Objective
                                 </label>
-                                <p class="text-[11px] text-slate-500">Tukuyin ang pangkalahatan at partikular na layunin ng pag-aaral.</p>
+                                <p class="text-[11px] text-slate-500">Specify the general and specific objectives of the study.</p>
                                 <textarea name="objectives" rows="10"
-                                          placeholder="Ilagay ang Objective..."
+                                          placeholder="Enter Objectives..."
                                           class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('objectives', $research->objectives) }}</textarea>
                             </div>
 
@@ -1121,9 +1121,9 @@
                                 <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                                     Abstract
                                 </label>
-                                <p class="text-[11px] text-slate-500">Buod ng buong pag-aaral, teknolohiya, metodolohiya, at resulta.</p>
+                                <p class="text-[11px] text-slate-500">Comprehensive summary of the study, methodology, technologies, and results.</p>
                                 <textarea name="abstract" rows="10"
-                                          placeholder="Ilagay ang Abstract..."
+                                          placeholder="Enter Abstract..."
                                           class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('abstract', $research->abstract) }}</textarea>
                             </div>
 
@@ -1132,7 +1132,7 @@
                                 <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                                     Keywords
                                 </label>
-                                <p class="text-[11px] text-slate-500">Paghiwalayin ang bawat keyword gamit ang kuwit o comma (hal. Web Application, SMS Notification, Food Ordering).</p>
+                                <p class="text-[11px] text-slate-500">Separate each keyword with commas (e.g., Web Application, SMS Notification, Food Ordering).</p>
                                 <textarea name="keywords" rows="5"
                                           placeholder="e.g. Web-Based System, Online Ordering, SMS Notification"
                                           class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-800 outline-none focus:border-emerald-600 focus:bg-white transition leading-relaxed font-normal">{{ old('keywords', $research->keywords) }}</textarea>
@@ -1144,14 +1144,14 @@
                             <button type="button" 
                                     @click="activeEditCard = null" 
                                     class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer">
-                                Kanselahin
+                                Cancel
                             </button>
                             <button type="submit" 
                                     class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                <span>I-save ang Pagbabago</span>
+                                <span>Save Changes</span>
                             </button>
                         </div>
 
@@ -1174,7 +1174,7 @@
                     <button type="button" 
                             onclick="openUpdateFileModal()" 
                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] transition shadow-xs cursor-pointer"
-                            title="Upload bago o re-attach na file para sa research na ito">
+                            title="Upload new or re-attach files for this research">
                         <span>📎</span> Re-attach / Update File
                     </button>
                     @if($hasAnyDocument)
@@ -1302,11 +1302,11 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-extrabold text-sm text-slate-900">Ayusin / I-upload ang Manuscript File(s)</h3>
-                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">Ayusin ang pagkakasunod-sunod upang piliin kung alin ang unang mag-view</p>
+                    <h3 class="font-extrabold text-sm text-slate-900">Manage & Upload Manuscript File(s)</h3>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5">Arrange file sequence to select which document appears first in the viewer</p>
                 </div>
             </div>
-            <button type="button" onclick="closeUpdateFileModal()" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer" title="Isara">
+            <button type="button" onclick="closeUpdateFileModal()" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer" title="Close">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -1324,7 +1324,7 @@
                         <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                         </svg>
-                        <span>Re-upload / Bagong Files</span>
+                        <span>Re-upload / New Files</span>
                     </button>
                     <button type="button" 
                             id="btnTabReorder" 
@@ -1333,7 +1333,7 @@
                         <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                         </svg>
-                        <span>Isaayos ang Kasalukuyang Files ({{ $attachedFiles->count() }})</span>
+                        <span>Reorder Existing Files ({{ $attachedFiles->count() }})</span>
                     </button>
                 </div>
             </div>
@@ -1365,18 +1365,18 @@
                     {{-- Dropzone / Picker Area (Minimal Clean) --}}
                     <div>
                         <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Pumili ng mga File (PDF / Word) <span class="text-rose-500">*</span>
+                            Select Manuscript Files (PDF / Word) <span class="text-rose-500">*</span>
                         </label>
                         <div id="modalDropZone" 
                              onclick="document.getElementById('modalPickerInput').click()" 
                              class="border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 bg-slate-50/50 hover:bg-emerald-50/20 group">
-                            <div class="w-11 h-11 rounded-xl bg-white text-slate-400 group-hover:text-emerald-600 group-hover:scale-105 transition-all shadow-xs flex items-center justify-center mx-auto mb-2 border border-slate-100">
+                             <div class="w-11 h-11 rounded-xl bg-white text-slate-400 group-hover:text-emerald-600 group-hover:scale-105 transition-all shadow-xs flex items-center justify-center mx-auto mb-2 border border-slate-100">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                 </svg>
                             </div>
-                            <p class="text-xs font-bold text-slate-800 group-hover:text-emerald-900 transition-colors">I-click para pumili ng file(s) o i-drag & drop dito</p>
-                            <p class="text-[11px] text-slate-400 mt-0.5 font-medium">Tumatanggap ng PDF (.pdf) o Word (.docx) hanggang 30MB bawat file</p>
+                            <p class="text-xs font-bold text-slate-800 group-hover:text-emerald-900 transition-colors">Click to browse file(s) or drag & drop here</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5 font-medium">Accepts PDF (.pdf) or Word (.docx) up to 30MB each</p>
                         </div>
                         <input type="file" id="modalPickerInput" multiple accept=".pdf,.docx" class="hidden" onchange="handleModalFilesSelected(this.files)">
                         <input type="file" name="files[]" id="modalActualFilesInput" multiple class="hidden">
@@ -1389,7 +1389,7 @@
                                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
                                 </svg>
-                                <span>Naka-ayos na Pagkakasunod-sunod:</span>
+                                <span>Arranged File Sequence:</span>
                             </span>
                             <span id="modalFileCountBadge" class="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200"></span>
                         </div>
@@ -1398,7 +1398,7 @@
                             <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span>Ang file na nasa <strong>#1 Primary</strong> ang unang lilitaw sa viewer at sa guest preview. Gamitin ang <strong>▲</strong> at <strong>▼</strong> upang maiayos ang tamang pagkakasunod-sunod.</span>
+                            <span>The file marked <strong>#1 Primary View</strong> will be displayed first in the viewer and guest preview. Use <strong>▲</strong> and <strong>▼</strong> to arrange the sequence.</span>
                         </div>
 
                         <div id="modalFileListItems" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
@@ -1410,7 +1410,7 @@
                                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                <span>Magdagdag pa ng File sa Listahan</span>
+                                <span>Add More Files to Queue</span>
                             </button>
                         </div>
                     </div>
@@ -1421,20 +1421,20 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         <div>
-                            <strong class="text-slate-800 font-bold">Paalala:</strong> Hindi madodoble ang record sa TiDB Cloud. Papalitan lamang nito ang attached file link habang pinananatili ang Project Context, Objective, Abstract, at Keywords.
+                            <strong class="text-slate-800 font-bold">Note:</strong> Existing database records in TiDB Cloud will not be duplicated. This only updates file attachments while preserving Project Context, Objectives, Abstract, and Keywords.
                         </div>
                     </div>
 
                     {{-- Footer Buttons --}}
                     <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                         <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer">
-                            Kanselahin
+                            Cancel
                         </button>
                         <button type="submit" id="btnSubmitUpdateFile" disabled class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                             </svg>
-                            <span>I-upload at I-save ang Files</span>
+                            <span>Upload & Save Files</span>
                         </button>
                     </div>
                 </form>
@@ -1443,14 +1443,14 @@
             {{-- TAB 2: REORDER EXISTING ATTACHED FILES (IF ALREADY MULTI-FILE) --}}
             @if($isMultiFile)
                 <div id="updateTabReorder" style="display: none;" class="space-y-4">
-                    <form action="{{ route('admin.researches.reorderFiles', $research) }}" method="POST" class="space-y-3" onsubmit="document.getElementById('btnSubmitReorder').disabled = true; document.getElementById('btnSubmitReorder').innerText = 'Isinasaayos...';">
+                    <form action="{{ route('admin.researches.reorderFiles', $research) }}" method="POST" class="space-y-3" onsubmit="document.getElementById('btnSubmitReorder').disabled = true; document.getElementById('btnSubmitReorder').innerText = 'Saving order...';">
                         @csrf
 
                         <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] text-slate-600 flex items-start gap-2">
                             <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
                             </svg>
-                            <span>I-click ang <strong>▲ (Pataas)</strong> o <strong>▼ (Pababa)</strong> upang ilipat kung aling kasalukuyang file ang gustong unang mag-view (#1). Hindi na kailangang mag-upload muli.</span>
+                            <span>Click <strong>▲ (Move Up)</strong> or <strong>▼ (Move Down)</strong> to change which file is viewed first (#1). No re-upload required.</span>
                         </div>
 
                         <div class="space-y-2 max-h-72 overflow-y-auto pr-1" id="existingFilesContainer">
@@ -1459,15 +1459,15 @@
                                     <input type="hidden" name="order[]" value="{{ $f->id }}">
                                     <div class="flex items-center gap-2.5 min-w-0 pr-2">
                                         <span class="existing-file-badge shrink-0 text-[10px] font-extrabold px-2 py-0.5 rounded-md {{ $idx === 0 ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
-                                            {{ $idx === 0 ? '🥇 #1 Unang Mag-view' : '#' . ($idx + 1) }}
+                                            {{ $idx === 0 ? '🥇 #1 Primary View' : '#' . ($idx + 1) }}
                                         </span>
                                         <p class="text-xs font-bold text-slate-900 truncate" title="{{ $f->original_name }}">{{ $f->original_name }}</p>
                                     </div>
                                     <div class="flex items-center gap-1 shrink-0">
-                                        <button type="button" onclick="moveExistingFile(this, -1)" class="w-7 h-7 inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition cursor-pointer" title="Ilipat Pataas">
+                                        <button type="button" onclick="moveExistingFile(this, -1)" class="w-7 h-7 inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition cursor-pointer" title="Move Up">
                                             ▲
                                         </button>
-                                        <button type="button" onclick="moveExistingFile(this, 1)" class="w-7 h-7 inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition cursor-pointer" title="Ilipat Pababa">
+                                        <button type="button" onclick="moveExistingFile(this, 1)" class="w-7 h-7 inline-flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition cursor-pointer" title="Move Down">
                                             ▼
                                         </button>
                                     </div>
@@ -1477,13 +1477,13 @@
 
                         <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                             <button type="button" onclick="closeUpdateFileModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer">
-                                Kanselahin
+                                Cancel
                             </button>
                             <button type="submit" id="btnSubmitReorder" class="px-5 py-2 text-xs font-bold text-white bg-[#0c4233] hover:bg-[#082a20] rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                <span>I-save ang Pagkakasunod-sunod</span>
+                                <span>Save File Order</span>
                             </button>
                         </div>
                     </form>
@@ -1605,7 +1605,7 @@ function renderModalFileList() {
             <div class="flex items-center justify-between p-2.5 rounded-xl border ${isFirst ? 'border-emerald-500 bg-emerald-50/30 shadow-xs' : 'border-slate-200/80 bg-white hover:bg-slate-50/50'} transition">
                 <div class="flex items-center gap-2.5 min-w-0 pr-2">
                     <span class="shrink-0 text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isFirst ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
-                        ${isFirst ? '🥇 #1 Unang Mag-view' : '#' + (i + 1)}
+                        ${isFirst ? '🥇 #1 Primary View' : '#' + (i + 1)}
                     </span>
                     <div class="min-w-0">
                         <p class="text-xs font-bold text-slate-900 truncate" title="${f.name}">${f.name}</p>
@@ -1617,20 +1617,20 @@ function renderModalFileList() {
                             onclick="moveModalFile(${i}, -1)" 
                             ${i === 0 ? 'disabled' : ''} 
                             class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-xs font-bold transition ${i === 0 ? 'opacity-25 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
-                            title="Ilipat Pataas">
+                            title="Move Up">
                         ▲
                     </button>
                     <button type="button" 
                             onclick="moveModalFile(${i}, 1)" 
                             ${i === modalFilesArray.length - 1 ? 'disabled' : ''} 
                             class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-xs font-bold transition ${i === modalFilesArray.length - 1 ? 'opacity-25 cursor-not-allowed bg-slate-100 text-slate-400' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 cursor-pointer'}" 
-                            title="Ilipat Pababa">
+                            title="Move Down">
                         ▼
                     </button>
                     <button type="button" 
                             onclick="removeModalFile(${i})" 
                             class="w-7 h-7 inline-flex items-center justify-center rounded-lg text-xs font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition cursor-pointer ml-1" 
-                            title="Tanggalin">
+                            title="Remove">
                         ✕
                     </button>
                 </div>
@@ -1642,14 +1642,14 @@ function renderModalFileList() {
 function validateAndSubmitUploadForm(e) {
     if (modalFilesArray.length === 0) {
         e.preventDefault();
-        alert('Pumili po ng kahit isang PDF o Word file bago mag-upload.');
+        alert('Please select at least one PDF or Word file before uploading.');
         return false;
     }
     syncModalActualInput();
     const btn = document.getElementById('btnSubmitUpdateFile');
     if (btn) {
         btn.disabled = true;
-        btn.innerText = 'Nag-a-upload at nagsi-synchronize...';
+        btn.innerText = 'Uploading and synchronizing...';
     }
     return true;
 }
@@ -1673,7 +1673,7 @@ function updateExistingFileBadges() {
         if (badge) {
             if (idx === 0) {
                 badge.className = 'existing-file-badge shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#0c4233] text-white';
-                badge.textContent = '🥇 #1 Unang Mag-view';
+                badge.textContent = '🥇 #1 Primary View';
                 r.className = 'existing-file-row flex items-center justify-between p-3 rounded-xl border border-emerald-500 bg-emerald-50/40 shadow-xs transition';
             } else {
                 badge.className = 'existing-file-badge shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700';

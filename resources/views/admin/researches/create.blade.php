@@ -181,7 +181,7 @@
                                         </p>
                                     </div>
                                     <p class="text-[11px] text-amber-800 dark:text-amber-300 font-medium">
-                                        Paalala: Siguraduhing natatangi at orihinal ang pag-aaral bago ito i-publish sa opisyal na repository.
+                                        Note: Ensure the study is unique and original before publishing to the official repository.
                                     </p>
                                 </div>
                             </div>

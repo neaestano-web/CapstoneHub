@@ -161,9 +161,9 @@ class ResearchController extends Controller
                 'files.*'            => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
                 'pdf'                => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
             ], [
-                'files.*.uploaded'   => 'Hindi ma-upload ang dokumento. Maaaring lumagpas ito sa file upload limit (30MB) o tinanggihan ng server. Subukang i-compress o pumili ng mas maliit na file.',
-                'files.*.max'        => 'Masyadong malaki ang file. Ang pinakamalaking sukat ay 30MB bawat file.',
-                'files.*.mimes'      => 'Tanging PDF (.pdf) o Word (.docx) files lamang ang pinapayagan.',
+                'files.*.uploaded'   => 'The document could not be uploaded. It may exceed the 30MB file upload limit or was rejected by the server. Try compressing or selecting a smaller file.',
+                'files.*.max'        => 'File is too large. Maximum size is 30MB per file.',
+                'files.*.mimes'      => 'Only PDF (.pdf) or Word (.docx) files are supported.',
             ]);
 
             $rawAuthors = $request->input('authors');
@@ -264,7 +264,7 @@ class ResearchController extends Controller
 
             // If title already existed in repository, attach warning alert to the session
             if ($existing) {
-                session()->flash('warning', "⚠️ Paalala / Warning: Ang na-upload at na-publish na capstone ay may katulad na umiiral nang pamagat sa repository: \"{$existing->title}\" ({$existing->year}).");
+                session()->flash('warning', "⚠️ Note: The uploaded and published capstone has a title similar to an existing record in the repository: \"{$existing->title}\" ({$existing->year}).");
             }
 
             return redirect()->route('admin.researches.index')
@@ -404,7 +404,7 @@ class ResearchController extends Controller
             }
         }
 
-        return back()->with('success', 'Matagumpay na na-update ang impormasyon ng proyekto!');
+        return back()->with('success', 'Project details updated successfully!');
     }
 
     /**
@@ -417,9 +417,9 @@ class ResearchController extends Controller
             'files.*' => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
             'pdf'     => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
         ], [
-            'files.*.uploaded' => 'Hindi ma-upload ang dokumento. Maaaring lumagpas ito sa file upload limit (30MB) o tinanggihan ng server. Subukang i-compress o pumili ng mas maliit na file.',
-            'files.*.max'      => 'Masyadong malaki ang file. Ang pinakamalaking sukat ay 30MB bawat file.',
-            'files.*.mimes'    => 'Tanging PDF (.pdf) o Word (.docx) files lamang ang pinapayagan.',
+            'files.*.uploaded' => 'The document could not be uploaded. It may exceed the 30MB file upload limit or was rejected by the server. Try compressing or selecting a smaller file.',
+            'files.*.max'      => 'File is too large. Maximum size is 30MB per file.',
+            'files.*.mimes'    => 'Only PDF (.pdf) or Word (.docx) files are supported.',
         ]);
 
         $uploadedFiles = [];
@@ -430,7 +430,7 @@ class ResearchController extends Controller
         }
 
         if (empty($uploadedFiles)) {
-            return back()->with('error', 'Pumili po ng kahit isang PDF o Word file na i-a-attach.');
+            return back()->with('error', 'Please select at least one PDF or Word file to attach.');
         }
 
         // 1. Delete old physical files and related cache
@@ -481,7 +481,7 @@ class ResearchController extends Controller
         $count = count($uploadedFiles);
         return back()->with(
             'success',
-            "Matagumpay na na-attach at na-update ang {$count} manuscript file(s) para sa \"{$research->title}\" nang hindi nadoble ang database record!"
+            "Successfully attached and updated {$count} manuscript file(s) for \"{$research->title}\" without duplicating database records!"
         );
     }
 
@@ -518,7 +518,7 @@ class ResearchController extends Controller
             }
         }
 
-        return back()->with('success', 'Matagumpay na naisaayos ang pagkakasunod-sunod ng mga file!');
+        return back()->with('success', 'Manuscript file sequence updated successfully!');
     }
 
     /**
