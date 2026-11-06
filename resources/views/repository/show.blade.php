@@ -1110,8 +1110,8 @@
                 $userDownloadPending = !$isAdmin && $downloadRequest && $downloadRequest->status === 'pending';
             @endphp
             <div class="detail-card-cyber p-6 space-y-4">
-                {{-- Multi-file Tab Bar (If more than 1 file) --}}
-                @if($isMultiFile)
+                {{-- Multi-file Tab Bar (Admin only: student users view only the first file) --}}
+                @if($isMultiFile && $isAdmin)
                     <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-700/60">
                         <div class="flex items-center gap-2 text-xs text-slate-300">
                             <span class="text-base">📚</span>
@@ -1142,7 +1142,7 @@
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span class="truncate max-w-md font-bold" id="viewerTitleLabel">
-                                {{ $isMultiFile ? 'File #1: ' . $allFiles->first()->original_name : 'Manuscript Reader' }}
+                                {{ ($isAdmin && $isMultiFile) ? 'File #1: ' . $allFiles->first()->original_name : ($allFiles->isNotEmpty() ? $allFiles->first()->original_name : 'Manuscript Reader') }}
                             </span>
                             @if(auth()->check() && auth()->user()->role === 'student')
                                 <span class="hidden sm:inline-block text-[10px] text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full">
@@ -1175,7 +1175,7 @@
                     </div>
 
                     <iframe id="manuscriptIframe"
-                            src="{{ route('document.pdf', $research->id) }}{{ $isMultiFile ? '?file_id=' . $allFiles->first()->id . '&' : '?' }}embedded=1#toolbar=0&navpanes=0&scrollbar=1" 
+                            src="{{ route('document.pdf', $research->id) }}{{ ($isAdmin && $isMultiFile) ? '?file_id=' . $allFiles->first()->id . '&' : '?' }}embedded=1#page=1&toolbar=0&navpanes=0&scrollbar=1" 
                             class="w-full h-full border-none rounded-2xl bg-white pt-10" 
                             title="Research Document Viewer"
                             oncontextmenu="return false;">

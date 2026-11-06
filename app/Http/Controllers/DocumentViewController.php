@@ -256,6 +256,18 @@ class DocumentViewController extends Controller
         $isStudent = auth()->check() && auth()->user()->role === 'student';
         $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
 
+        // For student user: they can ONLY view the FIRST file (#1) and only Page 1 of that file
+        if ($isStudent) {
+            $firstFile = $files->first();
+            $primaryPath = $firstFile?->file_path ?? $research->pdf_path;
+            if (!$primaryPath || !Storage::disk('public')->exists($primaryPath)) {
+                return $this->serveMissingFileNotice($research, 'Manuscript Reader');
+            }
+
+            return $this->serveSingleFile($research, $primaryPath, $ai, $firstFile?->original_name);
+        }
+
+        // --- Admin view logic below ---
         // If specific file requested via ?file_id=X
         $fileId = request()->query('file_id');
         if ($fileId && $specificFile = $files->firstWhere('id', $fileId)) {
@@ -263,7 +275,7 @@ class DocumentViewController extends Controller
         }
 
         // If continuous combined view is explicitly requested via ?combined=1 (Admin only)
-        if (request()->has('combined') && $files->count() > 1 && !$isStudent) {
+        if (request()->has('combined') && $files->count() > 1) {
             $pdfData = $this->getMergedOrConvertedPdf($research, $ai);
             if ($pdfData) {
                 return response($pdfData['content'], 200, [
