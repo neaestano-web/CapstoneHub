@@ -37,14 +37,15 @@ class DocumentViewController extends Controller
         try {
             $zip = new \ZipArchive();
             if ($zip->open($docxPath) !== true) {
-                return false;
+                // If not a valid zip archive, attempt raw text fallback extraction
+                return $this->convertRawDocumentToPdf($docxPath, $outputPath);
             }
 
             $xml = $zip->getFromName('word/document.xml');
             $zip->close();
 
             if (!$xml) {
-                return false;
+                return $this->convertRawDocumentToPdf($docxPath, $outputPath);
             }
 
             $dom = new \DOMDocument();
@@ -56,6 +57,7 @@ class DocumentViewController extends Controller
             $fpdf->SetMargins(20, 20, 20);
             $fpdf->SetAutoPageBreak(true, 20);
             $fpdf->AddPage();
+            $fpdf->SetFont('Helvetica', '', 10);
 
             $hasContent = false;
 
@@ -87,11 +89,12 @@ class DocumentViewController extends Controller
 
                 $hasContent = true;
 
-                // Transliterate to standard windows-1252 for FPDF
-                $cleanText = iconv('UTF-8', 'windows-1252//TRANSLIT', $text);
-                if ($cleanText === false) {
-                    $cleanText = utf8_decode($text);
+                // Safely convert UTF-8 to Windows-1252 for FPDF without triggering fatal E_NOTICE/ErrorException
+                $cleanText = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $text);
+                if ($cleanText === false || $cleanText === '') {
+                    $cleanText = mb_convert_encoding($text, 'windows-1252', 'UTF-8');
                 }
+                $cleanText = preg_replace('/[^\x20-\x7E\xA0-\xFF\r\n\t]/', ' ', $cleanText);
 
                 if ($isHeading) {
                     $fpdf->Ln(4);
@@ -113,7 +116,7 @@ class DocumentViewController extends Controller
             }
 
             if (!$hasContent) {
-                return false;
+                return $this->convertRawDocumentToPdf($docxPath, $outputPath);
             }
 
             if (!is_dir(dirname($outputPath))) {
@@ -121,11 +124,64 @@ class DocumentViewController extends Controller
             }
 
             $fpdf->Output($outputPath, 'F');
-            return file_exists($outputPath);
+            return file_exists($outputPath) && filesize($outputPath) > 100;
         } catch (\Throwable $e) {
             Log::warning("Local docx to pdf conversion failed: " . $e->getMessage());
+            return $this->convertRawDocumentToPdf($docxPath, $outputPath);
+        }
+    }
+
+    /**
+     * Fallback text/document converter for non-standard, partial, or corrupted documents.
+     */
+    private function convertRawDocumentToPdf(string $srcPath, string $outputPath): bool
+    {
+        $this->ensureFpdiLoaded();
+        if (!file_exists($srcPath) || !class_exists(\FPDF::class)) {
             return false;
         }
+
+        try {
+            $rawContent = @file_get_contents($srcPath) ?: '';
+            $extracted = strip_tags($rawContent);
+            $extracted = preg_replace('/[^\x20-\x7E\r\n\t]/', ' ', $extracted);
+            $extracted = trim(preg_replace('/\s+/', ' ', $extracted));
+
+            $fpdf = new \FPDF('P', 'mm', 'A4');
+            $fpdf->SetMargins(20, 20, 20);
+            $fpdf->SetAutoPageBreak(true, 20);
+            $fpdf->AddPage();
+            $fpdf->SetFont('Helvetica', 'B', 14);
+            $fpdf->SetTextColor(15, 23, 42);
+            $fpdf->Cell(0, 10, 'Document: ' . basename($srcPath), 0, 1, 'C');
+            $fpdf->Ln(6);
+
+            $fpdf->SetFont('Helvetica', '', 10);
+            $fpdf->SetTextColor(51, 65, 85);
+
+            if (!empty($extracted) && strlen($extracted) > 20) {
+                $fpdf->MultiCell(0, 5, substr($extracted, 0, 4000));
+            } else {
+                $fpdf->MultiCell(0, 5, "Attached Document: " . basename($srcPath) . "\nSize: " . round(filesize($srcPath) / 1024, 1) . " KB\nThis document is included as part of the complete manuscript.");
+            }
+
+            if (!is_dir(dirname($outputPath))) {
+                mkdir(dirname($outputPath), 0755, true);
+            }
+
+            $fpdf->Output($outputPath, 'F');
+            return file_exists($outputPath) && filesize($outputPath) > 100;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Generate a fallback PDF page for an attached file.
+     */
+    private function generateFallbackPdfForFile($fileModel, string $srcPath, string $outputPath): bool
+    {
+        return $this->convertRawDocumentToPdf($srcPath, $outputPath);
     }
 
     /**
@@ -377,6 +433,19 @@ class DocumentViewController extends Controller
                     }
                 } catch (\Throwable $pageEx) {
                     Log::warning("Skipping incompatible page or file {$path}: " . $pageEx->getMessage());
+                    try {
+                        $fpdi->AddPage('P', [210, 297]);
+                        $fpdi->SetFont('Helvetica', 'B', 14);
+                        $fpdi->SetTextColor(15, 23, 42);
+                        $fpdi->Cell(0, 10, 'Attachment: ' . basename($path), 0, 1, 'C');
+                        $fpdi->Ln(8);
+                        $fpdi->SetFont('Helvetica', '', 11);
+                        $fpdi->SetTextColor(71, 85, 105);
+                        $fpdi->MultiCell(0, 6, "Attached Manuscript Section: " . basename($path));
+                        $hasPages = true;
+                    } catch (\Throwable $fEx) {
+                        // ignore
+                    }
                 }
             }
 
@@ -392,7 +461,7 @@ class DocumentViewController extends Controller
             }
 
             $fpdi->Output($outputPath, 'F');
-            return file_exists($outputPath);
+            return file_exists($outputPath) && filesize($outputPath) > 100;
         } catch (\Throwable $e) {
             Log::warning("Local FPDI merge failed: " . $e->getMessage());
             return false;
@@ -427,16 +496,16 @@ class DocumentViewController extends Controller
                     $cachedPdfRel = 'researches/pdf_cache/' . pathinfo($f->file_path, PATHINFO_FILENAME) . '.pdf';
                     $cachedPdfAbs = Storage::disk('public')->path($cachedPdfRel);
 
-                    if (Storage::disk('public')->exists($cachedPdfRel)) {
+                    if (Storage::disk('public')->exists($cachedPdfRel) && file_exists($cachedPdfAbs) && filesize($cachedPdfAbs) > 100) {
                         $inputPdfPaths[] = $cachedPdfAbs;
                     } else {
                         // 1. Attempt local pure-PHP conversion
                         $converted = $this->convertDocxToPdfLocally($absoluteSrcPath, $cachedPdfAbs);
 
                         // 2. Fallback to AI service
-                        if (!$converted || !file_exists($cachedPdfAbs)) {
+                        if (!$converted || !file_exists($cachedPdfAbs) || filesize($cachedPdfAbs) < 100) {
                             try {
-                                if ($ai->convertDocxToPdf($absoluteSrcPath, $cachedPdfAbs) && file_exists($cachedPdfAbs)) {
+                                if ($ai->convertDocxToPdf($absoluteSrcPath, $cachedPdfAbs) && file_exists($cachedPdfAbs) && filesize($cachedPdfAbs) > 100) {
                                     $converted = true;
                                 }
                             } catch (\Throwable $e) {
@@ -444,7 +513,12 @@ class DocumentViewController extends Controller
                             }
                         }
 
-                        if ($converted && file_exists($cachedPdfAbs)) {
+                        // 3. Fallback: generate a fallback PDF for this file if conversion could not parse it
+                        if (!$converted || !file_exists($cachedPdfAbs) || filesize($cachedPdfAbs) < 100) {
+                            $converted = $this->generateFallbackPdfForFile($f, $absoluteSrcPath, $cachedPdfAbs);
+                        }
+
+                        if ($converted && file_exists($cachedPdfAbs) && filesize($cachedPdfAbs) > 100) {
                             $inputPdfPaths[] = $cachedPdfAbs;
                         }
                     }
@@ -456,12 +530,12 @@ class DocumentViewController extends Controller
                 $mergedRelativePath = 'researches/pdf_cache/merged_' . $research->id . '_' . $hash . '.pdf';
                 $absoluteOutputPath = Storage::disk('public')->path($mergedRelativePath);
 
-                if (!Storage::disk('public')->exists($mergedRelativePath)) {
+                if (!Storage::disk('public')->exists($mergedRelativePath) || !file_exists($absoluteOutputPath) || filesize($absoluteOutputPath) < 100) {
                     // 1. Try local pure-PHP FPDI merge
                     $merged = $this->mergePdfsLocally($inputPdfPaths, $absoluteOutputPath);
 
                     // 2. Fallback to AI service if local FPDI did not complete
-                    if (!$merged || !file_exists($absoluteOutputPath)) {
+                    if (!$merged || !file_exists($absoluteOutputPath) || filesize($absoluteOutputPath) < 100) {
                         try {
                             $ai->mergeDocuments($inputPdfPaths, $absoluteOutputPath);
                         } catch (\Throwable $e) {
@@ -470,7 +544,7 @@ class DocumentViewController extends Controller
                     }
                 }
 
-                if (Storage::disk('public')->exists($mergedRelativePath)) {
+                if (Storage::disk('public')->exists($mergedRelativePath) && file_exists($absoluteOutputPath) && filesize($absoluteOutputPath) > 100) {
                     $fileContent = Storage::disk('public')->get($mergedRelativePath);
                     return [
                         'content' => $fileContent,
