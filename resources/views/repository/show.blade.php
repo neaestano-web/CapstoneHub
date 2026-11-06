@@ -1078,61 +1078,6 @@
 
     </article>
 
-    {{-- GUEST USERS ONLY: MANUSCRIPT PREVIEW (FIRST PAGE ONLY OF FIRST UPLOADED FILE) --}}
-    @guest
-        @if($research->pdf_path || ($research->files && $research->files->count() > 0))
-            <div class="detail-card-cyber p-4 sm:p-6">
-                {{-- Interactive 1-Page Viewer Container --}}
-                <div class="relative w-full rounded-2xl overflow-hidden border border-slate-700/80 shadow-inner bg-slate-900 select-none"
-                     style="height: 740px;"
-                     oncontextmenu="return false;">
-                    
-                    {{-- Protective Top Bar --}}
-                    <div class="absolute top-0 left-0 right-0 h-10 bg-slate-900/95 backdrop-blur-md z-20 flex items-center justify-between px-5 border-b border-slate-700/80 text-white text-xs font-semibold">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                            <span class="truncate max-w-md font-bold text-slate-200">
-                                Manuscript Reader Preview (Page 1 of 1 Available for Guests)
-                            </span>
-                        </div>
-                        <div class="text-[11px] text-slate-400 flex items-center gap-2">
-                            <span>Remaining pages require student sign-in</span>
-                        </div>
-                    </div>
-
-                    <iframe id="guestPreviewIframe"
-                            src="{{ route('document.preview', $research->id) }}?v={{ $research->updated_at ? $research->updated_at->timestamp : time() }}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH" 
-                            class="w-full h-full border-none rounded-2xl bg-white pt-10" 
-                            title="First Page Preview of Manuscript"
-                            oncontextmenu="return false;">
-                    </iframe>
-
-                    {{-- Bottom Fade Lock Banner --}}
-                    <div class="absolute bottom-0 left-0 right-0 p-4 sm:p-5 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent z-20 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-800">
-                        <div class="flex items-center gap-3 text-left">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-lg shrink-0">
-                                🔒
-                            </div>
-                            <div>
-                                <div class="text-xs font-bold text-white">End of Page 1 Preview</div>
-                                <div class="text-[11px] text-slate-300">Sign in with your student account to unlock the full chapters, methodology, and attached documents.</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <a href="{{ route('repository.full', $research->id) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold rounded-full transition shadow-md">
-                                Sign In to Read Full PDF
-                            </a>
-                            <a href="{{ route('register') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-full transition">
-                                Register
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        @endif
-    @endguest
-
     {{-- AUTHENTICATED USERS ONLY: MANUSCRIPT PDF READER CONTAINER --}}
     @auth
         @if($research->pdf_path || ($research->files && $research->files->count() > 0))
