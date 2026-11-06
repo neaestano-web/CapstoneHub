@@ -136,7 +136,7 @@ class DocumentViewController extends Controller
         $this->ensureFpdiLoaded();
 
         // 1. Get the first uploaded file in sequential order
-        $files = $research->files()->orderBy('sort_order', 'asc')->get();
+        $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
         $firstFile = $files->first();
         $primaryPath = $firstFile?->file_path ?? $research->pdf_path;
 
@@ -226,7 +226,7 @@ class DocumentViewController extends Controller
             return $this->download($research, $ai);
         }
 
-        $files = $research->files()->orderBy('sort_order', 'asc')->get();
+        $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
 
         // If specific file requested via ?file_id=X
         $fileId = request()->query('file_id');
@@ -234,8 +234,8 @@ class DocumentViewController extends Controller
             return $this->serveSingleFile($research, $specificFile->file_path, $ai, $specificFile->original_name);
         }
 
-        // If multiple files exist, merge them sequentially (first uploaded file is first)
-        if ($files->count() > 1) {
+        // If continuous combined view is explicitly requested via ?combined=1
+        if (request()->has('combined') && $files->count() > 1) {
             $pdfData = $this->getMergedOrConvertedPdf($research, $ai);
             if ($pdfData) {
                 return response($pdfData['content'], 200, [
@@ -246,13 +246,14 @@ class DocumentViewController extends Controller
             }
         }
 
-        // Single file or fallback: use first file or legacy research->pdf_path
-        $primaryPath = $files->first()?->file_path ?? $research->pdf_path;
+        // Default: ALWAYS serve the first uploaded file (#1 primary view)
+        $firstFile = $files->first();
+        $primaryPath = $firstFile?->file_path ?? $research->pdf_path;
         if (!$primaryPath || !Storage::disk('public')->exists($primaryPath)) {
             return $this->serveMissingFileNotice($research, 'Manuscript Reader');
         }
 
-        return $this->serveSingleFile($research, $primaryPath, $ai);
+        return $this->serveSingleFile($research, $primaryPath, $ai, $firstFile?->original_name);
     }
 
     /**
@@ -320,9 +321,11 @@ class DocumentViewController extends Controller
         try {
             $fpdi = new \setasign\Fpdi\Fpdi();
             $hasPages = false;
+            $allFilesMerged = true;
 
             foreach ($inputPdfPaths as $path) {
                 if (!file_exists($path)) {
+                    $allFilesMerged = false;
                     continue;
                 }
                 try {
@@ -336,10 +339,14 @@ class DocumentViewController extends Controller
                     }
                 } catch (\Throwable $pageEx) {
                     Log::warning("Skipping incompatible page or file {$path}: " . $pageEx->getMessage());
+                    $allFilesMerged = false;
                 }
             }
 
-            if (!$hasPages) {
+            if (!$hasPages || !$allFilesMerged) {
+                if (file_exists($outputPath)) {
+                    @unlink($outputPath);
+                }
                 return false;
             }
 
@@ -361,7 +368,7 @@ class DocumentViewController extends Controller
     public function getMergedOrConvertedPdf(Research $research, AIService $ai): ?array
     {
         $this->ensureFpdiLoaded();
-        $files = $research->files()->orderBy('sort_order', 'asc')->get();
+        $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
         $safeTitle = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $research->title);
 
         // 1. Multiple files: merge into single PDF in sequential order

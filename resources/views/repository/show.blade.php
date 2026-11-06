@@ -1163,8 +1163,8 @@
                             @foreach($allFiles as $idx => $f)
                                 <button type="button" 
                                         id="tab-file-{{ $f->id }}"
-                                        onclick="switchViewerFile('{{ route('document.pdf', $research->id) }}?file_id={{ $f->id }}', 'tab-file-{{ $f->id }}')" 
-                                        class="viewer-tab-btn px-3 py-1 text-xs font-bold rounded-lg transition border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700">
+                                        onclick="switchViewerFile('{{ route('document.pdf', $research->id) }}?file_id={{ $f->id }}', 'tab-file-{{ $f->id }}', 'File #{{ $idx + 1 }}: {{ addslashes($f->original_name) }}')" 
+                                        class="viewer-tab-btn px-3 py-1 text-xs font-bold rounded-lg transition border {{ $idx === 0 ? 'active border-emerald-400/40 bg-emerald-500/20 text-emerald-300' : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700' }}">
                                     {{ $idx === 0 ? '🥇 #1 ' : '#' . ($idx + 1) . ' ' }}{{ Str::limit($f->original_name, 22) }}
                                 </button>
                             @endforeach
@@ -1181,7 +1181,7 @@
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span class="truncate max-w-md font-bold" id="viewerTitleLabel">
-                                {{ $isMultiFile ? 'Manuscript Reader (Sequential Combined View)' : 'Manuscript Reader' }}
+                                {{ $isMultiFile ? 'File #1: ' . $allFiles->first()->original_name : 'Manuscript Reader' }}
                             </span>
                         </div>
                         <div class="text-[11px] text-slate-300 flex items-center gap-3">
@@ -1205,7 +1205,7 @@
                     </div>
 
                     <iframe id="manuscriptIframe"
-                            src="{{ route('document.pdf', $research->id) }}?embedded=1#toolbar=0&navpanes=0&scrollbar=1" 
+                            src="{{ route('document.pdf', $research->id) }}{{ $isMultiFile ? '?file_id=' . $allFiles->first()->id . '&' : '?' }}embedded=1#toolbar=0&navpanes=0&scrollbar=1" 
                             class="w-full h-full border-none rounded-2xl bg-white pt-10" 
                             title="Research Document Viewer"
                             oncontextmenu="return false;">
@@ -1214,10 +1214,14 @@
             </div>
 
             <script>
-            function switchViewerFile(url, activeTabId) {
+            function switchViewerFile(url, activeTabId, titleText) {
                 const iframe = document.getElementById('manuscriptIframe');
                 if (iframe) {
                     iframe.src = url + (url.includes('?') ? '&' : '?') + 'embedded=1#toolbar=0&navpanes=0&scrollbar=1';
+                }
+                const label = document.getElementById('viewerTitleLabel');
+                if (label && titleText) {
+                    label.textContent = titleText;
                 }
                 document.querySelectorAll('.viewer-tab-btn').forEach(btn => {
                     btn.classList.remove('active', 'border-emerald-400/40', 'bg-emerald-500/20', 'text-emerald-300');

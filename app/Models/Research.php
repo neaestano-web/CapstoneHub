@@ -82,7 +82,7 @@ class Research extends Model
 
     public function files()
     {
-        return $this->hasMany(ResearchFile::class)->orderBy('sort_order', 'asc');
+        return $this->hasMany(ResearchFile::class)->orderBy('sort_order', 'asc')->orderBy('id', 'asc');
     }
 
     /**
