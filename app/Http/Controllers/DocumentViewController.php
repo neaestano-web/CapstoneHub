@@ -135,12 +135,25 @@ class DocumentViewController extends Controller
     {
         $this->ensureFpdiLoaded();
 
-        // 1. Get the first uploaded file in sequential order
+        // 1. Get the first uploaded file that actually exists on disk in sequential order
         $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
-        $firstFile = $files->first();
-        $primaryPath = $firstFile?->file_path ?? $research->pdf_path;
+        $primaryPath = null;
+        $displayName = null;
 
-        if (!$primaryPath || !Storage::disk('public')->exists($primaryPath)) {
+        foreach ($files as $f) {
+            if ($f->file_path && Storage::disk('public')->exists($f->file_path)) {
+                $primaryPath = $f->file_path;
+                $displayName = $f->original_name;
+                break;
+            }
+        }
+
+        // Fallback to research->pdf_path if no valid file in files relation
+        if (!$primaryPath && $research->pdf_path && Storage::disk('public')->exists($research->pdf_path)) {
+            $primaryPath = $research->pdf_path;
+        }
+
+        if (!$primaryPath) {
             return $this->serveMissingFileNotice($research, 'Guest Preview');
         }
 
@@ -165,6 +178,14 @@ class DocumentViewController extends Controller
 
             if (Storage::disk('public')->exists($pdfRelativePath)) {
                 $absoluteSourcePath = $absolutePdfPath;
+            } else {
+                // If DOCX cannot be converted to PDF, render via docx-preview
+                return response()->view('admin.researches.file-viewer', [
+                    'research' => $research,
+                    'fileUrl' => route('files.show', ['path' => $primaryPath]),
+                    'extension' => 'docx',
+                    'displayName' => $displayName ?: ($research->title . '.docx'),
+                ]);
             }
         }
 
@@ -173,6 +194,7 @@ class DocumentViewController extends Controller
         $cacheHash = substr(md5($primaryPath . '_' . $mtime), 0, 12);
         $previewRelativePath = 'researches/pdf_cache/page1_preview_' . $research->id . '_' . $cacheHash . '.pdf';
         $absolutePreviewPath = Storage::disk('public')->path($previewRelativePath);
+        $safeTitle = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $research->title);
 
         if (!Storage::disk('public')->exists($previewRelativePath) && strtolower(pathinfo($absoluteSourcePath, PATHINFO_EXTENSION)) === 'pdf') {
             try {
@@ -192,25 +214,30 @@ class DocumentViewController extends Controller
                     }
                 }
             } catch (\Throwable $e) {
-                // If FPDI fails on non-standard compression, serve source PDF
-                $content = file_get_contents($absoluteSourcePath);
-                return response($content, 200, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . pathinfo($primaryPath, PATHINFO_FILENAME) . ' (Page 1 Preview).pdf"',
-                    'Content-Length' => strlen($content),
-                ]);
+                Log::warning("FPDI Page 1 extraction exception for research {$research->id}: " . $e->getMessage());
             }
         }
 
+        // If 1-page sliced PDF exists, serve it
         if (Storage::disk('public')->exists($previewRelativePath)) {
             $content = Storage::disk('public')->get($previewRelativePath);
-            $safeTitle = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $research->title);
-
             return response($content, 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="' . $safeTitle . ' (Page 1 Preview).pdf"',
                 'Content-Length' => strlen($content),
-                'Cache-Control' => 'public, max-age=86400',
+                'Cache-Control' => 'no-cache, private, must-revalidate',
+            ]);
+        }
+
+        // Fallback: If FPDI slicing failed on non-standard PDF compression, serve the source PDF directly
+        // The embedded iframe URL uses #page=1&toolbar=0&navpanes=0&scrollbar=0 which restricts view to Page 1
+        if (file_exists($absoluteSourcePath) && strtolower(pathinfo($absoluteSourcePath, PATHINFO_EXTENSION)) === 'pdf') {
+            $content = file_get_contents($absoluteSourcePath);
+            return response($content, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $safeTitle . ' (Page 1 Preview).pdf"',
+                'Content-Length' => strlen($content),
+                'Cache-Control' => 'no-cache, private, must-revalidate',
             ]);
         }
 

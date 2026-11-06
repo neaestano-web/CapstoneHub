@@ -1101,7 +1101,7 @@
                     </div>
 
                     <iframe id="guestPreviewIframe"
-                            src="{{ route('document.preview', $research->id) }}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH" 
+                            src="{{ route('document.preview', $research->id) }}?v={{ $research->updated_at ? $research->updated_at->timestamp : time() }}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH" 
                             class="w-full h-full border-none rounded-2xl bg-white pt-10" 
                             title="First Page Preview of Manuscript"
                             oncontextmenu="return false;">

@@ -450,7 +450,7 @@ class ResearchController extends Controller
         }
 
         // Clean any merged or preview cached PDFs for this research
-        $pdfCacheFiles = \Storage::disk('public')->files('researches/pdf_cache');
+        $pdfCacheFiles = \Storage::disk('public')->allFiles('researches/pdf_cache');
         foreach ($pdfCacheFiles as $cf) {
             if (str_contains($cf, "page1_preview_{$research->id}_") || str_contains($cf, "merged_{$research->id}_")) {
                 \Storage::disk('public')->delete($cf);
@@ -473,10 +473,11 @@ class ResearchController extends Controller
             ]);
         }
 
-        // 3. Update research primary pdf_path
+        // 3. Update research primary pdf_path and bump timestamp
         $research->update([
             'pdf_path' => $firstPath,
         ]);
+        $research->touch();
 
         $count = count($uploadedFiles);
         return back()->with(
