@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Research;
 use App\Models\User;
+use App\Services\SystemCleanupService;
 
 class DashboardController extends Controller
 {
@@ -26,5 +27,18 @@ class DashboardController extends Controller
             'pendingResearches',
             'totalUsers'
         ));
+    }
+
+    /**
+     * Delete all projects and non-admin users, keeping only administrators.
+     */
+    public function wipeData(SystemCleanupService $cleanup)
+    {
+        $result = $cleanup->wipeDataKeepAdmins();
+
+        return redirect()->route('admin.dashboard')->with(
+            'success',
+            "All projects ({$result['researches']}) and non-admin users ({$result['users']}) have been deleted successfully. The repository has been reset for a fresh start."
+        );
     }
 }

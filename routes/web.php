@@ -109,6 +109,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/download-requests', [AdminDownloadRequestController::class, 'index'])->name('download-requests.index');
     Route::patch('/download-requests/{downloadRequest}/approve', [AdminDownloadRequestController::class, 'approve'])->name('download-requests.approve');
 
+    // System Data Wipe / Fresh Start (Keeps Admins Only)
+    Route::post('/system/wipe-data', [DashboardController::class, 'wipeData'])->name('system.wipe-data');
+
 });
 
 Route::get('/dashboard', function () {
