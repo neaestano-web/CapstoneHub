@@ -124,7 +124,7 @@ class ResearchController extends Controller
         $hasActiveSubmission = Research::where('user_id', Auth::id())->exists();
         if ($hasActiveSubmission) {
             return redirect()->route('student.researches.index')
-                ->with('error', 'Limit Reached: Pinoproseso o nakatabi na ang iyong 1 active capstone submission. Maaari mo lamang itong palitan kapag binura mo ang kasalukuyang na-upload.');
+                ->with('error', 'Limit Reached: You already have 1 active capstone submission. You can only replace it after deleting your current submission.');
         }
 
         $categories = ResearchCategory::with('projectTypes')->orderBy('id', 'asc')->get();
@@ -261,7 +261,7 @@ class ResearchController extends Controller
         $hasActiveSubmission = Research::where('user_id', Auth::id())->exists();
         if ($hasActiveSubmission) {
             return redirect()->route('student.researches.index')
-                ->with('error', 'Limit Reached: Pinoproseso o nakatabi na ang iyong 1 active capstone submission. Maaari mo lamang itong palitan kapag binura mo ang kasalukuyang na-upload.');
+                ->with('error', 'Limit Reached: You already have 1 active capstone submission. You can only replace it after deleting your current submission.');
         }
 
         $request->validate([
@@ -280,9 +280,9 @@ class ResearchController extends Controller
             'files.*' => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
             'pdf' => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
         ], [
-            'files.*.uploaded'   => 'Hindi ma-upload ang dokumento. Maaaring lumagpas ito sa file upload limit (30MB) o tinanggihan ng server. Subukang i-compress o pumili ng mas maliit na file.',
-            'files.*.max'        => 'Masyadong malaki ang file. Ang pinakamalaking sukat ay 30MB bawat file.',
-            'files.*.mimes'      => 'Tanging PDF (.pdf) o Word (.docx) files lamang ang pinapayagan.',
+            'files.*.uploaded'   => 'Could not upload document. It may have exceeded the upload size limit (30MB) or was rejected by the server. Please compress or choose a smaller file.',
+            'files.*.max'        => 'The file size is too large. Maximum file size is 30MB each.',
+            'files.*.mimes'      => 'Only PDF (.pdf) or Word (.docx) files are supported.',
         ]);
 
         $rawAuthors = $request->input('authors');
@@ -356,7 +356,7 @@ class ResearchController extends Controller
 
         // If title already existed in repository, attach warning alert to the session
         if ($existing) {
-            session()->flash('warning', "⚠️ Paalala / Warning: Ang na-upload na capstone ay may kaparehong pamagat sa umiiral nang pag-aaral: \"{$existing->title}\" ({$existing->year}). Pakitiyak ang orihinalidad sa admin review.");
+            session()->flash('warning', "⚠️ Warning: The uploaded capstone has a title identical or very similar to an existing study: \"{$existing->title}\" ({$existing->year}). Please verify originality during admin review.");
         }
 
         return redirect()->route('student.researches.index')

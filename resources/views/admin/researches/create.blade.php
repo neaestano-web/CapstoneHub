@@ -168,7 +168,7 @@
                                 <div class="space-y-1.5 flex-1">
                                     <div class="flex items-center justify-between gap-2">
                                         <p class="font-bold text-amber-950 dark:text-amber-100">
-                                            Warning / Alert: Mayroon nang umiiral na capstone sa repository na may pareho o katulad na pamagat!
+                                            Warning: An existing capstone in the repository has an identical or similar title!
                                         </p>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 uppercase">
                                             Existed Project
@@ -790,9 +790,9 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
 
     if (window.hasDuplicateTitle) {
         const proceed = confirm(
-            '⚠️ BABALA / ALERT:\n\n' +
-            'Ang pamagat ng capstone na ito ay umiiral na sa repository:\n"' + window.duplicateMatchTitle + '"\n\n' +
-            'Nais mo pa rin bang magpatuloy sa pag-publish nito?'
+            '⚠️ WARNING / ALERT:\n\n' +
+            'This capstone title already exists in the repository:\n"' + window.duplicateMatchTitle + '"\n\n' +
+            'Do you still want to proceed with publishing this project?'
         );
         if (!proceed) {
             e.preventDefault();

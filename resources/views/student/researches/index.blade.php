@@ -95,7 +95,7 @@
         <div class="p-3.5 sd-card-subtle border sd-border rounded-xl text-xs flex items-center gap-2.5">
             <span class="text-base shrink-0">ℹ️</span>
             <p class="sd-text leading-relaxed">
-                Mayroon ka nang 1 active capstone submission. Upang mag-submit ng panibagong papel, burahin muna ang iyong kasalukuyang na-upload gamit ang <strong>Delete</strong> button sa ibaba.
+                You currently have 1 active capstone submission. To submit a new paper, delete your existing upload using the <strong>Delete</strong> button below.
             </p>
         </div>
     @endif
@@ -176,7 +176,7 @@
                                         <form action="{{ route('student.researches.destroy', $research) }}" 
                                               method="POST" 
                                               class="inline"
-                                              onsubmit="return confirm('Sigurado ka bang nais mong burahin ang submission na ito? Kapag nabura, maaari ka nang mag-upload muli.')">
+                                              onsubmit="return confirm('Are you sure you want to delete this submission? Once deleted, you will be able to upload a new manuscript.')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg font-bold text-xs transition border border-rose-500/20">
