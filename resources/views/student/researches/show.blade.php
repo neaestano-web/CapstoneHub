@@ -197,21 +197,63 @@
                                     </span>
                                     <span class="font-semibold text-slate-800 truncate" title="{{ $rf->original_name }}">{{ $rf->original_name }}</span>
                                 </div>
-                                <a href="{{ route('files.show', ['path' => $rf->file_path]) }}" target="_blank" class="text-emerald-700 hover:underline font-bold flex-shrink-0 ml-2">
-                                    Open
+                                <a href="{{ route('repository.show', $research->id) }}" class="text-emerald-700 hover:underline font-bold flex-shrink-0 ml-2">
+                                    View
                                 </a>
                             </div>
                         @endforeach
                     </div>
+                    @php
+                        $userDownloadApproved = \App\Models\DownloadRequest::where('user_id', auth()->id())
+                            ->where('research_id', $research->id)
+                            ->where('status', 'approved')
+                            ->exists();
+                        $userDownloadPending = \App\Models\DownloadRequest::where('user_id', auth()->id())
+                            ->where('research_id', $research->id)
+                            ->where('status', 'pending')
+                            ->exists();
+                    @endphp
                     <div class="pt-2">
-                        <a href="{{ route('repository.download', $research->id) }}" class="w-full py-2.5 px-4 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-full text-xs font-extrabold transition inline-flex items-center justify-center gap-2 shadow-xs">
-                            <span>📥</span> Download Complete PDF (All Files)
-                        </a>
+                        @if($userDownloadApproved)
+                            <a href="{{ route('repository.download', $research->id) }}" class="w-full py-2.5 px-4 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-full text-xs font-extrabold transition inline-flex items-center justify-center gap-2 shadow-xs">
+                                <span>📥</span> Download Complete PDF (All Files)
+                            </a>
+                        @elseif($userDownloadPending)
+                            <div class="w-full py-2 px-3 bg-amber-500/10 border border-amber-500/30 text-amber-800 rounded-xl text-center text-xs font-bold">
+                                ⏳ Download Request Pending Approval
+                            </div>
+                        @else
+                            <a href="{{ route('repository.show', $research->id) }}" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs font-extrabold transition inline-flex items-center justify-center gap-2 shadow-xs">
+                                <span>🔒</span> Request Download Permission
+                            </a>
+                        @endif
                     </div>
                 @elseif($research->pdf_path)
-                    <a href="{{ route('repository.download', $research->id) }}" class="w-full py-2.5 px-4 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-full text-xs font-extrabold transition inline-flex items-center justify-center gap-2 shadow-xs">
-                        <span>📥</span> Download PDF ➔
-                    </a>
+                    @php
+                        $userDownloadApproved = \App\Models\DownloadRequest::where('user_id', auth()->id())
+                            ->where('research_id', $research->id)
+                            ->where('status', 'approved')
+                            ->exists();
+                        $userDownloadPending = \App\Models\DownloadRequest::where('user_id', auth()->id())
+                            ->where('research_id', $research->id)
+                            ->where('status', 'pending')
+                            ->exists();
+                    @endphp
+                    <div class="pt-2">
+                        @if($userDownloadApproved)
+                            <a href="{{ route('repository.download', $research->id) }}" class="w-full py-2.5 px-4 bg-[#0c4233] hover:bg-[#082d23] text-white rounded-full text-xs font-extrabold transition inline-flex items-center justify-center gap-2 shadow-xs">
+                                <span>📥</span> Download PDF ➔
+                            </a>
+                        @elseif($userDownloadPending)
+                            <div class="w-full py-2 px-3 bg-amber-500/10 border border-amber-500/30 text-amber-800 rounded-xl text-center text-xs font-bold">
+                                ⏳ Download Request Pending Approval
+                            </div>
+                        @else
+                            <a href="{{ route('repository.show', $research->id) }}" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs font-extrabold transition inline-flex items-center justify-center gap-2 shadow-xs">
+                                <span>🔒</span> Request Download Permission
+                            </a>
+                        @endif
+                    </div>
                 @endif
             </div>
 

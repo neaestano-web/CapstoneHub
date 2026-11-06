@@ -200,9 +200,11 @@
             <a href="{{ url()->previous() }}" class="toolbar-btn toolbar-btn-outline">
                 ← Back
             </a>
-            <a href="{{ $fileUrl }}" class="toolbar-btn toolbar-btn-download" download>
-                ⬇ Download
-            </a>
+            @if(!empty($canDownload))
+                <a href="{{ $fileUrl }}" class="toolbar-btn toolbar-btn-download" download>
+                    ⬇ Download
+                </a>
+            @endif
         </div>
     </div>
 @endif
@@ -226,6 +228,7 @@
     <script>
         (function() {
             const fileUrl = @json($fileUrl);
+            const canDownload = @json(!empty($canDownload));
             const container = document.getElementById('docx-container');
             const loading = document.getElementById('loadingState');
 
@@ -266,10 +269,11 @@
                             <div style="font-size:48px;margin-bottom:16px">⚠️</div>
                             <h2>Could not render document</h2>
                             <p>${error.message}</p>
+                            ${canDownload ? `
                             <a href="${fileUrl}" download
                                style="margin-top:20px;padding:10px 24px;background:#22c55e;color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">
                                 Download Original File
-                            </a>
+                            </a>` : ''}
                         </div>
                     `;
                 });

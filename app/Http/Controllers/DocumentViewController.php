@@ -290,7 +290,7 @@ class DocumentViewController extends Controller
     {
         if (!$this->canDownload($research)) {
             return redirect()->route('repository.show', $research)
-                ->with('error', 'Download permission required. Please request access from Admin.');
+                ->with('error', 'Download permission required. Please submit a download request and wait for faculty approval.');
         }
 
         $pdfData = $this->getMergedOrConvertedPdf($research, $ai);
@@ -322,12 +322,7 @@ class DocumentViewController extends Controller
             return true;
         }
 
-        // The student author/uploader can always download their own paper
-        if ($research->user_id && (int)$research->user_id === (int)$user->id) {
-            return true;
-        }
-
-        // Check approved download request
+        // All student users must have an approved download request for this specific research project
         return DownloadRequest::where('user_id', $user->id)
             ->where('research_id', $research->id)
             ->where('status', 'approved')
@@ -580,6 +575,7 @@ class DocumentViewController extends Controller
             'fileUrl' => route('files.show', ['path' => $path]),
             'extension' => 'docx',
             'displayName' => $displayName,
+            'canDownload' => $this->canDownload($research),
         ]);
     }
 

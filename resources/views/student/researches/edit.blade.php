@@ -169,14 +169,14 @@
                                         </span>
                                         <span class="font-semibold text-slate-800">{{ $rf->original_name }}</span>
                                     </div>
-                                    <a href="{{ route('files.show', ['path' => $rf->file_path]) }}" target="_blank" class="text-emerald-700 hover:underline font-bold">
+                                    <a href="{{ route('repository.show', $research->id) }}" target="_blank" class="text-emerald-700 hover:underline font-bold">
                                         View
                                     </a>
                                 </div>
                             @endforeach
                         </div>
                     @elseif($research->pdf_path)
-                        <a href="{{ route('files.show', ['path' => $research->pdf_path]) }}" target="_blank"
+                        <a href="{{ route('repository.show', $research->id) }}" target="_blank"
                            class="text-sm text-green-700 hover:underline mt-2 inline-block">📎 View Current File</a>
                     @endif
                 </div>

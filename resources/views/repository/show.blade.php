@@ -792,6 +792,24 @@
             <button onclick="this.parentElement.remove()" class="text-emerald-400 font-black cursor-pointer">✕</button>
         </div>
     @endif
+    @if(session('error'))
+        <div class="p-4 bg-rose-950/80 border border-rose-500/40 text-rose-300 rounded-2xl text-xs font-bold flex items-center justify-between shadow-lg">
+            <span>⚠️ {{ session('error') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-rose-400 font-black cursor-pointer">✕</button>
+        </div>
+    @endif
+    @if(session('status'))
+        <div class="p-4 bg-sky-950/80 border border-sky-500/40 text-sky-300 rounded-2xl text-xs font-bold flex items-center justify-between shadow-lg">
+            <span>ℹ️ {{ session('status') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-sky-400 font-black cursor-pointer">✕</button>
+        </div>
+    @endif
+    @if(session('warning'))
+        <div class="p-4 bg-amber-950/80 border border-amber-500/40 text-amber-300 rounded-2xl text-xs font-bold flex items-center justify-between shadow-lg">
+            <span>⚠️ {{ session('warning') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-amber-400 font-black cursor-pointer">✕</button>
+        </div>
+    @endif
 
     {{-- MAIN MANUSCRIPT DETAIL CARD --}}
     <article class="detail-card-cyber">
@@ -1084,14 +1102,12 @@
             @php
                 $allFiles = $research->files ? $research->files->sortBy('sort_order')->values() : collect();
                 $isMultiFile = $allFiles->count() > 1;
-                $userDownloadApproved = auth()->check() && (
-                    auth()->user()->role === 'admin' ||
-                    (int)auth()->id() === (int)$research->user_id ||
-                    \App\Models\DownloadRequest::where('user_id', auth()->id())
-                        ->where('research_id', $research->id)
-                        ->where('status', 'approved')
-                        ->exists()
-                );
+                $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+                $downloadRequest = (auth()->check() && !$isAdmin)
+                    ? \App\Models\DownloadRequest::where('user_id', auth()->id())->where('research_id', $research->id)->latest()->first()
+                    : null;
+                $userDownloadApproved = $isAdmin || ($downloadRequest && $downloadRequest->status === 'approved');
+                $userDownloadPending = !$isAdmin && $downloadRequest && $downloadRequest->status === 'pending';
             @endphp
             <div class="detail-card-cyber p-6 space-y-4">
                 {{-- Multi-file Tab Bar (If more than 1 file) --}}
@@ -1130,7 +1146,7 @@
                             </span>
                         </div>
                         <div class="text-[11px] text-slate-300 flex items-center gap-3">
-                            @if(auth()->user()->role === 'admin')
+                            @if($isAdmin)
                                 <span class="hidden sm:inline-block">👑 Admin Authorized</span>
                                 <a href="{{ route('repository.download', $research->id) }}" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold rounded-full transition shadow-xs inline-flex items-center gap-1.5">
                                     <span>📥</span> Download Full PDF {{ $isMultiFile ? '(' . $allFiles->count() . ' Files Combined)' : '' }}
@@ -1140,8 +1156,12 @@
                                 <a href="{{ route('repository.download', $research->id) }}" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold rounded-full transition shadow-xs inline-flex items-center gap-1.5">
                                     <span>📥</span> Download Full PDF {{ $isMultiFile ? '(' . $allFiles->count() . ' Files Combined)' : '' }}
                                 </a>
+                            @elseif($userDownloadPending)
+                                <span class="px-3.5 py-1.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-full font-bold text-[11px] inline-flex items-center gap-1.5 shadow-xs">
+                                    <span>⏳</span> Download Request Pending Approval
+                                </span>
                             @else
-                                <span class="hidden sm:inline-block">🔒 Direct Download Restricted</span>
+                                <span class="hidden sm:inline-block text-slate-400">🔒 Direct Download Restricted</span>
                                 <button type="button" onclick="openDownloadModal()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold rounded-full transition shadow-xs cursor-pointer">
                                     Request Download
                                 </button>

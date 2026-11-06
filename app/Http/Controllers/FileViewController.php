@@ -15,20 +15,30 @@ class FileViewController extends Controller
      */
     public function show($path)
     {
-        // If download is requested, redirect to unified single PDF download (merging all attached files)
-        if (request()->has('download')) {
-            $filename = basename($path);
-            $research = Research::where('pdf_path', $path)
-                ->orWhere('pdf_path', 'researches/' . $filename)
-                ->orWhere('pdf_path', 'like', '%' . $filename)
-                ->orWhereHas('files', function ($q) use ($path, $filename) {
-                    $q->where('file_path', $path)
-                      ->orWhere('file_path', 'like', '%' . $filename);
-                })
-                ->first();
+        $filename = basename($path);
+        $research = Research::where('pdf_path', $path)
+            ->orWhere('pdf_path', 'researches/' . $filename)
+            ->orWhere('pdf_path', 'like', '%' . $filename)
+            ->orWhereHas('files', function ($q) use ($path, $filename) {
+                $q->where('file_path', $path)
+                  ->orWhere('file_path', 'like', '%' . $filename);
+            })
+            ->first();
 
-            if ($research) {
-                return redirect()->route('repository.download', $research);
+        // If download is requested, redirect to unified single PDF download (merging all attached files)
+        if (request()->has('download') && $research) {
+            return redirect()->route('repository.download', $research);
+        }
+
+        // For student users attempting direct navigation/download to raw files, enforce approved download request
+        if ($research && auth()->check() && auth()->user()->role !== 'admin') {
+            $isFetchForViewer = request()->ajax()
+                || request()->header('Sec-Fetch-Dest') === 'empty'
+                || request()->header('X-Requested-With') === 'XMLHttpRequest';
+
+            if (!$isFetchForViewer && !app(DocumentViewController::class)->canDownload($research)) {
+                return redirect()->route('repository.show', $research)
+                    ->with('error', 'Download permission required. Please submit a download request and wait for faculty approval.');
             }
         }
 
