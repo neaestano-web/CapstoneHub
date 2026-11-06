@@ -53,3 +53,4 @@ class WipeDataCommand extends Command
         return 0;
     }
 }
+
