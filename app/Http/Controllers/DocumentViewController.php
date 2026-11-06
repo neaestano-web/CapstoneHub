@@ -35,74 +35,121 @@ class DocumentViewController extends Controller
         }
 
         try {
-            $zip = new \ZipArchive();
-            if ($zip->open($docxPath) !== true) {
-                // If not a valid zip archive, attempt raw text fallback extraction
-                return $this->convertRawDocumentToPdf($docxPath, $outputPath);
+            $realPath = realpath($docxPath) ?: $docxPath;
+            $xml = null;
+
+            // 1. Try ZipArchive with RDONLY
+            if (class_exists(\ZipArchive::class)) {
+                $zip = new \ZipArchive();
+                $openRes = $zip->open($realPath, \ZipArchive::RDONLY);
+                if ($openRes === true) {
+                    $xml = $zip->getFromName('word/document.xml');
+                    if (!$xml) {
+                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $entryName = $zip->getNameIndex($i);
+                            if (strcasecmp($entryName, 'word/document.xml') === 0 || preg_match('/word\/document.*\.xml$/i', $entryName)) {
+                                $xml = $zip->getFromIndex($i);
+                                break;
+                            }
+                        }
+                    }
+                    $zip->close();
+                }
             }
 
-            $xml = $zip->getFromName('word/document.xml');
-            $zip->close();
+            // 2. Fallback to PHP stream wrapper zip://
+            if (!$xml) {
+                $normalizedPath = str_replace('\\', '/', $realPath);
+                $xml = @file_get_contents('zip://' . $normalizedPath . '#word/document.xml');
+            }
 
             if (!$xml) {
-                return $this->convertRawDocumentToPdf($docxPath, $outputPath);
+                return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
             }
 
+            // Parse document text and paragraphs
+            $paragraphs = [];
             $dom = new \DOMDocument();
-            @$dom->loadXML($xml);
-            $xpath = new \DOMXPath($dom);
-            $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+            if (@$dom->loadXML($xml)) {
+                $xpath = new \DOMXPath($dom);
+                $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
 
+                foreach ($xpath->query('//w:p') as $p) {
+                    $text = '';
+                    $isHeading = false;
+                    $isBold = false;
+
+                    $pStyle = $xpath->query('.//w:pStyle/@w:val', $p)->item(0)?->nodeValue;
+                    if ($pStyle && (stripos($pStyle, 'heading') !== false || stripos($pStyle, 'title') !== false)) {
+                        $isHeading = true;
+                    }
+
+                    foreach ($xpath->query('.//w:r', $p) as $r) {
+                        $boldNode = $xpath->query('.//w:b', $r)->item(0);
+                        if ($boldNode) {
+                            $isBold = true;
+                        }
+                        foreach ($xpath->query('.//w:t', $r) as $t) {
+                            $text .= $t->nodeValue;
+                        }
+                    }
+
+                    $text = trim($text);
+                    if ($text !== '') {
+                        $paragraphs[] = [
+                            'text' => $text,
+                            'isHeading' => $isHeading,
+                            'isBold' => $isBold,
+                        ];
+                    }
+                }
+            }
+
+            // 3. Fallback regex extraction if DOMDocument returned 0 paragraphs
+            if (empty($paragraphs)) {
+                preg_match_all('/<w:t[^>]*>(.*?)<\/w:t>/is', $xml, $matches);
+                if (!empty($matches[1])) {
+                    $combined = implode(' ', $matches[1]);
+                    $combined = html_entity_decode($combined, ENT_QUOTES | ENT_XML1, 'UTF-8');
+                    $chunks = explode("\n", wordwrap($combined, 100, "\n"));
+                    foreach ($chunks as $chunk) {
+                        $chunk = trim($chunk);
+                        if ($chunk !== '') {
+                            $paragraphs[] = [
+                                'text' => $chunk,
+                                'isHeading' => false,
+                                'isBold' => false,
+                            ];
+                        }
+                    }
+                }
+            }
+
+            if (empty($paragraphs)) {
+                return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
+            }
+
+            // Render PDF via FPDF
             $fpdf = new \FPDF('P', 'mm', 'A4');
             $fpdf->SetMargins(20, 20, 20);
             $fpdf->SetAutoPageBreak(true, 20);
             $fpdf->AddPage();
             $fpdf->SetFont('Helvetica', '', 10);
 
-            $hasContent = false;
-
-            foreach ($xpath->query('//w:p') as $p) {
-                $text = '';
-                $isHeading = false;
-                $isBold = false;
-
-                $pStyle = $xpath->query('.//w:pStyle/@w:val', $p)->item(0)?->nodeValue;
-                if ($pStyle && (stripos($pStyle, 'heading') !== false || stripos($pStyle, 'title') !== false)) {
-                    $isHeading = true;
-                }
-
-                foreach ($xpath->query('.//w:r', $p) as $r) {
-                    $boldNode = $xpath->query('.//w:b', $r)->item(0);
-                    if ($boldNode) {
-                        $isBold = true;
-                    }
-                    foreach ($xpath->query('.//w:t', $r) as $t) {
-                        $text .= $t->nodeValue;
-                    }
-                }
-
-                $text = trim($text);
-                if ($text === '') {
-                    $fpdf->Ln(3);
-                    continue;
-                }
-
-                $hasContent = true;
-
-                // Safely convert UTF-8 to Windows-1252 for FPDF without triggering fatal E_NOTICE/ErrorException
-                $cleanText = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $text);
+            foreach ($paragraphs as $para) {
+                $cleanText = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $para['text']);
                 if ($cleanText === false || $cleanText === '') {
-                    $cleanText = mb_convert_encoding($text, 'windows-1252', 'UTF-8');
+                    $cleanText = mb_convert_encoding($para['text'], 'windows-1252', 'UTF-8');
                 }
                 $cleanText = preg_replace('/[^\x20-\x7E\xA0-\xFF\r\n\t]/', ' ', $cleanText);
 
-                if ($isHeading) {
+                if ($para['isHeading']) {
                     $fpdf->Ln(4);
                     $fpdf->SetFont('Helvetica', 'B', 12);
                     $fpdf->SetTextColor(15, 23, 42);
                     $fpdf->MultiCell(0, 6, $cleanText);
                     $fpdf->Ln(2);
-                } elseif ($isBold) {
+                } elseif ($para['isBold']) {
                     $fpdf->SetFont('Helvetica', 'B', 10);
                     $fpdf->SetTextColor(30, 41, 59);
                     $fpdf->MultiCell(0, 5, $cleanText);
@@ -115,10 +162,6 @@ class DocumentViewController extends Controller
                 }
             }
 
-            if (!$hasContent) {
-                return $this->convertRawDocumentToPdf($docxPath, $outputPath);
-            }
-
             if (!is_dir(dirname($outputPath))) {
                 mkdir(dirname($outputPath), 0755, true);
             }
@@ -127,61 +170,45 @@ class DocumentViewController extends Controller
             return file_exists($outputPath) && filesize($outputPath) > 100;
         } catch (\Throwable $e) {
             Log::warning("Local docx to pdf conversion failed: " . $e->getMessage());
-            return $this->convertRawDocumentToPdf($docxPath, $outputPath);
+            return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
         }
     }
 
     /**
-     * Fallback text/document converter for non-standard, partial, or corrupted documents.
+     * Generate a clean fallback PDF cover page for an unreadable/unconvertible attached file.
+     * NEVER dumps raw zip binary data.
      */
-    private function convertRawDocumentToPdf(string $srcPath, string $outputPath): bool
+    private function generateFallbackPdfForFile($fileModel, string $srcPath, string $outputPath): bool
     {
         $this->ensureFpdiLoaded();
-        if (!file_exists($srcPath) || !class_exists(\FPDF::class)) {
+        if (!class_exists(\FPDF::class)) {
             return false;
         }
 
         try {
-            $rawContent = @file_get_contents($srcPath) ?: '';
-            $extracted = strip_tags($rawContent);
-            $extracted = preg_replace('/[^\x20-\x7E\r\n\t]/', ' ', $extracted);
-            $extracted = trim(preg_replace('/\s+/', ' ', $extracted));
-
             $fpdf = new \FPDF('P', 'mm', 'A4');
             $fpdf->SetMargins(20, 20, 20);
             $fpdf->SetAutoPageBreak(true, 20);
             $fpdf->AddPage();
             $fpdf->SetFont('Helvetica', 'B', 14);
             $fpdf->SetTextColor(15, 23, 42);
-            $fpdf->Cell(0, 10, 'Document: ' . basename($srcPath), 0, 1, 'C');
-            $fpdf->Ln(6);
+            $fileName = is_object($fileModel) ? ($fileModel->original_name ?? basename($srcPath)) : basename($srcPath);
+            $fpdf->Cell(0, 10, 'Attachment: ' . $fileName, 0, 1, 'C');
+            $fpdf->Ln(8);
 
-            $fpdf->SetFont('Helvetica', '', 10);
-            $fpdf->SetTextColor(51, 65, 85);
-
-            if (!empty($extracted) && strlen($extracted) > 20) {
-                $fpdf->MultiCell(0, 5, substr($extracted, 0, 4000));
-            } else {
-                $fpdf->MultiCell(0, 5, "Attached Document: " . basename($srcPath) . "\nSize: " . round(filesize($srcPath) / 1024, 1) . " KB\nThis document is included as part of the complete manuscript.");
-            }
+            $fpdf->SetFont('Helvetica', '', 11);
+            $fpdf->SetTextColor(71, 85, 105);
+            $sizeText = file_exists($srcPath) ? (round(filesize($srcPath) / 1024, 1) . ' KB') : 'Available in repository';
+            $fpdf->MultiCell(0, 6, "This section represents attached manuscript document: {$fileName}.\nFile size: {$sizeText}\nThis document is part of the complete research manuscript.");
 
             if (!is_dir(dirname($outputPath))) {
                 mkdir(dirname($outputPath), 0755, true);
             }
-
             $fpdf->Output($outputPath, 'F');
             return file_exists($outputPath) && filesize($outputPath) > 100;
         } catch (\Throwable $e) {
             return false;
         }
-    }
-
-    /**
-     * Generate a fallback PDF page for an attached file.
-     */
-    private function generateFallbackPdfForFile($fileModel, string $srcPath, string $outputPath): bool
-    {
-        return $this->convertRawDocumentToPdf($srcPath, $outputPath);
     }
 
     /**
