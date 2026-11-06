@@ -1144,6 +1144,11 @@
                             <span class="truncate max-w-md font-bold" id="viewerTitleLabel">
                                 {{ $isMultiFile ? 'File #1: ' . $allFiles->first()->original_name : 'Manuscript Reader' }}
                             </span>
+                            @if(auth()->check() && auth()->user()->role === 'student')
+                                <span class="hidden sm:inline-block text-[10px] text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                                    Page 1 Preview
+                                </span>
+                            @endif
                         </div>
                         <div class="text-[11px] text-slate-300 flex items-center gap-3">
                             @if($isAdmin)

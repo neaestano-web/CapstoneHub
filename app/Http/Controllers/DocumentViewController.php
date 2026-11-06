@@ -253,6 +253,7 @@ class DocumentViewController extends Controller
             return $this->download($research, $ai);
         }
 
+        $isStudent = auth()->check() && auth()->user()->role === 'student';
         $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
 
         // If specific file requested via ?file_id=X
@@ -261,8 +262,8 @@ class DocumentViewController extends Controller
             return $this->serveSingleFile($research, $specificFile->file_path, $ai, $specificFile->original_name);
         }
 
-        // If continuous combined view is explicitly requested via ?combined=1
-        if (request()->has('combined') && $files->count() > 1) {
+        // If continuous combined view is explicitly requested via ?combined=1 (Admin only)
+        if (request()->has('combined') && $files->count() > 1 && !$isStudent) {
             $pdfData = $this->getMergedOrConvertedPdf($research, $ai);
             if ($pdfData) {
                 return response($pdfData['content'], 200, [
@@ -522,13 +523,71 @@ class DocumentViewController extends Controller
     /**
      * Serve a single file inline (PDF as inline PDF, DOCX via converted PDF or embedded docx-preview).
      */
+    /**
+     * Slice and return Page 1 only of a PDF for student user view.
+     */
+    private function servePageOneOnly(Research $research, string $absolutePdfPath, string $displayName)
+    {
+        $this->ensureFpdiLoaded();
+
+        $mtime = file_exists($absolutePdfPath) ? filemtime($absolutePdfPath) : time();
+        $cacheHash = substr(md5($absolutePdfPath . '_' . $mtime), 0, 12);
+        $page1RelPath = 'researches/pdf_cache/student_page1_' . $research->id . '_' . $cacheHash . '.pdf';
+        $page1AbsPath = Storage::disk('public')->path($page1RelPath);
+
+        if (!Storage::disk('public')->exists($page1RelPath) && class_exists(\setasign\Fpdi\Fpdi::class)) {
+            try {
+                $fpdi = new \setasign\Fpdi\Fpdi();
+                $pageCount = $fpdi->setSourceFile($absolutePdfPath);
+                if ($pageCount >= 1) {
+                    $templateId = $fpdi->importPage(1);
+                    $size = $fpdi->getTemplateSize($templateId);
+                    $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                    $fpdi->useTemplate($templateId);
+
+                    if (!is_dir(dirname($page1AbsPath))) {
+                        mkdir(dirname($page1AbsPath), 0755, true);
+                    }
+                    $fpdi->Output($page1AbsPath, 'F');
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Student Page 1 slicing exception for research {$research->id}: " . $e->getMessage());
+            }
+        }
+
+        if (Storage::disk('public')->exists($page1RelPath)) {
+            $content = Storage::disk('public')->get($page1RelPath);
+            return response($content, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $displayName . ' (Page 1).pdf"',
+                'Content-Length' => strlen($content),
+                'Cache-Control' => 'no-cache, private, must-revalidate',
+            ]);
+        }
+
+        // Fallback if slicing failed: serve source directly
+        $content = file_get_contents($absolutePdfPath);
+        return response($content, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $displayName . ' (Page 1).pdf"',
+            'Content-Length' => strlen($content),
+            'Cache-Control' => 'no-cache, private, must-revalidate',
+        ]);
+    }
+
     private function serveSingleFile(Research $research, string $path, AIService $ai, ?string $originalName = null)
     {
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         $absoluteDocxPath = Storage::disk('public')->path($path);
         $displayName = $originalName ?: ($research->title . '.' . $extension);
+        $isStudent = auth()->check() && auth()->user()->role === 'student';
 
         if ($extension === 'pdf') {
+            $absolutePdfPath = Storage::disk('public')->path($path);
+            if ($isStudent) {
+                return $this->servePageOneOnly($research, $absolutePdfPath, pathinfo($displayName, PATHINFO_FILENAME));
+            }
+
             $file = Storage::disk('public')->get($path);
             return response($file, 200, [
                 'Content-Type' => 'application/pdf',
@@ -542,6 +601,10 @@ class DocumentViewController extends Controller
         $absolutePdfPath = Storage::disk('public')->path($pdfRelativePath);
 
         if (Storage::disk('public')->exists($pdfRelativePath)) {
+            if ($isStudent) {
+                return $this->servePageOneOnly($research, $absolutePdfPath, pathinfo($displayName, PATHINFO_FILENAME));
+            }
+
             $file = Storage::disk('public')->get($pdfRelativePath);
             return response($file, 200, [
                 'Content-Type' => 'application/pdf',
@@ -561,6 +624,10 @@ class DocumentViewController extends Controller
         }
 
         if (Storage::disk('public')->exists($pdfRelativePath)) {
+            if ($isStudent) {
+                return $this->servePageOneOnly($research, $absolutePdfPath, pathinfo($displayName, PATHINFO_FILENAME));
+            }
+
             $file = Storage::disk('public')->get($pdfRelativePath);
             return response($file, 200, [
                 'Content-Type' => 'application/pdf',
@@ -576,6 +643,7 @@ class DocumentViewController extends Controller
             'extension' => 'docx',
             'displayName' => $displayName,
             'canDownload' => $this->canDownload($research),
+            'singlePageOnly' => $isStudent,
         ]);
     }
 

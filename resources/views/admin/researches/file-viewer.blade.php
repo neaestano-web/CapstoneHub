@@ -119,6 +119,12 @@
             background: #fff !important;
         }
 
+        @if(!empty($singlePageOnly))
+        #docx-container .docx-wrapper > section.docx:not(:first-child) {
+            display: none !important;
+        }
+        @endif
+
         /* PDF embed */
         .pdf-embed {
             width: 100%;
@@ -229,6 +235,7 @@
         (function() {
             const fileUrl = @json($fileUrl);
             const canDownload = @json(!empty($canDownload));
+            const singlePageOnly = @json(!empty($singlePageOnly));
             const container = document.getElementById('docx-container');
             const loading = document.getElementById('loadingState');
 
@@ -261,6 +268,12 @@
                 })
                 .then(() => {
                     console.log('Document rendered successfully');
+                    if (singlePageOnly) {
+                        const sections = container.querySelectorAll('.docx-wrapper > section.docx');
+                        for (let i = 1; i < sections.length; i++) {
+                            sections[i].remove();
+                        }
+                    }
                 })
                 .catch(error => {
                     console.error('Document render error:', error);
