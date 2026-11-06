@@ -30,15 +30,19 @@ class FileViewController extends Controller
             return redirect()->route('repository.download', $research);
         }
 
-        // For student users attempting direct navigation/download to raw files, enforce approved download request
-        if ($research && auth()->check() && auth()->user()->role !== 'admin') {
+        // For student users attempting direct navigation/download to raw files:
+        if ($research && auth()->check() && auth()->user()->role === 'student') {
             $isFetchForViewer = request()->ajax()
                 || request()->header('Sec-Fetch-Dest') === 'empty'
                 || request()->header('X-Requested-With') === 'XMLHttpRequest';
 
-            if (!$isFetchForViewer && !app(DocumentViewController::class)->canDownload($research)) {
-                return redirect()->route('repository.show', $research)
-                    ->with('error', 'Download permission required. Please submit a download request and wait for faculty approval.');
+            if (!$isFetchForViewer) {
+                if (!app(DocumentViewController::class)->canDownload($research)) {
+                    return redirect()->route('repository.show', $research)
+                        ->with('error', 'Download permission required. Please submit a download request and wait for faculty approval.');
+                }
+                // When approved, students download the project as a single merged PDF
+                return redirect()->route('repository.download', $research);
             }
         }
 

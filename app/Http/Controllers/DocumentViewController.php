@@ -313,9 +313,14 @@ class DocumentViewController extends Controller
                 ->with('error', 'Unable to prepare download file. Please contact the administrator.');
         }
 
+        $safeTitle = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $research->title);
+        $filename = (auth()->check() && auth()->user()->role === 'student')
+            ? (trim($safeTitle) . '.pdf')
+            : $pdfData['filename'];
+
         return response($pdfData['content'], 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $pdfData['filename'] . '"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             'Content-Length' => strlen($pdfData['content']),
         ]);
     }
@@ -356,11 +361,9 @@ class DocumentViewController extends Controller
         try {
             $fpdi = new \setasign\Fpdi\Fpdi();
             $hasPages = false;
-            $allFilesMerged = true;
 
             foreach ($inputPdfPaths as $path) {
                 if (!file_exists($path)) {
-                    $allFilesMerged = false;
                     continue;
                 }
                 try {
@@ -374,11 +377,10 @@ class DocumentViewController extends Controller
                     }
                 } catch (\Throwable $pageEx) {
                     Log::warning("Skipping incompatible page or file {$path}: " . $pageEx->getMessage());
-                    $allFilesMerged = false;
                 }
             }
 
-            if (!$hasPages || !$allFilesMerged) {
+            if (!$hasPages) {
                 if (file_exists($outputPath)) {
                     @unlink($outputPath);
                 }
@@ -472,7 +474,7 @@ class DocumentViewController extends Controller
                     $fileContent = Storage::disk('public')->get($mergedRelativePath);
                     return [
                         'content' => $fileContent,
-                        'filename' => $safeTitle . ' (Complete Combined Manuscript).pdf',
+                        'filename' => $safeTitle . '.pdf',
                     ];
                 }
 
@@ -480,7 +482,7 @@ class DocumentViewController extends Controller
                 if (!empty($inputPdfPaths) && file_exists($inputPdfPaths[0])) {
                     return [
                         'content' => file_get_contents($inputPdfPaths[0]),
-                        'filename' => $safeTitle . ' (Part 1).pdf',
+                        'filename' => $safeTitle . '.pdf',
                     ];
                 }
             }
