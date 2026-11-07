@@ -274,7 +274,7 @@
                     <span class="w-6 h-6 rounded-md bg-[#0c4233] text-white font-bold text-xs inline-flex items-center justify-center">2</span>
                     <div>
                         <h2 class="text-base font-bold admin-title">Category Classification</h2>
-                        <p class="text-xs admin-muted">Select research categories or run AI Auto-Classification to suggest matching tags.</p>
+                        <p class="text-xs admin-muted">Select research categories or run Auto-Classification to suggest matching tags.</p>
                     </div>
                 </div>
 
