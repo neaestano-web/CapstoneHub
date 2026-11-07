@@ -495,7 +495,7 @@
 
                             <a href="{{ route('repository.show', $research->id) }}"
                                class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50/70 hover:bg-emerald-100 border border-emerald-200/60 px-2.5 py-1 rounded-lg transition shrink-0">
-                                <span>Inspect</span>
+                                <span>View</span>
                                 <span>➔</span>
                             </a>
                         </div>
