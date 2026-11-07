@@ -67,7 +67,7 @@
     {{-- TOP NAVIGATION & STATUS BAR --}}
     <div>
         <a href="{{ route('student.researches.index') }}" class="back-btn-pill">
-            ← Back to My Submissions
+            ← Back to My Submission
         </a>
 
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-2">
@@ -190,16 +190,13 @@
                 @if($research->files && $research->files->count() > 0)
                     <div class="space-y-2 text-left">
                         @foreach($research->files->sortBy('sort_order') as $rf)
-                            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-2 truncate">
+                            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center text-xs">
+                                <div class="flex items-center gap-2 truncate w-full">
                                     <span class="px-2 py-0.5 rounded font-extrabold flex-shrink-0 {{ $rf->sort_order === 1 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700' }}">
                                         {{ $rf->sort_order === 1 ? '🥇 #1' : '#' . $rf->sort_order }}
                                     </span>
                                     <span class="font-semibold text-slate-800 truncate" title="{{ $rf->original_name }}">{{ $rf->original_name }}</span>
                                 </div>
-                                <a href="{{ route('repository.show', $research->id) }}" class="text-emerald-700 hover:underline font-bold flex-shrink-0 ml-2">
-                                    View
-                                </a>
                             </div>
                         @endforeach
                     </div>

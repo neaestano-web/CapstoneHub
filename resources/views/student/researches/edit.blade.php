@@ -21,7 +21,7 @@
 <div class="mb-6 pb-4 border-b border-slate-100">
     <a href="{{ route('student.researches.index') }}"
        class="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-bold text-[#5840bb] bg-purple-50 hover:bg-purple-100 border border-purple-100 transition">
-        ← Back to My Submissions
+        ← Back to My Submission
     </a>
     <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.15rem;" class="font-extrabold text-[#2d2b56] tracking-tight leading-tight">
         Edit Capstone <span class="text-[#0c4233]">Submission</span>

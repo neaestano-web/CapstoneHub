@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'My Submissions — Student Portal')
+@section('title', 'My Submission — Student Portal')
 
 @section('content')
 <style>
@@ -35,7 +35,7 @@
             <div class="flex items-center gap-2 mb-1">
                 <span class="text-xs font-bold uppercase tracking-wider sd-muted">Student Portal</span>
                 <span class="sd-muted opacity-40">/</span>
-                <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">My Submissions</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">My Submission</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight sd-title">
                 Capstone Submission
