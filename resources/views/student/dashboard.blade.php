@@ -217,81 +217,182 @@
 
         {{-- RIGHT COLUMN: REPOSITORY TRENDS --}}
         <div class="space-y-4">
-            {{-- Popular Search Topics --}}
-            <div class="sd-card p-5 space-y-3">
-                <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5 pb-2 sd-divider">
-                    <span>🔥</span>
-                    <span>Popular Search Topics</span>
-                </h3>
-                <div class="space-y-2">
+            {{-- Popular Search Topics (Bar Graph) --}}
+            <div class="sd-card p-5 space-y-3.5">
+                <div class="flex items-center justify-between pb-2 sd-divider">
+                    <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
+                        <span>🔥</span>
+                        <span>Popular Search Topics</span>
+                    </h3>
+                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                        Search Graph
+                    </span>
+                </div>
+
+                @php
+                    $maxSearchTotal = $mostSearched->max('total') ?: 1;
+                @endphp
+
+                <div class="space-y-3">
                     @forelse($mostSearched as $index => $search)
-                        <div class="flex items-center justify-between gap-2 text-xs py-1 {{ !$loop->last ? 'sd-divider' : '' }}">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold {{ $index === 0 ? 'bg-amber-100 text-amber-800' : 'sd-card-subtle sd-muted' }}">
-                                    {{ $index + 1 }}
-                                </span>
-                                <span class="font-medium text-xs sd-title truncate">
-                                    "{{ $search->query }}"
-                                </span>
+                        @php
+                            $searchPct = round(($search->total / $maxSearchTotal) * 100);
+                        @endphp
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between gap-2 text-xs">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 {{ $index === 0 ? 'bg-amber-500 text-white shadow-xs' : 'sd-card-subtle sd-muted' }}">
+                                        {{ $index + 1 }}
+                                    </span>
+                                    <span class="font-semibold text-xs sd-title truncate" title="{{ $search->query }}">
+                                        "{{ $search->query }}"
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <span class="font-mono text-[11px] font-extrabold sd-title">
+                                        {{ number_format($search->total) }}
+                                    </span>
+                                    <span class="text-[10px] sd-muted">searches</span>
+                                </div>
                             </div>
-                            <span class="font-mono text-[10px] font-bold sd-muted shrink-0">
-                                {{ number_format($search->total) }}
-                            </span>
+
+                            {{-- Graph Bar --}}
+                            <div class="h-2 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500 {{ $index === 0 ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 'bg-gradient-to-r from-emerald-600 to-teal-400' }}"
+                                     style="width: {{ max(6, $searchPct) }}%;"></div>
+                            </div>
                         </div>
                     @empty
-                        <p class="text-xs sd-muted text-center py-2">No searches logged yet.</p>
+                        <p class="text-xs sd-muted text-center py-4">No searches logged yet.</p>
                     @endforelse
                 </div>
             </div>
 
-            {{-- Top Read Capstones --}}
-            <div class="sd-card p-5 space-y-3">
-                <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5 pb-2 sd-divider">
-                    <span>📖</span>
-                    <span>Top Read Capstones</span>
-                </h3>
-                <div class="space-y-2.5">
+            {{-- Top Read Capstones (Readership Bar Graph) --}}
+            <div class="sd-card p-5 space-y-3.5">
+                <div class="flex items-center justify-between pb-2 sd-divider">
+                    <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
+                        <span>📖</span>
+                        <span>Top Read Capstones</span>
+                    </h3>
+                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                        Readership Graph
+                    </span>
+                </div>
+
+                @php
+                    $maxStudyViews = $topStudies->max('views_count') ?: 1;
+                @endphp
+
+                <div class="space-y-3">
                     @forelse($topStudies as $index => $study)
-                        <div class="space-y-1 text-xs py-1 {{ !$loop->last ? 'sd-divider' : '' }}">
-                            <div class="flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 mt-0.5 {{ $index === 0 ? 'bg-emerald-100 text-emerald-800' : 'sd-card-subtle sd-muted' }}">
-                                    {{ $index + 1 }}
-                                </span>
-                                <a href="{{ route('repository.show', $study->id) }}" class="font-bold text-xs sd-title hover:underline line-clamp-1 flex-1">
-                                    {{ $study->title }}
-                                </a>
+                        @php
+                            $viewsPct = round(($study->views_count / $maxStudyViews) * 100);
+                        @endphp
+                        <div class="space-y-1.5">
+                            <div class="flex items-start justify-between gap-2 text-xs">
+                                <div class="flex items-center gap-2 min-w-0 flex-1">
+                                    <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 {{ $index === 0 ? 'bg-[#0c4233] text-white shadow-xs' : 'sd-card-subtle sd-muted' }}">
+                                        {{ $index + 1 }}
+                                    </span>
+                                    <a href="{{ route('repository.show', $study->id) }}" class="font-bold text-xs sd-title hover:underline line-clamp-1 truncate" title="{{ $study->title }}">
+                                        {{ $study->title }}
+                                    </a>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <span class="font-mono text-[11px] font-extrabold sd-accent">
+                                        {{ number_format($study->views_count) }}
+                                    </span>
+                                    <span class="text-[10px] sd-muted">views</span>
+                                </div>
                             </div>
+
                             <div class="flex items-center justify-between text-[10px] sd-muted pl-7">
                                 <span class="truncate">{{ $study->category->name ?? 'Uncategorized' }}</span>
-                                <span class="font-mono font-bold sd-muted shrink-0">
-                                    {{ number_format($study->views_count) }} views
-                                </span>
+                                <span class="font-mono text-[9px] sd-muted font-bold">{{ $viewsPct }}% of peak</span>
+                            </div>
+
+                            {{-- Graph Bar --}}
+                            <div class="h-2 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden pl-7">
+                                <div class="h-full rounded-full transition-all duration-500 {{ $index === 0 ? 'bg-gradient-to-r from-emerald-600 to-teal-400' : 'bg-gradient-to-r from-slate-400 to-slate-300 dark:from-slate-500 dark:to-slate-600' }}"
+                                     style="width: {{ max(6, $viewsPct) }}%;"></div>
                             </div>
                         </div>
                     @empty
-                        <p class="text-xs sd-muted text-center py-2">No studies published yet.</p>
+                        <p class="text-xs sd-muted text-center py-4">No studies published yet.</p>
                     @endforelse
                 </div>
             </div>
 
-            {{-- Popular Categories --}}
-            <div class="sd-card p-5 space-y-3">
-                <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5 pb-2 sd-divider">
-                    <span>📁</span>
-                    <span>Popular Categories</span>
-                </h3>
-                <div class="space-y-1.5">
-                    @forelse($mostExploredCategories as $cat)
-                        <div class="flex items-center justify-between p-2 sd-card-subtle text-xs">
-                            <span class="font-medium text-xs sd-title truncate">{{ $cat->name }}</span>
-                            <span class="font-mono text-[10px] font-bold sd-muted shrink-0">
-                                {{ number_format($cat->search_logs_count) }} queries
-                            </span>
-                        </div>
-                    @empty
-                        <p class="text-xs sd-muted text-center py-2">No category logs available.</p>
-                    @endforelse
+            {{-- Popular Categories (Distribution Graph) --}}
+            <div class="sd-card p-5 space-y-3.5">
+                <div class="flex items-center justify-between pb-2 sd-divider">
+                    <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
+                        <span>📁</span>
+                        <span>Popular Categories</span>
+                    </h3>
+                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
+                        Category Graph
+                    </span>
                 </div>
+
+                @php
+                    $totalCatQueries = $mostExploredCategories->sum('search_logs_count') ?: 1;
+                    $catColors = ['#059669', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'];
+                @endphp
+
+                @if($mostExploredCategories->count() > 0)
+                    {{-- Segmented Distribution Bar Graph --}}
+                    <div class="space-y-1.5">
+                        <div class="h-3 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden flex gap-0.5 p-0.5">
+                            @foreach($mostExploredCategories as $index => $cat)
+                                @php
+                                    $slicePct = max(3, round(($cat->search_logs_count / $totalCatQueries) * 100));
+                                    $color = $catColors[$index % count($catColors)];
+                                @endphp
+                                <div class="h-full rounded-sm transition-all duration-500 first:rounded-l-full last:rounded-r-full" 
+                                     style="width: {{ $slicePct }}%; background-color: {{ $color }};" 
+                                     title="{{ $cat->name }}: {{ number_format($cat->search_logs_count) }} queries ({{ $slicePct }}%)"></div>
+                            @endforeach
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] sd-muted px-0.5">
+                            <span>Category Share</span>
+                            <span class="font-mono font-bold">{{ number_format($totalCatQueries) }} total queries</span>
+                        </div>
+                    </div>
+
+                    {{-- Individual Category Progress Bars --}}
+                    <div class="space-y-2.5 pt-1">
+                        @foreach($mostExploredCategories as $index => $cat)
+                            @php
+                                $catPct = round(($cat->search_logs_count / $totalCatQueries) * 100);
+                                $color = $catColors[$index % count($catColors)];
+                            @endphp
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ $color }};"></span>
+                                        <span class="font-medium text-xs sd-title truncate" title="{{ $cat->name }}">
+                                            {{ $cat->name }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <span class="font-mono text-[11px] font-bold sd-title">
+                                            {{ number_format($cat->search_logs_count) }}
+                                        </span>
+                                        <span class="font-mono text-[10px] sd-muted font-bold">({{ $catPct }}%)</span>
+                                    </div>
+                                </div>
+                                <div class="h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500" 
+                                         style="width: {{ max(4, $catPct) }}%; background-color: {{ $color }};"></div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-xs sd-muted text-center py-4">No category logs available.</p>
+                @endif
             </div>
         </div>
     </div>
