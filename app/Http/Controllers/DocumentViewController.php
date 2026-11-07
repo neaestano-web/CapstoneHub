@@ -49,6 +49,15 @@ class DocumentViewController extends Controller
 
             $xpath = new \DOMXPath($dom);
             $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+            $xpath->registerNamespace('wp', 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing');
+            $xpath->registerNamespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main');
+            $xpath->registerNamespace('pic', 'http://schemas.openxmlformats.org/drawingml/2006/picture');
+            $xpath->registerNamespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+            $xpath->registerNamespace('v', 'urn:schemas-microsoft-com:vml');
+
+            // Extract all embedded images and logos from docx
+            $imageMap = $this->extractDocxImages($docxPath, $realPath);
+            $floatingBottom = 0;
 
             // Render PDF via FPDF with academic layout margins
             $fpdf = new \FPDF('P', 'mm', 'A4');
@@ -75,6 +84,61 @@ class DocumentViewController extends Controller
                     if ($hasPageBreak) {
                         $fpdf->AddPage();
                         $consecutiveBlank = 0;
+                        $floatingBottom = 0;
+                    }
+
+                    // Render embedded drawings / logos / pictures in this paragraph
+                    $drawings = $xpath->query('.//w:drawing | .//w:pict', $node);
+                    if ($drawings && $drawings->length > 0 && !empty($imageMap)) {
+                        foreach ($drawings as $d) {
+                            $blip = $xpath->query('.//a:blip/@r:embed | .//v:imagedata/@r:id', $d)->item(0)?->nodeValue;
+                            if ($blip && isset($imageMap[$blip])) {
+                                $imgPath = $imageMap[$blip]['path'];
+                                
+                                $cx = intval($xpath->query('.//wp:extent/@cx', $d)->item(0)?->nodeValue ?? 0);
+                                $cy = intval($xpath->query('.//wp:extent/@cy', $d)->item(0)?->nodeValue ?? 0);
+                                $wMm = ($cx > 0) ? round($cx / 36000, 1) : 25;
+                                $hMm = ($cy > 0) ? round($cy / 36000, 1) : 25;
+                                if ($wMm > 165) {
+                                    $ratio = 165 / $wMm;
+                                    $wMm = 165;
+                                    $hMm = round($hMm * $ratio, 1);
+                                }
+
+                                $posH = $xpath->query('.//wp:positionH/wp:posOffset', $d)->item(0)?->nodeValue;
+                                $posV = $xpath->query('.//wp:positionV/wp:posOffset', $d)->item(0)?->nodeValue;
+
+                                try {
+                                    if ($posH !== null && $posV !== null) {
+                                        // Floating anchor image (e.g. logos flanking cover header)
+                                        $imgX = 25 + round(intval($posH) / 36000, 1);
+                                        $imgY = max(15, $fpdf->GetY() + round(intval($posV) / 36000, 1));
+                                        $fpdf->Image($imgPath, $imgX, $imgY, $wMm, $hMm);
+                                        $floatingBottom = max($floatingBottom, $imgY + $hMm);
+                                    } else {
+                                        // Inline image
+                                        $jc = $xpath->query('.//w:pPr/w:jc/@w:val', $node)->item(0)?->nodeValue;
+                                        if ($jc === 'right') {
+                                            $imgX = 210 - 20 - $wMm;
+                                        } elseif ($jc === 'left') {
+                                            $imgX = 25;
+                                        } else {
+                                            $imgX = (210 - $wMm) / 2;
+                                        }
+
+                                        $imgY = $fpdf->GetY();
+                                        if ($imgY + $hMm > 270) {
+                                            $fpdf->AddPage();
+                                            $imgY = $fpdf->GetY();
+                                        }
+                                        $fpdf->Image($imgPath, $imgX, $imgY, $wMm, $hMm);
+                                        $fpdf->SetY($imgY + $hMm + 2);
+                                    }
+                                } catch (\Throwable $imgEx) {
+                                    Log::warning("FPDF Image insertion warning: " . $imgEx->getMessage());
+                                }
+                            }
+                        }
                     }
 
                     // Extract text from paragraph runs
@@ -88,7 +152,12 @@ class DocumentViewController extends Controller
                     if ($cleanText === '') {
                         $consecutiveBlank++;
                         if ($consecutiveBlank <= 3) {
-                            $fpdf->Ln(4.5);
+                            if ($floatingBottom > 0 && $fpdf->GetY() < $floatingBottom) {
+                                $fpdf->SetY($floatingBottom + 2);
+                                $floatingBottom = 0;
+                            } else {
+                                $fpdf->Ln(4.5);
+                            }
                         }
                         continue;
                     }
@@ -230,11 +299,117 @@ class DocumentViewController extends Controller
             }
 
             $fpdf->Output($outputPath, 'F');
+
+            // Cleanup temporary image files
+            if (!empty($imageMap)) {
+                foreach ($imageMap as $img) {
+                    if (isset($img['path']) && file_exists($img['path'])) {
+                        @unlink($img['path']);
+                        @rmdir(dirname($img['path']));
+                    }
+                }
+            }
+
             return file_exists($outputPath) && filesize($outputPath) > 100;
         } catch (\Throwable $e) {
             Log::warning("Local docx to pdf conversion failed: " . $e->getMessage());
             return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
         }
+    }
+
+    /**
+     * Extract images and media relationship mappings from docx file.
+     * Returns an array mapping rId => ['path' => tempFilePath, 'ext' => extension].
+     */
+    private function extractDocxImages(string $docxPath, string $realPath): array
+    {
+        $imageMap = [];
+        $mediaBytes = [];
+        $relsXml = null;
+
+        // 1. Try ZipArchive
+        if (class_exists(\ZipArchive::class)) {
+            $zip = new \ZipArchive();
+            $targets = array_unique([$realPath, $docxPath]);
+            foreach ($targets as $target) {
+                if ($zip->open($target, \ZipArchive::RDONLY) === true || $zip->open($target) === true) {
+                    $relsXml = $zip->getFromName('word/_rels/document.xml.rels');
+                    for ($i = 0; $i < $zip->numFiles; $i++) {
+                        $name = $zip->getNameIndex($i);
+                        if (str_starts_with(strtolower($name), 'word/media/')) {
+                            $mediaBytes[strtolower($name)] = $zip->getFromIndex($i);
+                        }
+                    }
+                    $zip->close();
+                    if (!empty($mediaBytes)) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 2. Pure-PHP direct scanner fallback if ZipArchive was unavailable or missed any files
+        if (empty($mediaBytes) || !$relsXml) {
+            $rawBytes = @file_get_contents($docxPath);
+            if ($rawBytes) {
+                $offset = 0;
+                while (($pos = strpos($rawBytes, "PK\x03\x04", $offset)) !== false) {
+                    $header = substr($rawBytes, $pos, 30);
+                    if (strlen($header) < 30) {
+                        break;
+                    }
+                    $unpacked = unpack('vversion/vflags/vmethod/vmtime/vmdate/Vcrc/VcompSize/VuncompSize/vnameLen/vextraLen', substr($header, 4, 26));
+                    $name = substr($rawBytes, $pos + 30, $unpacked['nameLen']);
+                    $dataOffset = $pos + 30 + $unpacked['nameLen'] + $unpacked['extraLen'];
+                    $nameLower = strtolower($name);
+
+                    if ($nameLower === 'word/_rels/document.xml.rels' && !$relsXml) {
+                        $compData = substr($rawBytes, $dataOffset, $unpacked['compSize']);
+                        $relsXml = ($unpacked['method'] === 0) ? $compData : @gzinflate($compData);
+                    } elseif (str_starts_with($nameLower, 'word/media/') && !isset($mediaBytes[$nameLower])) {
+                        $compData = substr($rawBytes, $dataOffset, $unpacked['compSize']);
+                        $mediaBytes[$nameLower] = ($unpacked['method'] === 0) ? $compData : @gzinflate($compData);
+                    }
+                    $offset = $dataOffset;
+                }
+            }
+        }
+
+        // Parse relationships to map rId => temp file for FPDF insertion
+        if ($relsXml && !empty($mediaBytes)) {
+            $relsDom = new \DOMDocument();
+            if (@$relsDom->loadXML($relsXml)) {
+                $tempSubdir = sys_get_temp_dir() . '/capstone_img_' . uniqid();
+                @mkdir($tempSubdir, 0755, true);
+
+                foreach ($relsDom->getElementsByTagName('Relationship') as $rel) {
+                    $type = $rel->getAttribute('Type');
+                    if (str_contains($type, '/image')) {
+                        $rId = $rel->getAttribute('Id');
+                        $target = $rel->getAttribute('Target');
+                        $targetLower = strtolower($target);
+                        $zipKey = str_starts_with($targetLower, 'media/') ? 'word/' . $targetLower : ltrim($targetLower, '/');
+
+                        if (isset($mediaBytes[$zipKey])) {
+                            $ext = strtolower(pathinfo($target, PATHINFO_EXTENSION) ?: 'png');
+                            if (!in_array($ext, ['png', 'jpg', 'jpeg'])) {
+                                $ext = 'png';
+                            }
+                            $tmpFile = $tempSubdir . '/' . $rId . '.' . $ext;
+                            @file_put_contents($tmpFile, $mediaBytes[$zipKey]);
+                            if (file_exists($tmpFile) && filesize($tmpFile) > 0) {
+                                $imageMap[$rId] = [
+                                    'path' => $tmpFile,
+                                    'ext' => $ext,
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $imageMap;
     }
 
     /**
