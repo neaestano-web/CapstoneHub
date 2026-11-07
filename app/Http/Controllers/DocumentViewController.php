@@ -531,6 +531,9 @@ class DocumentViewController extends Controller
 
         // 1. Get the first uploaded file that actually exists on disk in sequential order
         $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
+        foreach ($files as $f) {
+            $this->ensureFileRestoredFromDatabase($f);
+        }
         $primaryPath = null;
         $displayName = null;
 
