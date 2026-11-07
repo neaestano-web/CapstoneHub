@@ -267,7 +267,7 @@
                 <div id="classificationPanel" style="display:none;" class="sd-card-subtle p-5 space-y-4">
                     <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                         <span>🤖</span>
-                        <span>AI Suggestions — Review & Confirm</span>
+                        <span>Review & Confirm</span>
                     </div>
 
                     <div class="space-y-2">
