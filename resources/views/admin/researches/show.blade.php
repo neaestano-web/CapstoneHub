@@ -1443,7 +1443,7 @@
             {{-- TAB 2: REORDER EXISTING ATTACHED FILES (IF ALREADY MULTI-FILE) --}}
             @if($isMultiFile)
                 <div id="updateTabReorder" style="display: none;" class="space-y-4">
-                    <form action="{{ route('admin.researches.reorderFiles', $research) }}" method="POST" class="space-y-3" onsubmit="document.getElementById('btnSubmitReorder').disabled = true; document.getElementById('btnSubmitReorder').innerText = 'Saving order...';">
+                    <form action="{{ route('admin.researches.reorderFiles', $research) }}" method="POST" class="space-y-3" onsubmit="const b = document.getElementById('btnSubmitReorder'); if(b){ b.style.pointerEvents='none'; b.innerText='Saving order...'; setTimeout(function(){ b.disabled = true; }, 300); }">
                         @csrf
 
                         <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] text-slate-600 flex items-start gap-2">
@@ -1641,15 +1641,26 @@ function renderModalFileList() {
 
 function validateAndSubmitUploadForm(e) {
     if (modalFilesArray.length === 0) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         alert('Please select at least one PDF or Word file before uploading.');
         return false;
     }
     syncModalActualInput();
     const btn = document.getElementById('btnSubmitUpdateFile');
     if (btn) {
-        btn.disabled = true;
-        btn.innerText = 'Uploading and synchronizing...';
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.75';
+        btn.innerHTML = `
+            <svg class="w-3.5 h-3.5 animate-spin inline-block mr-1.5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Uploading & Saving Files...</span>
+        `;
+        // Delay disabling so Chrome does not abort the active form submit with ERR_FAILED
+        setTimeout(function() {
+            btn.disabled = true;
+        }, 300);
     }
     return true;
 }

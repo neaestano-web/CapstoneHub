@@ -412,6 +412,9 @@ class ResearchController extends Controller
      */
     public function updateFiles(Request $request, Research $research)
     {
+        @ini_set('max_execution_time', '300');
+        @set_time_limit(300);
+
         $request->validate([
             'files'   => 'nullable|array|min:1',
             'files.*' => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
@@ -430,60 +433,79 @@ class ResearchController extends Controller
         }
 
         if (empty($uploadedFiles)) {
-            return back()->with('error', 'Please select at least one PDF or Word file to attach.');
+            return redirect()->route('admin.researches.show', $research)->with('error', 'Please select at least one PDF or Word file to attach.');
         }
 
-        // 1. Delete old physical files and related cache
-        foreach ($research->files as $f) {
-            if ($f->file_path && \Storage::disk('public')->exists($f->file_path)) {
-                \Storage::disk('public')->delete($f->file_path);
-            }
-            $cachedPdf = 'researches/pdf_cache/' . pathinfo($f->file_path, PATHINFO_FILENAME) . '.pdf';
-            if (\Storage::disk('public')->exists($cachedPdf)) {
-                \Storage::disk('public')->delete($cachedPdf);
-            }
-            $f->delete();
-        }
+        try {
+            \DB::beginTransaction();
 
-        if ($research->pdf_path && \Storage::disk('public')->exists($research->pdf_path)) {
-            \Storage::disk('public')->delete($research->pdf_path);
-        }
-
-        // Clean any merged or preview cached PDFs for this research
-        $pdfCacheFiles = \Storage::disk('public')->allFiles('researches/pdf_cache');
-        foreach ($pdfCacheFiles as $cf) {
-            if (str_contains($cf, "page1_preview_{$research->id}_") || str_contains($cf, "merged_{$research->id}_")) {
-                \Storage::disk('public')->delete($cf);
+            // 1. Delete old physical files and related cache
+            foreach ($research->files as $f) {
+                if ($f->file_path && \Storage::disk('public')->exists($f->file_path)) {
+                    \Storage::disk('public')->delete($f->file_path);
+                }
+                $cachedPdf = 'researches/pdf_cache/' . pathinfo($f->file_path, PATHINFO_FILENAME) . '.pdf';
+                if (\Storage::disk('public')->exists($cachedPdf)) {
+                    \Storage::disk('public')->delete($cachedPdf);
+                }
+                $f->delete();
             }
-        }
 
-        // 2. Store newly uploaded files
-        $firstPath = null;
-        foreach ($uploadedFiles as $index => $file) {
-            $path = $file->store('researches', 'public');
-            if ($index === 0) {
-                $firstPath = $path;
+            if ($research->pdf_path && \Storage::disk('public')->exists($research->pdf_path)) {
+                \Storage::disk('public')->delete($research->pdf_path);
             }
-            $research->files()->create([
-                'file_path'     => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'mime_type'     => $file->getClientMimeType(),
-                'file_size'     => $file->getSize(),
-                'sort_order'    => $index + 1,
+
+            // Clean any merged or preview cached PDFs for this research
+            try {
+                if (\Storage::disk('public')->exists('researches/pdf_cache')) {
+                    $pdfCacheFiles = \Storage::disk('public')->allFiles('researches/pdf_cache');
+                    foreach ($pdfCacheFiles as $cf) {
+                        if (str_contains($cf, "page1_preview_{$research->id}_") || str_contains($cf, "merged_{$research->id}_")) {
+                            \Storage::disk('public')->delete($cf);
+                        }
+                    }
+                }
+            } catch (\Throwable $cacheErr) {
+                \Illuminate\Support\Facades\Log::warning('Non-critical cache cleanup notice: ' . $cacheErr->getMessage());
+            }
+
+            // 2. Store newly uploaded files
+            $firstPath = null;
+            foreach ($uploadedFiles as $index => $file) {
+                if (!$file || !$file->isValid()) {
+                    continue;
+                }
+                $path = $file->store('researches', 'public');
+                if ($index === 0 || $firstPath === null) {
+                    $firstPath = $path;
+                }
+                $research->files()->create([
+                    'file_path'     => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type'     => $file->getClientMimeType(),
+                    'file_size'     => $file->getSize(),
+                    'sort_order'    => $index + 1,
+                ]);
+            }
+
+            // 3. Update research primary pdf_path and bump timestamp
+            $research->update([
+                'pdf_path' => $firstPath,
             ]);
+            $research->touch();
+
+            \DB::commit();
+
+            $count = count($uploadedFiles);
+            return redirect()->route('admin.researches.show', $research)->with(
+                'success',
+                "Successfully attached and updated {$count} manuscript file(s) for \"{$research->title}\" without duplicating database records!"
+            );
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Admin updateFiles exception: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return redirect()->route('admin.researches.show', $research)->with('error', 'Upload failed: ' . $e->getMessage());
         }
-
-        // 3. Update research primary pdf_path and bump timestamp
-        $research->update([
-            'pdf_path' => $firstPath,
-        ]);
-        $research->touch();
-
-        $count = count($uploadedFiles);
-        return back()->with(
-            'success',
-            "Successfully attached and updated {$count} manuscript file(s) for \"{$research->title}\" without duplicating database records!"
-        );
     }
 
     /**
@@ -512,14 +534,20 @@ class ResearchController extends Controller
         }
 
         // Clean cached merged and preview PDFs so new order takes effect immediately
-        $pdfCacheFiles = \Storage::disk('public')->files('researches/pdf_cache');
-        foreach ($pdfCacheFiles as $cf) {
-            if (str_contains($cf, "page1_preview_{$research->id}_") || str_contains($cf, "merged_{$research->id}_")) {
-                \Storage::disk('public')->delete($cf);
+        try {
+            if (\Storage::disk('public')->exists('researches/pdf_cache')) {
+                $pdfCacheFiles = \Storage::disk('public')->files('researches/pdf_cache');
+                foreach ($pdfCacheFiles as $cf) {
+                    if (str_contains($cf, "page1_preview_{$research->id}_") || str_contains($cf, "merged_{$research->id}_")) {
+                        \Storage::disk('public')->delete($cf);
+                    }
+                }
             }
+        } catch (\Throwable $cacheErr) {
+            \Illuminate\Support\Facades\Log::warning('Non-critical cache cleanup notice: ' . $cacheErr->getMessage());
         }
 
-        return back()->with('success', 'Manuscript file sequence updated successfully!');
+        return redirect()->route('admin.researches.show', $research)->with('success', 'Manuscript file sequence updated successfully!');
     }
 
     /**
