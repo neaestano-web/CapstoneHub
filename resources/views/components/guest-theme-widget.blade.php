@@ -50,84 +50,43 @@
                 <!-- SECTION 1: THEME MODES -->
                 <div class="guest-setting-section">
                     <div class="guest-section-header">
-                        <span class="guest-section-icon">🌓</span>
-                        <div class="guest-section-titles">
-                            <h4 class="guest-section-title">Color Theme Mode</h4>
-                            <span class="guest-section-desc">Choose a pre-tuned mode designed for eye comfort</span>
-                        </div>
+                        <span class="guest-section-title">Theme Mode</span>
                     </div>
 
                     <div class="guest-theme-grid">
                         <!-- Cyber Dark (Default) -->
                         <button type="button" class="guest-theme-card" data-mode="dark" onclick="selectThemeMode('dark')">
-                            <div class="theme-card-preview dark-preview">
-                                <span class="preview-glow-cyan"></span>
-                                <span class="preview-glow-emerald"></span>
-                                <div class="preview-card-skeleton"></div>
-                            </div>
-                            <div class="theme-card-info">
-                                <div class="theme-card-name">
-                                    <span>Cyber Dark</span>
-                                    <span class="theme-active-check">✓</span>
-                                </div>
-                                <span class="theme-card-hint">Default JHCSC neon glow</span>
-                            </div>
+                            <span class="theme-swatch swatch-dark"></span>
+                            <span class="theme-card-name">Cyber Dark</span>
+                            <span class="theme-active-check">✓</span>
                         </button>
 
                         <!-- Clean Light -->
                         <button type="button" class="guest-theme-card" data-mode="light" onclick="selectThemeMode('light')">
-                            <div class="theme-card-preview light-preview">
-                                <div class="preview-card-skeleton"></div>
-                            </div>
-                            <div class="theme-card-info">
-                                <div class="theme-card-name">
-                                    <span>Clean Light</span>
-                                    <span class="theme-active-check">✓</span>
-                                </div>
-                                <span class="theme-card-hint">Bright & crisp for daylight</span>
-                            </div>
+                            <span class="theme-swatch swatch-light"></span>
+                            <span class="theme-card-name">Clean Light</span>
+                            <span class="theme-active-check">✓</span>
                         </button>
 
                         <!-- Warm Sepia -->
                         <button type="button" class="guest-theme-card" data-mode="sepia" onclick="selectThemeMode('sepia')">
-                            <div class="theme-card-preview sepia-preview">
-                                <div class="preview-card-skeleton"></div>
-                            </div>
-                            <div class="theme-card-info">
-                                <div class="theme-card-name">
-                                    <span>Warm Sepia</span>
-                                    <span class="theme-active-check">✓</span>
-                                </div>
-                                <span class="theme-card-hint">Soft paper eye-comfort</span>
-                            </div>
+                            <span class="theme-swatch swatch-sepia"></span>
+                            <span class="theme-card-name">Warm Sepia</span>
+                            <span class="theme-active-check">✓</span>
                         </button>
 
                         <!-- Midnight OLED -->
                         <button type="button" class="guest-theme-card" data-mode="oled" onclick="selectThemeMode('oled')">
-                            <div class="theme-card-preview oled-preview">
-                                <div class="preview-card-skeleton"></div>
-                            </div>
-                            <div class="theme-card-info">
-                                <div class="theme-card-name">
-                                    <span>Midnight OLED</span>
-                                    <span class="theme-active-check">✓</span>
-                                </div>
-                                <span class="theme-card-hint">Pure deep black contrast</span>
-                            </div>
+                            <span class="theme-swatch swatch-oled"></span>
+                            <span class="theme-card-name">Midnight OLED</span>
+                            <span class="theme-active-check">✓</span>
                         </button>
 
                         <!-- Custom Colors Mode -->
                         <button type="button" class="guest-theme-card" data-mode="custom" onclick="selectThemeMode('custom')">
-                            <div class="theme-card-preview custom-preview">
-                                <div class="preview-rainbow-wheel"></div>
-                            </div>
-                            <div class="theme-card-info">
-                                <div class="theme-card-name">
-                                    <span>Custom Canvas</span>
-                                    <span class="theme-active-check">✓</span>
-                                </div>
-                                <span class="theme-card-hint">Pick any BG & text colors</span>
-                            </div>
+                            <span class="theme-swatch swatch-custom"></span>
+                            <span class="theme-card-name">Custom Canvas</span>
+                            <span class="theme-active-check">✓</span>
                         </button>
                     </div>
                 </div>
@@ -135,23 +94,18 @@
                 <!-- SECTION 2: CUSTOM COLOR PICKER (SHOWN ONLY ON CUSTOM CANVAS) -->
                 <div id="customColorBox" class="guest-setting-section custom-color-panel" style="display: none;">
                     <div class="guest-section-header">
-                        <span class="guest-section-icon">🎨</span>
-                        <div class="guest-section-titles">
-                            <h4 class="guest-section-title">Custom Palette Tuning</h4>
-                            <span class="guest-section-desc">Fine-tune the page background and text color to your liking</span>
-                        </div>
+                        <span class="guest-section-title">Custom Palette Tuning</span>
                     </div>
 
                     <div class="custom-pickers-row">
                         <!-- Background Color -->
                         <div class="color-picker-item">
                             <label for="customBgInput" class="color-picker-label">
-                                <span>Background Color</span>
+                                <span>Background</span>
                                 <span id="customBgHex" class="hex-badge">#0b1119</span>
                             </label>
                             <div class="color-input-wrap">
                                 <input type="color" id="customBgInput" value="#0b1119" oninput="onCustomBgChange(this.value)" class="native-color-picker">
-                                <span class="color-swatch-display" id="customBgSwatch"></span>
                                 <input type="text" id="customBgText" value="#0b1119" maxlength="7" onchange="onCustomBgTextChange(this.value)" class="hex-text-input">
                             </div>
                         </div>
@@ -164,7 +118,6 @@
                             </label>
                             <div class="color-input-wrap">
                                 <input type="color" id="customTextInput" value="#ffffff" oninput="onCustomTextChange(this.value)" class="native-color-picker">
-                                <span class="color-swatch-display" id="customTextSwatch"></span>
                                 <input type="text" id="customTextText" value="#ffffff" maxlength="7" onchange="onCustomTextTextChange(this.value)" class="hex-text-input">
                             </div>
                         </div>
@@ -178,12 +131,8 @@
                                 <span id="contrastText">Optimal Readability</span>
                             </div>
                             <button type="button" class="btn-auto-contrast" onclick="autoFixContrast()">
-                                🪄 Auto-Tune Text Contrast
+                                Auto-Tune Contrast
                             </button>
-                        </div>
-                        <div class="contrast-mini-preview" id="contrastMiniPreview">
-                            <span class="mini-preview-title">Sample Research Title: AI-Powered Repository</span>
-                            <span class="mini-preview-snippet">Explore thousands of JHCSC computing capstones with clear typography and custom styling...</span>
                         </div>
                     </div>
                 </div>
@@ -191,11 +140,7 @@
                 <!-- SECTION 3: ACCENT COLOR SELECTION -->
                 <div class="guest-setting-section">
                     <div class="guest-section-header">
-                        <span class="guest-section-icon">✨</span>
-                        <div class="guest-section-titles">
-                            <h4 class="guest-section-title">Brand Accent Highlight</h4>
-                            <span class="guest-section-desc">Color for buttons, badges, glowing borders and search highlights</span>
-                        </div>
+                        <span class="guest-section-title">Accent Color</span>
                     </div>
 
                     <div class="accent-swatches-grid">
@@ -229,38 +174,30 @@
                 <!-- SECTION 4: READING COMFORT (FONT SCALING) -->
                 <div class="guest-setting-section">
                     <div class="guest-section-header">
-                        <span class="guest-section-icon">🔎</span>
-                        <div class="guest-section-titles">
-                            <h4 class="guest-section-title">Reading Text Size</h4>
-                            <span class="guest-section-desc">Scale research titles and abstracts for comfortable reading</span>
-                        </div>
+                        <span class="guest-section-title">Text Size</span>
                     </div>
 
                     <div class="font-scale-options">
                         <button type="button" class="font-scale-btn" data-scale="0.94rem" onclick="setFontScale('0.94rem')">
-                            <span style="font-size: 0.82rem;">A</span>
-                            <span>Compact</span>
+                            Compact
                         </button>
                         <button type="button" class="font-scale-btn active" data-scale="1rem" onclick="setFontScale('1rem')">
-                            <span style="font-size: 1rem;">A</span>
-                            <span>Standard</span>
+                            Standard
                         </button>
                         <button type="button" class="font-scale-btn" data-scale="1.08rem" onclick="setFontScale('1.08rem')">
-                            <span style="font-size: 1.15rem;">A</span>
-                            <span>Comfortable</span>
+                            Comfortable
                         </button>
                         <button type="button" class="font-scale-btn" data-scale="1.18rem" onclick="setFontScale('1.18rem')">
-                            <span style="font-size: 1.3rem;">A</span>
-                            <span>Large</span>
+                            Large
                         </button>
                     </div>
                 </div>
 
                 <!-- DRAGGABLE ICON HELPER & POSITION RESET -->
                 <div class="drag-hint-box">
-                    <div class="drag-hint-text">
+                    <span class="drag-hint-text">
                         Tip: Drag the floating button to move it anywhere.
-                    </div>
+                    </span>
                     <button type="button" class="btn-reset-pos" onclick="resetWidgetPosition()">
                         Reset Position
                     </button>
@@ -561,16 +498,16 @@
 
     .guest-theme-card {
         background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--guest-border, rgba(255, 255, 255, 0.09));
-        border-radius: 12px;
-        padding: 8px;
+        border: 1px solid var(--guest-border, rgba(255, 255, 255, 0.08));
+        border-radius: 10px;
+        padding: 9px 12px;
         display: flex;
-        flex-direction: column;
-        gap: 6px;
+        align-items: center;
+        gap: 10px;
         cursor: pointer;
         text-align: left;
         outline: none;
-        transition: all 0.18s ease;
+        transition: all 0.16s ease;
         position: relative;
     }
 
@@ -580,111 +517,48 @@
     }
 
     .guest-theme-card.active {
-        background: rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.08);
         border-color: var(--guest-accent, #00f5d4);
         box-shadow: 0 0 0 1px var(--guest-accent, #00f5d4);
     }
 
-    .theme-card-preview {
-        height: 42px;
-        border-radius: 7px;
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .theme-swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
-    .dark-preview {
+    .swatch-dark {
         background: #0b1119;
+        border: 1.5px solid #00f5d4;
     }
-    .dark-preview .preview-glow-cyan {
-        position: absolute;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: rgba(0, 245, 212, 0.35);
-        filter: blur(10px);
-        top: -8px;
-        left: -4px;
+    .swatch-light {
+        background: #f8fafc;
+        border: 1.5px solid #94a3b8;
     }
-    .dark-preview .preview-glow-emerald {
-        position: absolute;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: rgba(16, 185, 129, 0.3);
-        filter: blur(8px);
-        bottom: -8px;
-        right: -4px;
-    }
-    .dark-preview .preview-card-skeleton {
-        width: 70%;
-        height: 18px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-        border: 1px solid rgba(0, 245, 212, 0.25);
-    }
-
-    .light-preview {
-        background: #f1f5f9;
-    }
-    .light-preview .preview-card-skeleton {
-        width: 70%;
-        height: 18px;
-        background: #ffffff;
-        border-radius: 4px;
-        border: 1px solid #cbd5e1;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-
-    .sepia-preview {
+    .swatch-sepia {
         background: #fbf7ee;
+        border: 1.5px solid #d97706;
     }
-    .sepia-preview .preview-card-skeleton {
-        width: 70%;
-        height: 18px;
-        background: #f7f0e2;
-        border-radius: 4px;
-        border: 1px solid #ded2bf;
-    }
-
-    .oled-preview {
+    .swatch-oled {
         background: #000000;
+        border: 1.5px solid #475569;
     }
-    .oled-preview .preview-card-skeleton {
-        width: 70%;
-        height: 18px;
-        background: #111111;
-        border-radius: 4px;
-        border: 1px solid #333333;
-    }
-
-    .custom-preview {
-        background: radial-gradient(circle at 50% 50%, #162438 0%, #0b1119 100%);
-    }
-    .preview-rainbow-wheel {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
+    .swatch-custom {
         background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
-        box-shadow: 0 0 8px rgba(0,0,0,0.4);
-    }
-
-    .theme-card-info {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .theme-card-name {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 0.78rem;
-        font-weight: 700;
+        font-size: 0.8rem;
+        font-weight: 600;
         color: var(--guest-text-headings, #ffffff);
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .theme-active-check {
@@ -696,12 +570,6 @@
 
     .guest-theme-card.active .theme-active-check {
         display: inline-block;
-    }
-
-    .theme-card-hint {
-        font-size: 0.65rem;
-        color: var(--guest-text-muted, #94a3b8);
-        line-height: 1.25;
     }
 
     /* Custom Color Controls Panel (Hidden by default, shown on Custom Canvas) */
@@ -959,24 +827,21 @@
 
     .font-scale-btn {
         background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--guest-border, rgba(255, 255, 255, 0.09));
+        border: 1px solid var(--guest-border, rgba(255, 255, 255, 0.08));
         border-radius: 8px;
-        padding: 6px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
+        padding: 7px 4px;
+        text-align: center;
         color: var(--guest-text-headings, #ffffff);
-        font-size: 0.7rem;
+        font-size: 0.74rem;
         font-weight: 600;
         cursor: pointer;
         outline: none;
-        transition: all 0.18s ease;
+        transition: all 0.16s ease;
     }
 
     .font-scale-btn:hover {
-        background: rgba(255, 255, 255, 0.07);
-        border-color: var(--guest-accent, #00f5d4);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.2);
     }
 
     .font-scale-btn.active {
