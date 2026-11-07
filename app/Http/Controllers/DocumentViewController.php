@@ -42,102 +42,186 @@ class DocumentViewController extends Controller
                 return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
             }
 
-            // Parse document text and paragraphs
-            $paragraphs = [];
             $dom = new \DOMDocument();
-            if (@$dom->loadXML($xml)) {
-                $xpath = new \DOMXPath($dom);
-                $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
-
-                foreach ($xpath->query('//w:p') as $p) {
-                    $text = '';
-                    $isHeading = false;
-                    $isBold = false;
-
-                    $pStyle = $xpath->query('.//w:pStyle/@w:val', $p)->item(0)?->nodeValue;
-                    if ($pStyle && (stripos($pStyle, 'heading') !== false || stripos($pStyle, 'title') !== false)) {
-                        $isHeading = true;
-                    }
-
-                    // Check for bold in paragraph runs
-                    $boldNode = $xpath->query('.//w:b', $p)->item(0);
-                    if ($boldNode) {
-                        $isBold = true;
-                    }
-
-                    // Directly extract all text nodes within paragraph
-                    foreach ($xpath->query('.//w:t', $p) as $t) {
-                        $text .= $t->nodeValue;
-                    }
-
-                    $text = trim($text);
-                    if ($text !== '') {
-                        $paragraphs[] = [
-                            'text' => $text,
-                            'isHeading' => $isHeading,
-                            'isBold' => $isBold,
-                        ];
-                    }
-                }
-            }
-
-            // Fallback regex extraction if DOMDocument returned 0 paragraphs
-            if (empty($paragraphs)) {
-                preg_match_all('/<w:t[^>]*>(.*?)<\/w:t>/is', $xml, $matches);
-                if (!empty($matches[1])) {
-                    $combined = implode(' ', $matches[1]);
-                    $combined = html_entity_decode($combined, ENT_QUOTES | ENT_XML1, 'UTF-8');
-                    $chunks = explode("\n", wordwrap($combined, 95, "\n"));
-                    foreach ($chunks as $chunk) {
-                        $chunk = trim($chunk);
-                        if ($chunk !== '') {
-                            $paragraphs[] = [
-                                'text' => $chunk,
-                                'isHeading' => false,
-                                'isBold' => false,
-                            ];
-                        }
-                    }
-                }
-            }
-
-            if (empty($paragraphs)) {
+            if (!@$dom->loadXML($xml)) {
                 return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
             }
 
-            // Render PDF via FPDF
+            $xpath = new \DOMXPath($dom);
+            $xpath->registerNamespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main');
+
+            // Render PDF via FPDF with academic layout margins
             $fpdf = new \FPDF('P', 'mm', 'A4');
-            $fpdf->SetMargins(20, 20, 20);
+            $fpdf->SetMargins(25, 25, 20);
             $fpdf->SetAutoPageBreak(true, 20);
             $fpdf->AddPage();
             $fpdf->SetFont('Helvetica', '', 10);
 
-            foreach ($paragraphs as $para) {
-                $cleanText = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $para['text']);
-                if ($cleanText === false || $cleanText === '') {
-                    $cleanText = @mb_convert_encoding($para['text'], 'windows-1252', 'UTF-8');
-                }
-                if ($cleanText === false || $cleanText === '') {
-                    $cleanText = utf8_decode($para['text']);
-                }
-                $cleanText = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', ' ', $cleanText);
+            $pageWidth = 210 - 45; // 165mm printable width
+            $consecutiveBlank = 0;
 
-                if ($para['isHeading']) {
-                    $fpdf->Ln(4);
-                    $fpdf->SetFont('Helvetica', 'B', 12);
-                    $fpdf->SetTextColor(15, 23, 42);
-                    $fpdf->MultiCell(0, 6, $cleanText);
-                    $fpdf->Ln(2);
-                } elseif ($para['isBold']) {
-                    $fpdf->SetFont('Helvetica', 'B', 10);
-                    $fpdf->SetTextColor(30, 41, 59);
-                    $fpdf->MultiCell(0, 5, $cleanText);
-                    $fpdf->Ln(1.5);
-                } else {
-                    $fpdf->SetFont('Helvetica', '', 10);
-                    $fpdf->SetTextColor(51, 65, 85);
-                    $fpdf->MultiCell(0, 5, $cleanText);
-                    $fpdf->Ln(1.5);
+            // Process top-level body elements in exact document order
+            $bodyNodes = $xpath->query('//w:body/*');
+            if (!$bodyNodes || $bodyNodes->length === 0) {
+                return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
+            }
+
+            foreach ($bodyNodes as $node) {
+                $tag = $node->nodeName;
+
+                if ($tag === 'w:p') {
+                    // Check for explicit page break in paragraph
+                    $hasPageBreak = $xpath->query('.//w:br[@w:type="page"] | .//w:pageBreakBefore', $node)->length > 0;
+                    if ($hasPageBreak) {
+                        $fpdf->AddPage();
+                        $consecutiveBlank = 0;
+                    }
+
+                    // Extract text from paragraph runs
+                    $text = '';
+                    foreach ($xpath->query('.//w:t', $node) as $t) {
+                        $text .= $t->nodeValue;
+                    }
+                    $cleanText = trim($text);
+
+                    // Preserve intentional vertical spacing between sections (up to 3 consecutive empty lines)
+                    if ($cleanText === '') {
+                        $consecutiveBlank++;
+                        if ($consecutiveBlank <= 3) {
+                            $fpdf->Ln(4.5);
+                        }
+                        continue;
+                    }
+                    $consecutiveBlank = 0;
+
+                    // Spacing before
+                    $spacingBefore = intval($xpath->query('.//w:pPr/w:spacing/@w:before', $node)->item(0)?->nodeValue ?? 0);
+                    if ($spacingBefore > 0) {
+                        $fpdf->Ln(min(6, round($spacingBefore / 40)));
+                    }
+
+                    // Alignment: center, justify (both), right, left
+                    $jc = $xpath->query('.//w:pPr/w:jc/@w:val', $node)->item(0)?->nodeValue;
+                    $align = 'L';
+                    if ($jc === 'center') {
+                        $align = 'C';
+                    } elseif ($jc === 'both' || $jc === 'justify') {
+                        $align = 'J';
+                    } elseif ($jc === 'right') {
+                        $align = 'R';
+                    }
+
+                    // Heading / Title check
+                    $pStyle = strtolower($xpath->query('.//w:pPr/w:pStyle/@w:val', $node)->item(0)?->nodeValue ?? '');
+                    $isHeading = str_contains($pStyle, 'heading') || str_contains($pStyle, 'title');
+
+                    // Font styling (bold, italic)
+                    $isBold = $isHeading || ($xpath->query('.//w:b', $node)->length > 0);
+                    $isItalic = $xpath->query('.//w:i', $node)->length > 0;
+                    $fontStyle = ($isBold ? 'B' : '') . ($isItalic ? 'I' : '');
+
+                    // Font size hierarchy
+                    $szVal = intval($xpath->query('.//w:sz/@w:val', $node)->item(0)?->nodeValue ?? 0);
+                    $fontSize = 10;
+                    if ($szVal > 0) {
+                        $pt = round($szVal / 2);
+                        if ($pt >= 16) $fontSize = 14;
+                        elseif ($pt >= 13) $fontSize = 12;
+                        elseif ($pt >= 11) $fontSize = 10.5;
+                        elseif ($pt <= 8) $fontSize = 8.5;
+                        else $fontSize = 10;
+                    } elseif ($isHeading) {
+                        $fontSize = 13;
+                    } elseif ($isBold && ($align === 'C')) {
+                        $fontSize = 11.5;
+                    }
+
+                    // Academic first-line indent for justified/left body text
+                    $firstLine = intval($xpath->query('.//w:pPr/w:ind/@w:firstLine', $node)->item(0)?->nodeValue ?? 0);
+                    if ($firstLine > 0 && ($align === 'J' || $align === 'L') && !$isBold && !$isHeading) {
+                        $cleanText = "     " . $cleanText;
+                    }
+
+                    // List item / bullet formatting
+                    $hasNum = $xpath->query('.//w:pPr/w:numPr', $node)->length > 0;
+                    if ($hasNum) {
+                        $cleanText = chr(149) . '  ' . $cleanText;
+                    }
+
+                    // Character encoding conversion with accents and special characters
+                    $encodedText = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $cleanText);
+                    if ($encodedText === false || $encodedText === '') {
+                        $encodedText = @mb_convert_encoding($cleanText, 'windows-1252', 'UTF-8');
+                    }
+                    if ($encodedText === false || $encodedText === '') {
+                        $encodedText = utf8_decode($cleanText);
+                    }
+                    $encodedText = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', ' ', $encodedText);
+
+                    $fpdf->SetFont('Helvetica', $fontStyle, $fontSize);
+                    if ($isBold) {
+                        $fpdf->SetTextColor(15, 23, 42);
+                    } else {
+                        $fpdf->SetTextColor(30, 41, 59);
+                    }
+
+                    $lineHeight = ($fontSize >= 13) ? 6.5 : (($fontSize >= 11) ? 5.5 : 4.8);
+                    $fpdf->MultiCell(0, $lineHeight, $encodedText, 0, $align);
+
+                    // Spacing after
+                    $spacingAfter = intval($xpath->query('.//w:pPr/w:spacing/@w:after', $node)->item(0)?->nodeValue ?? 0);
+                    if ($spacingAfter > 0) {
+                        $fpdf->Ln(min(5, round($spacingAfter / 40)));
+                    } else {
+                        $fpdf->Ln(1.2);
+                    }
+                } elseif ($tag === 'w:tbl') {
+                    // Render Table row by row with structured columns and borders
+                    $rows = $xpath->query('.//w:tr', $node);
+                    if ($rows && $rows->length > 0) {
+                        $fpdf->Ln(2);
+                        $firstRowCells = $xpath->query('.//w:tc', $rows->item(0));
+                        $colCount = max(1, $firstRowCells ? $firstRowCells->length : 1);
+                        $colWidth = round($pageWidth / $colCount, 1);
+
+                        foreach ($rows as $rIdx => $row) {
+                            $cells = $xpath->query('.//w:tc', $row);
+                            $cellData = [];
+
+                            foreach ($cells as $cell) {
+                                $cText = '';
+                                foreach ($xpath->query('.//w:t', $cell) as $ct) {
+                                    $cText .= $ct->nodeValue;
+                                }
+                                $cText = trim($cText);
+                                $cEnc = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $cText) ?: utf8_decode($cText);
+                                $cEnc = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', ' ', $cEnc);
+                                $cellData[] = $cEnc;
+                            }
+
+                            if ($fpdf->GetY() > 265) {
+                                $fpdf->AddPage();
+                            }
+
+                            $rowHeight = 6.5;
+                            $isHeader = ($rIdx === 0);
+                            $fpdf->SetFont('Helvetica', $isHeader ? 'B' : '', 9.5);
+                            if ($isHeader) {
+                                $fpdf->SetFillColor(241, 245, 249);
+                                $fpdf->SetTextColor(15, 23, 42);
+                            } else {
+                                $fpdf->SetFillColor(255, 255, 255);
+                                $fpdf->SetTextColor(51, 65, 85);
+                            }
+
+                            foreach ($cellData as $cIdx => $cVal) {
+                                $fpdf->Cell($colWidth, $rowHeight, substr($cVal, 0, 45), 1, 0, 'L', true);
+                            }
+                            $fpdf->Ln($rowHeight);
+                        }
+                        $fpdf->Ln(3);
+                        $consecutiveBlank = 0;
+                    }
                 }
             }
 
