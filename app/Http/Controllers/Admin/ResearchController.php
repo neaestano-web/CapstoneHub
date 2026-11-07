@@ -216,12 +216,21 @@ class ResearchController extends Controller
                 if ($index === 0) {
                     $firstPath = $path;
                 }
+
+                $fileData = null;
+                try {
+                    $fileData = base64_encode(file_get_contents($file->getRealPath()));
+                } catch (\Throwable $e) {
+                    \Log::warning('Could not encode file to base64: ' . $e->getMessage());
+                }
+
                 $research->files()->create([
                     'file_path'     => $path,
                     'original_name' => $file->getClientOriginalName(),
                     'mime_type'     => $file->getClientMimeType(),
                     'file_size'     => $file->getSize(),
                     'sort_order'    => $index + 1,
+                    'file_data'     => $fileData,
                 ]);
             }
 
@@ -479,12 +488,21 @@ class ResearchController extends Controller
                 if ($index === 0 || $firstPath === null) {
                     $firstPath = $path;
                 }
+
+                $fileData = null;
+                try {
+                    $fileData = base64_encode(file_get_contents($file->getRealPath()));
+                } catch (\Throwable $e) {
+                    \Log::warning('Could not encode file to base64: ' . $e->getMessage());
+                }
+
                 $research->files()->create([
                     'file_path'     => $path,
                     'original_name' => $file->getClientOriginalName(),
                     'mime_type'     => $file->getClientMimeType(),
                     'file_size'     => $file->getSize(),
                     'sort_order'    => $index + 1,
+                    'file_data'     => $fileData,
                 ]);
             }
 

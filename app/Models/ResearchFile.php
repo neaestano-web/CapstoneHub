@@ -15,6 +15,7 @@ class ResearchFile extends Model
         'mime_type',
         'file_size',
         'sort_order',
+        'file_data',
     ];
 
     public function research()

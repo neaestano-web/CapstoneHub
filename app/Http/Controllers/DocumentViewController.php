@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DownloadRequest;
 use App\Models\Research;
+use App\Models\ResearchFile;
 use App\Services\AI\AIService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -643,6 +644,34 @@ class DocumentViewController extends Controller
     }
 
     /**
+     * Ensure physical file exists on local storage disk.
+     * If Render's ephemeral container restarted and wiped the file, restore it seamlessly from TiDB!
+     */
+    private function ensureFileRestoredFromDatabase(?ResearchFile $file): void
+    {
+        if (!$file || empty($file->file_path) || empty($file->file_data)) {
+            return;
+        }
+
+        if (!Storage::disk('public')->exists($file->file_path)) {
+            try {
+                $content = base64_decode($file->file_data);
+                if ($content !== false && strlen($content) > 0) {
+                    $absPath = Storage::disk('public')->path($file->file_path);
+                    $dir = dirname($absPath);
+                    if (!is_dir($dir)) {
+                        @mkdir($dir, 0755, true);
+                    }
+                    Storage::disk('public')->put($file->file_path, $content);
+                    Log::info("Restored missing manuscript file from TiDB database: {$file->file_path}");
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Failed to restore file from TiDB: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
      * View research document as PDF inline in the browser.
      */
     public function show(Research $research, AIService $ai)
@@ -653,6 +682,10 @@ class DocumentViewController extends Controller
 
         $isStudent = auth()->check() && auth()->user()->role === 'student';
         $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
+
+        foreach ($files as $f) {
+            $this->ensureFileRestoredFromDatabase($f);
+        }
 
         // For student user: they can ONLY view the FIRST file (#1) and only Page 1 of that file
         if ($isStudent) {
@@ -817,6 +850,9 @@ class DocumentViewController extends Controller
     {
         $this->ensureFpdiLoaded();
         $files = $research->files()->orderBy('sort_order', 'asc')->orderBy('id', 'asc')->get();
+        foreach ($files as $f) {
+            $this->ensureFileRestoredFromDatabase($f);
+        }
         $safeTitle = preg_replace('/[^\w\s\-\.\(\)]/u', '_', $research->title);
 
         // 1. Multiple files: merge into single PDF in sequential order
