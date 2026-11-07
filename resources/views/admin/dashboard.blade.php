@@ -144,46 +144,8 @@
             </span>
         </div>
 
-        {{-- ROW 1: Submission Trend & Category Distribution --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {{-- Graph 1: Monthly Submission & Approval Trend --}}
-            <div class="section-card-admin space-y-4">
-                <div class="flex items-center justify-between pb-3 dashed-divider">
-                    <div>
-                        <h3 class="text-sm font-extrabold text-[#2d2b56] uppercase tracking-wider flex items-center gap-2">
-                            <span>📊</span>
-                            <span>Submission & Approval Trend</span>
-                        </h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Monthly rate of manuscript uploads and approved papers</p>
-                    </div>
-                    <span class="text-[10px] font-extrabold px-3 py-1 rounded-full bg-emerald-50 text-[#0c4233] border border-emerald-200/80 shrink-0">
-                        6-Month Activity
-                    </span>
-                </div>
-
-                <div class="relative w-full h-64 sm:h-72">
-                    <canvas id="adminMonthlyTrendChart"></canvas>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 pt-3 dashed-divider">
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                        <span class="text-[10px] uppercase font-extrabold text-slate-400 block tracking-wider">Submissions</span>
-                        <span class="text-lg font-extrabold text-[#0c4233] font-mono mt-0.5 block">
-                            {{ number_format(array_sum($monthlySubmissions)) }}
-                        </span>
-                        <span class="text-[10px] text-slate-400">Past 6 months</span>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                        <span class="text-[10px] uppercase font-extrabold text-slate-400 block tracking-wider">Approved</span>
-                        <span class="text-lg font-extrabold text-emerald-600 font-mono mt-0.5 block">
-                            {{ number_format(array_sum($monthlyApprovals)) }}
-                        </span>
-                        <span class="text-[10px] text-slate-400">Past 6 months</span>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Graph 2: Research Category Distribution --}}
+            {{-- Graph 1: Research Category Distribution --}}
             <div class="section-card-admin space-y-4">
                 <div class="flex items-center justify-between pb-3 dashed-divider">
                     <div>
@@ -237,11 +199,8 @@
                     </div>
                 @endif
             </div>
-        </div>
 
-        {{-- ROW 2: Top Read Capstones & Popular Search Topics --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {{-- Graph 3: Top Read Capstones (Readership Impact) --}}
+            {{-- Graph 2: Top Read Capstones (Readership Impact) --}}
             <div class="section-card-admin space-y-4">
                 <div class="flex items-center justify-between pb-3 dashed-divider">
                     <div>
@@ -291,8 +250,8 @@
                 @endif
             </div>
 
-            {{-- Graph 4: Popular Search Queries --}}
-            <div class="section-card-admin space-y-4">
+            {{-- Graph 3: Popular Search Queries --}}
+            <div class="section-card-admin space-y-4 lg:col-span-2">
                 <div class="flex items-center justify-between pb-3 dashed-divider">
                     <div>
                         <h3 class="text-sm font-extrabold text-[#2d2b56] uppercase tracking-wider flex items-center gap-2">
@@ -422,107 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const textHeadings = isDark ? '#f8fafc' : '#2d2b56';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
 
-    // 1. MONTHLY SUBMISSION & APPROVAL TREND CHART
-    const ctxTrend = document.getElementById('adminMonthlyTrendChart');
-    if (ctxTrend) {
-        const trendLabels = @json($months);
-        const subData = @json($monthlySubmissions);
-        const appData = @json($monthlyApprovals);
-
-        new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: trendLabels,
-                datasets: [
-                    {
-                        label: 'Submissions',
-                        data: subData,
-                        borderColor: '#0c4233',
-                        backgroundColor: function(context) {
-                            const {ctx, chartArea} = context.chart;
-                            if (!chartArea) return 'rgba(12, 66, 51, 0.15)';
-                            const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                            g.addColorStop(0, 'rgba(12, 66, 51, 0.35)');
-                            g.addColorStop(1, 'rgba(12, 66, 51, 0.00)');
-                            return g;
-                        },
-                        borderWidth: 2.5,
-                        fill: true,
-                        tension: 0.35,
-                        pointBackgroundColor: '#0c4233',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                    },
-                    {
-                        label: 'Approved',
-                        data: appData,
-                        borderColor: '#10b981',
-                        backgroundColor: function(context) {
-                            const {ctx, chartArea} = context.chart;
-                            if (!chartArea) return 'rgba(16, 185, 129, 0.15)';
-                            const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                            g.addColorStop(0, 'rgba(16, 185, 129, 0.30)');
-                            g.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
-                            return g;
-                        },
-                        borderWidth: 2.5,
-                        fill: true,
-                        tension: 0.35,
-                        pointBackgroundColor: '#10b981',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        align: 'end',
-                        labels: {
-                            boxWidth: 12,
-                            boxHeight: 12,
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            color: textHeadings,
-                            font: { size: 11, weight: '700' }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: '#0f172a',
-                        titleColor: '#ffffff',
-                        bodyColor: '#cbd5e1',
-                        padding: 10,
-                        cornerRadius: 8,
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { color: gridColor, drawBorder: false },
-                        ticks: { color: textMuted, font: { size: 11, weight: '600' } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: gridColor, drawBorder: false },
-                        ticks: {
-                            precision: 0,
-                            color: textMuted,
-                            font: { size: 11, weight: '600' }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // 2. CATEGORY DISTRIBUTION DOUGHNUT CHART
+    // 1. CATEGORY DISTRIBUTION DOUGHNUT CHART
     const ctxCat = document.getElementById('adminCategoryChart');
     if (ctxCat) {
         const cLabels = @json($catLabels);

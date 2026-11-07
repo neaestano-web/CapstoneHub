@@ -24,27 +24,7 @@ class DashboardController extends Controller
               });
         })->count();
 
-        // 1. Monthly Submission & Approval Trends (Last 6 Months)
-        $months = [];
-        $monthlySubmissions = [];
-        $monthlyApprovals = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $startDate = now()->subMonths($i)->startOfMonth();
-            $endDate = now()->subMonths($i)->endOfMonth();
-            $months[] = $startDate->format('M Y');
-
-            $monthlySubmissions[] = Research::whereBetween('created_at', [$startDate, $endDate])->count();
-            $monthlyApprovals[] = Research::where('status', 'approved')
-                ->where(function ($q) use ($startDate, $endDate) {
-                    $q->whereBetween('approved_at', [$startDate, $endDate])
-                      ->orWhere(function ($sub) use ($startDate, $endDate) {
-                          $sub->whereNull('approved_at')
-                              ->whereBetween('updated_at', [$startDate, $endDate]);
-                      });
-                })->count();
-        }
-
-        // 2. Category Distribution (Approved Researches per Category)
+        // 1. Category Distribution (Approved Researches per Category)
         $categoryDistribution = ResearchCategory::withCount([
             'classifiedResearches as approved_researches_count' => fn ($query) => $query->where('status', 'approved')
         ])
@@ -99,9 +79,6 @@ class DashboardController extends Controller
             'approvedResearches',
             'pendingResearches',
             'totalUsers',
-            'months',
-            'monthlySubmissions',
-            'monthlyApprovals',
             'categoryDistribution',
             'catLabels',
             'catValues',
