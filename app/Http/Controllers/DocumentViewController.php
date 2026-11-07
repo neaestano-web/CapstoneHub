@@ -36,32 +36,7 @@ class DocumentViewController extends Controller
 
         try {
             $realPath = realpath($docxPath) ?: $docxPath;
-            $xml = null;
-
-            // 1. Try ZipArchive with RDONLY
-            if (class_exists(\ZipArchive::class)) {
-                $zip = new \ZipArchive();
-                $openRes = $zip->open($realPath, \ZipArchive::RDONLY);
-                if ($openRes === true) {
-                    $xml = $zip->getFromName('word/document.xml');
-                    if (!$xml) {
-                        for ($i = 0; $i < $zip->numFiles; $i++) {
-                            $entryName = $zip->getNameIndex($i);
-                            if (strcasecmp($entryName, 'word/document.xml') === 0 || preg_match('/word\/document.*\.xml$/i', $entryName)) {
-                                $xml = $zip->getFromIndex($i);
-                                break;
-                            }
-                        }
-                    }
-                    $zip->close();
-                }
-            }
-
-            // 2. Fallback to PHP stream wrapper zip://
-            if (!$xml) {
-                $normalizedPath = str_replace('\\', '/', $realPath);
-                $xml = @file_get_contents('zip://' . $normalizedPath . '#word/document.xml');
-            }
+            $xml = $this->extractDocxXml($docxPath, $realPath);
 
             if (!$xml) {
                 return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
@@ -84,14 +59,15 @@ class DocumentViewController extends Controller
                         $isHeading = true;
                     }
 
-                    foreach ($xpath->query('.//w:r', $p) as $r) {
-                        $boldNode = $xpath->query('.//w:b', $r)->item(0);
-                        if ($boldNode) {
-                            $isBold = true;
-                        }
-                        foreach ($xpath->query('.//w:t', $r) as $t) {
-                            $text .= $t->nodeValue;
-                        }
+                    // Check for bold in paragraph runs
+                    $boldNode = $xpath->query('.//w:b', $p)->item(0);
+                    if ($boldNode) {
+                        $isBold = true;
+                    }
+
+                    // Directly extract all text nodes within paragraph
+                    foreach ($xpath->query('.//w:t', $p) as $t) {
+                        $text .= $t->nodeValue;
                     }
 
                     $text = trim($text);
@@ -105,13 +81,13 @@ class DocumentViewController extends Controller
                 }
             }
 
-            // 3. Fallback regex extraction if DOMDocument returned 0 paragraphs
+            // Fallback regex extraction if DOMDocument returned 0 paragraphs
             if (empty($paragraphs)) {
                 preg_match_all('/<w:t[^>]*>(.*?)<\/w:t>/is', $xml, $matches);
                 if (!empty($matches[1])) {
                     $combined = implode(' ', $matches[1]);
                     $combined = html_entity_decode($combined, ENT_QUOTES | ENT_XML1, 'UTF-8');
-                    $chunks = explode("\n", wordwrap($combined, 100, "\n"));
+                    $chunks = explode("\n", wordwrap($combined, 95, "\n"));
                     foreach ($chunks as $chunk) {
                         $chunk = trim($chunk);
                         if ($chunk !== '') {
@@ -139,9 +115,12 @@ class DocumentViewController extends Controller
             foreach ($paragraphs as $para) {
                 $cleanText = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $para['text']);
                 if ($cleanText === false || $cleanText === '') {
-                    $cleanText = mb_convert_encoding($para['text'], 'windows-1252', 'UTF-8');
+                    $cleanText = @mb_convert_encoding($para['text'], 'windows-1252', 'UTF-8');
                 }
-                $cleanText = preg_replace('/[^\x20-\x7E\xA0-\xFF\r\n\t]/', ' ', $cleanText);
+                if ($cleanText === false || $cleanText === '') {
+                    $cleanText = utf8_decode($para['text']);
+                }
+                $cleanText = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', ' ', $cleanText);
 
                 if ($para['isHeading']) {
                     $fpdf->Ln(4);
@@ -172,6 +151,78 @@ class DocumentViewController extends Controller
             Log::warning("Local docx to pdf conversion failed: " . $e->getMessage());
             return $this->generateFallbackPdfForFile(null, $docxPath, $outputPath);
         }
+    }
+
+    /**
+     * Robust multi-layer extraction of word/document.xml from any docx file.
+     */
+    private function extractDocxXml(string $docxPath, string $realPath): ?string
+    {
+        // 1. Try ZipArchive with RDONLY and default modes
+        if (class_exists(\ZipArchive::class)) {
+            $zip = new \ZipArchive();
+            $targets = array_unique([$realPath, $docxPath]);
+            foreach ($targets as $target) {
+                if ($zip->open($target, \ZipArchive::RDONLY) === true || $zip->open($target) === true) {
+                    $xml = $zip->getFromName('word/document.xml');
+                    if (!$xml) {
+                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $entry = $zip->getNameIndex($i);
+                            if (strcasecmp($entry, 'word/document.xml') === 0 || preg_match('/word\/document.*\.xml$/i', $entry)) {
+                                $xml = $zip->getFromIndex($i);
+                                break;
+                            }
+                        }
+                    }
+                    $zip->close();
+                    if (!empty($xml)) {
+                        return $xml;
+                    }
+                }
+            }
+        }
+
+        // 2. Pure-PHP direct ZIP local header scanner
+        $rawBytes = @file_get_contents($docxPath);
+        if ($rawBytes) {
+            $offset = 0;
+            while (($pos = strpos($rawBytes, "PK\x03\x04", $offset)) !== false) {
+                $header = substr($rawBytes, $pos, 30);
+                if (strlen($header) < 30) {
+                    break;
+                }
+                $unpacked = unpack('vversion/vflags/vmethod/vmtime/vmdate/Vcrc/VcompSize/VuncompSize/vnameLen/vextraLen', substr($header, 4, 26));
+                $nameLen = $unpacked['nameLen'];
+                $extraLen = $unpacked['extraLen'];
+                $name = substr($rawBytes, $pos + 30, $nameLen);
+                $dataOffset = $pos + 30 + $nameLen + $extraLen;
+
+                if (strcasecmp($name, 'word/document.xml') === 0 || preg_match('/word\/document.*\.xml$/i', $name)) {
+                    $method = $unpacked['method'];
+                    $compSize = $unpacked['compSize'];
+                    $data = substr($rawBytes, $dataOffset, $compSize);
+                    if ($method === 0) {
+                        return $data;
+                    }
+                    if ($method === 8) {
+                        $inflated = @gzinflate($data);
+                        if (!empty($inflated)) {
+                            return $inflated;
+                        }
+                    }
+                }
+                $offset = $dataOffset;
+            }
+        }
+
+        // 3. zip:// stream wrapper fallback
+        $normalized = str_replace('\\', '/', $realPath);
+        $streamXml = @file_get_contents('zip://' . $normalized . '#word/document.xml');
+        if (!empty($streamXml)) {
+            return $streamXml;
+        }
+
+        return null;
     }
 
     /**
@@ -248,6 +299,13 @@ class DocumentViewController extends Controller
             $pdfRelativePath = 'researches/pdf_cache/' . pathinfo($primaryPath, PATHINFO_FILENAME) . '.pdf';
             $absolutePdfPath = Storage::disk('public')->path($pdfRelativePath);
 
+            if (Storage::disk('public')->exists($pdfRelativePath)) {
+                $cachedContent = @file_get_contents($absolutePdfPath);
+                if ($cachedContent && (strpos($cachedContent, 'This section represents attached manuscript document') !== false || strpos($cachedContent, 'PK !') !== false)) {
+                    @unlink($absolutePdfPath);
+                }
+            }
+
             if (!Storage::disk('public')->exists($pdfRelativePath)) {
                 $converted = $this->convertDocxToPdfLocally($absoluteSourcePath, $absolutePdfPath);
                 if (!$converted) {
@@ -259,16 +317,14 @@ class DocumentViewController extends Controller
                 }
             }
 
+            if (!Storage::disk('public')->exists($pdfRelativePath)) {
+                $this->generateFallbackPdfForFile(null, $absoluteSourcePath, $absolutePdfPath);
+            }
+
             if (Storage::disk('public')->exists($pdfRelativePath)) {
                 $absoluteSourcePath = $absolutePdfPath;
             } else {
-                // If DOCX cannot be converted to PDF, render via docx-preview
-                return response()->view('admin.researches.file-viewer', [
-                    'research' => $research,
-                    'fileUrl' => route('files.show', ['path' => $primaryPath]),
-                    'extension' => 'docx',
-                    'displayName' => $displayName ?: ($research->title . '.docx'),
-                ]);
+                return $this->serveMissingFileNotice($research, 'Guest Preview');
             }
         }
 
@@ -523,6 +579,13 @@ class DocumentViewController extends Controller
                     $cachedPdfRel = 'researches/pdf_cache/' . pathinfo($f->file_path, PATHINFO_FILENAME) . '.pdf';
                     $cachedPdfAbs = Storage::disk('public')->path($cachedPdfRel);
 
+                    if (Storage::disk('public')->exists($cachedPdfRel) && file_exists($cachedPdfAbs)) {
+                        $cachedContent = @file_get_contents($cachedPdfAbs);
+                        if ($cachedContent && (strpos($cachedContent, 'This section represents attached manuscript document') !== false || strpos($cachedContent, 'PK !') !== false)) {
+                            @unlink($cachedPdfAbs);
+                        }
+                    }
+
                     if (Storage::disk('public')->exists($cachedPdfRel) && file_exists($cachedPdfAbs) && filesize($cachedPdfAbs) > 100) {
                         $inputPdfPaths[] = $cachedPdfAbs;
                     } else {
@@ -556,6 +619,13 @@ class DocumentViewController extends Controller
                 $hash = substr(md5(implode('|', $inputPdfPaths)), 0, 10);
                 $mergedRelativePath = 'researches/pdf_cache/merged_' . $research->id . '_' . $hash . '.pdf';
                 $absoluteOutputPath = Storage::disk('public')->path($mergedRelativePath);
+
+                if (Storage::disk('public')->exists($mergedRelativePath) && file_exists($absoluteOutputPath)) {
+                    $mergedContent = @file_get_contents($absoluteOutputPath);
+                    if ($mergedContent && (strpos($mergedContent, 'This section represents attached manuscript document') !== false || strpos($mergedContent, 'PK !') !== false)) {
+                        @unlink($absoluteOutputPath);
+                    }
+                }
 
                 if (!Storage::disk('public')->exists($mergedRelativePath) || !file_exists($absoluteOutputPath) || filesize($absoluteOutputPath) < 100) {
                     // 1. Try local pure-PHP FPDI merge
@@ -671,13 +741,18 @@ class DocumentViewController extends Controller
         }
 
         if (Storage::disk('public')->exists($page1RelPath)) {
-            $content = Storage::disk('public')->get($page1RelPath);
-            return response($content, 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $displayName . ' (Page 1).pdf"',
-                'Content-Length' => strlen($content),
-                'Cache-Control' => 'no-cache, private, must-revalidate',
-            ]);
+            $existingP1 = @file_get_contents($page1AbsPath);
+            if ($existingP1 && (strpos($existingP1, 'This section represents attached manuscript document') !== false || strpos($existingP1, 'PK !') !== false)) {
+                @unlink($page1AbsPath);
+            } else {
+                $content = Storage::disk('public')->get($page1RelPath);
+                return response($content, 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $displayName . ' (Page 1).pdf"',
+                    'Content-Length' => strlen($content),
+                    'Cache-Control' => 'no-cache, private, must-revalidate',
+                ]);
+            }
         }
 
         // Fallback if slicing failed: serve source directly
@@ -716,16 +791,21 @@ class DocumentViewController extends Controller
         $absolutePdfPath = Storage::disk('public')->path($pdfRelativePath);
 
         if (Storage::disk('public')->exists($pdfRelativePath)) {
-            if ($isStudent) {
-                return $this->servePageOneOnly($research, $absolutePdfPath, pathinfo($displayName, PATHINFO_FILENAME));
-            }
+            $existingContent = @file_get_contents($absolutePdfPath);
+            if ($existingContent && (strpos($existingContent, 'This section represents attached manuscript document') !== false || strpos($existingContent, 'PK !') !== false)) {
+                @unlink($absolutePdfPath);
+            } else {
+                if ($isStudent) {
+                    return $this->servePageOneOnly($research, $absolutePdfPath, pathinfo($displayName, PATHINFO_FILENAME));
+                }
 
-            $file = Storage::disk('public')->get($pdfRelativePath);
-            return response($file, 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . pathinfo($displayName, PATHINFO_FILENAME) . '.pdf"',
-                'Content-Length' => strlen($file),
-            ]);
+                $file = Storage::disk('public')->get($pdfRelativePath);
+                return response($file, 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . pathinfo($displayName, PATHINFO_FILENAME) . '.pdf"',
+                    'Content-Length' => strlen($file),
+                ]);
+            }
         }
 
         // If not cached, attempt local conversion
@@ -736,6 +816,10 @@ class DocumentViewController extends Controller
             } catch (\Throwable $e) {
                 Log::warning("DOCX conversion exception: {$path}");
             }
+        }
+
+        if (!Storage::disk('public')->exists($pdfRelativePath)) {
+            $this->generateFallbackPdfForFile(null, $absoluteDocxPath, $absolutePdfPath);
         }
 
         if (Storage::disk('public')->exists($pdfRelativePath)) {
@@ -751,15 +835,7 @@ class DocumentViewController extends Controller
             ]);
         }
 
-        // View the actual Word Document content using high-fidelity docx-preview
-        return response()->view('admin.researches.file-viewer', [
-            'research' => $research,
-            'fileUrl' => route('files.show', ['path' => $path]),
-            'extension' => 'docx',
-            'displayName' => $displayName,
-            'canDownload' => $this->canDownload($research),
-            'singlePageOnly' => $isStudent,
-        ]);
+        return $this->serveMissingFileNotice($research, 'Manuscript Reader');
     }
 
     /**
