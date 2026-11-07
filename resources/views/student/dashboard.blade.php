@@ -217,184 +217,329 @@
 
         {{-- RIGHT COLUMN: REPOSITORY TRENDS --}}
         <div class="space-y-4">
-            {{-- Popular Search Topics (Bar Graph) --}}
+            @php
+                $searchLabels = $mostSearched->pluck('query')->map(fn($q) => strlen($q) > 16 ? substr($q, 0, 16) . '…' : $q)->values();
+                $searchValues = $mostSearched->pluck('total')->values();
+
+                $topStudyLabels = $topStudies->pluck('title')->map(fn($t) => strlen($t) > 20 ? substr($t, 0, 20) . '…' : $t)->values();
+                $topStudyFullTitles = $topStudies->pluck('title')->values();
+                $topStudyViews = $topStudies->pluck('views_count')->values();
+
+                $catLabels = $mostExploredCategories->pluck('name')->values();
+                $catValues = $mostExploredCategories->pluck('search_logs_count')->values();
+                $totalCatQueries = $mostExploredCategories->sum('search_logs_count') ?: 1;
+                $catPalette = ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#ec4899'];
+            @endphp
+
+            {{-- 1. Popular Search Topics (Interactive Chart) --}}
             <div class="sd-card p-5 space-y-3.5">
                 <div class="flex items-center justify-between pb-2 sd-divider">
                     <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
                         <span>🔥</span>
                         <span>Popular Search Topics</span>
                     </h3>
-                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                        Search Graph
+                    <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                        Interactive Bar Chart
                     </span>
                 </div>
 
-                @php
-                    $maxSearchTotal = $mostSearched->max('total') ?: 1;
-                @endphp
+                @if($mostSearched->count() > 0)
+                    {{-- Chart.js Canvas --}}
+                    <div class="relative w-full h-44">
+                        <canvas id="popularSearchChart"></canvas>
+                    </div>
 
-                <div class="space-y-3">
-                    @forelse($mostSearched as $index => $search)
-                        @php
-                            $searchPct = round(($search->total / $maxSearchTotal) * 100);
-                        @endphp
-                        <div class="space-y-1.5">
-                            <div class="flex items-center justify-between gap-2 text-xs">
-                                <div class="flex items-center gap-2 min-w-0">
-                                    <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 {{ $index === 0 ? 'bg-amber-500 text-white shadow-xs' : 'sd-card-subtle sd-muted' }}">
-                                        {{ $index + 1 }}
-                                    </span>
-                                    <span class="font-semibold text-xs sd-title truncate" title="{{ $search->query }}">
-                                        "{{ $search->query }}"
-                                    </span>
-                                </div>
-                                <div class="flex items-center gap-1.5 shrink-0">
-                                    <span class="font-mono text-[11px] font-extrabold sd-title">
-                                        {{ number_format($search->total) }}
-                                    </span>
-                                    <span class="text-[10px] sd-muted">searches</span>
-                                </div>
-                            </div>
-
-                            {{-- Graph Bar --}}
-                            <div class="h-2 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
-                                <div class="h-full rounded-full transition-all duration-500 {{ $index === 0 ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 'bg-gradient-to-r from-emerald-600 to-teal-400' }}"
-                                     style="width: {{ max(6, $searchPct) }}%;"></div>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-xs sd-muted text-center py-4">No searches logged yet.</p>
-                    @endforelse
-                </div>
+                    {{-- Data Summary Badges --}}
+                    <div class="flex flex-wrap gap-1.5 pt-1">
+                        @foreach($mostSearched as $idx => $s)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold sd-card-subtle sd-title border sd-border" title="{{ $s->query }}">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                <span class="truncate max-w-[120px]">{{ $s->query }}</span>
+                                <span class="font-mono font-bold sd-muted text-[10px]">({{ number_format($s->total) }})</span>
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-xs sd-muted text-center py-6">No searches logged yet.</p>
+                @endif
             </div>
 
-            {{-- Top Read Capstones (Readership Bar Graph) --}}
+            {{-- 2. Top Read Capstones (Interactive Chart) --}}
             <div class="sd-card p-5 space-y-3.5">
                 <div class="flex items-center justify-between pb-2 sd-divider">
                     <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
                         <span>📖</span>
                         <span>Top Read Capstones</span>
                     </h3>
-                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                        Readership Graph
+                    <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                        Readership Chart
                     </span>
                 </div>
 
-                @php
-                    $maxStudyViews = $topStudies->max('views_count') ?: 1;
-                @endphp
+                @if($topStudies->count() > 0)
+                    {{-- Chart.js Canvas --}}
+                    <div class="relative w-full h-44">
+                        <canvas id="topReadChart"></canvas>
+                    </div>
 
-                <div class="space-y-3">
-                    @forelse($topStudies as $index => $study)
-                        @php
-                            $viewsPct = round(($study->views_count / $maxStudyViews) * 100);
-                        @endphp
-                        <div class="space-y-1.5">
-                            <div class="flex items-start justify-between gap-2 text-xs">
+                    {{-- Ranked Clickable List Underneath --}}
+                    <div class="space-y-2 pt-1 border-t sd-divider">
+                        @foreach($topStudies as $idx => $study)
+                            <div class="flex items-center justify-between gap-2 text-xs py-1">
                                 <div class="flex items-center gap-2 min-w-0 flex-1">
-                                    <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 {{ $index === 0 ? 'bg-[#0c4233] text-white shadow-xs' : 'sd-card-subtle sd-muted' }}">
-                                        {{ $index + 1 }}
+                                    <span class="w-4 h-4 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 {{ $idx === 0 ? 'bg-[#0c4233] text-white' : 'sd-card-subtle sd-muted' }}">
+                                        {{ $idx + 1 }}
                                     </span>
-                                    <a href="{{ route('repository.show', $study->id) }}" class="font-bold text-xs sd-title hover:underline line-clamp-1 truncate" title="{{ $study->title }}">
+                                    <a href="{{ route('repository.show', $study->id) }}" class="font-semibold text-xs sd-title hover:underline truncate" title="{{ $study->title }}">
                                         {{ $study->title }}
                                     </a>
                                 </div>
-                                <div class="flex items-center gap-1 shrink-0">
-                                    <span class="font-mono text-[11px] font-extrabold sd-accent">
-                                        {{ number_format($study->views_count) }}
-                                    </span>
-                                    <span class="text-[10px] sd-muted">views</span>
-                                </div>
+                                <span class="font-mono font-extrabold text-[11px] sd-accent shrink-0">
+                                    {{ number_format($study->views_count) }} views
+                                </span>
                             </div>
-
-                            <div class="flex items-center justify-between text-[10px] sd-muted pl-7">
-                                <span class="truncate">{{ $study->category->name ?? 'Uncategorized' }}</span>
-                                <span class="font-mono text-[9px] sd-muted font-bold">{{ $viewsPct }}% of peak</span>
-                            </div>
-
-                            {{-- Graph Bar --}}
-                            <div class="h-2 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden pl-7">
-                                <div class="h-full rounded-full transition-all duration-500 {{ $index === 0 ? 'bg-gradient-to-r from-emerald-600 to-teal-400' : 'bg-gradient-to-r from-slate-400 to-slate-300 dark:from-slate-500 dark:to-slate-600' }}"
-                                     style="width: {{ max(6, $viewsPct) }}%;"></div>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-xs sd-muted text-center py-4">No studies published yet.</p>
-                    @endforelse
-                </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-xs sd-muted text-center py-6">No studies published yet.</p>
+                @endif
             </div>
 
-            {{-- Popular Categories (Distribution Graph) --}}
+            {{-- 3. Popular Categories (Doughnut Chart) --}}
             <div class="sd-card p-5 space-y-3.5">
                 <div class="flex items-center justify-between pb-2 sd-divider">
                     <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
                         <span>📁</span>
                         <span>Popular Categories</span>
                     </h3>
-                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
-                        Category Graph
+                    <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
+                        Doughnut Chart
                     </span>
                 </div>
 
-                @php
-                    $totalCatQueries = $mostExploredCategories->sum('search_logs_count') ?: 1;
-                    $catColors = ['#059669', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'];
-                @endphp
-
                 @if($mostExploredCategories->count() > 0)
-                    {{-- Segmented Distribution Bar Graph --}}
-                    <div class="space-y-1.5">
-                        <div class="h-3 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden flex gap-0.5 p-0.5">
-                            @foreach($mostExploredCategories as $index => $cat)
-                                @php
-                                    $slicePct = max(3, round(($cat->search_logs_count / $totalCatQueries) * 100));
-                                    $color = $catColors[$index % count($catColors)];
-                                @endphp
-                                <div class="h-full rounded-sm transition-all duration-500 first:rounded-l-full last:rounded-r-full" 
-                                     style="width: {{ $slicePct }}%; background-color: {{ $color }};" 
-                                     title="{{ $cat->name }}: {{ number_format($cat->search_logs_count) }} queries ({{ $slicePct }}%)"></div>
-                            @endforeach
-                        </div>
-                        <div class="flex justify-between items-center text-[10px] sd-muted px-0.5">
-                            <span>Category Share</span>
-                            <span class="font-mono font-bold">{{ number_format($totalCatQueries) }} total queries</span>
+                    {{-- Interactive Doughnut Chart --}}
+                    <div class="relative w-full h-48 flex items-center justify-center">
+                        <canvas id="popularCategoryChart"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                            <span class="text-lg font-mono font-black sd-title leading-none">{{ number_format($totalCatQueries) }}</span>
+                            <span class="text-[10px] font-bold sd-muted uppercase tracking-wider mt-0.5">Queries</span>
                         </div>
                     </div>
 
-                    {{-- Individual Category Progress Bars --}}
-                    <div class="space-y-2.5 pt-1">
-                        @foreach($mostExploredCategories as $index => $cat)
+                    {{-- Category Legend Badges with Percentages --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                        @foreach($mostExploredCategories as $idx => $cat)
                             @php
-                                $catPct = round(($cat->search_logs_count / $totalCatQueries) * 100);
-                                $color = $catColors[$index % count($catColors)];
+                                $color = $catPalette[$idx % count($catPalette)];
+                                $pct = round(($cat->search_logs_count / $totalCatQueries) * 100);
                             @endphp
-                            <div class="space-y-1">
-                                <div class="flex items-center justify-between text-xs">
-                                    <div class="flex items-center gap-1.5 min-w-0">
-                                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ $color }};"></span>
-                                        <span class="font-medium text-xs sd-title truncate" title="{{ $cat->name }}">
-                                            {{ $cat->name }}
-                                        </span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5 shrink-0">
-                                        <span class="font-mono text-[11px] font-bold sd-title">
-                                            {{ number_format($cat->search_logs_count) }}
-                                        </span>
-                                        <span class="font-mono text-[10px] sd-muted font-bold">({{ $catPct }}%)</span>
-                                    </div>
+                            <div class="flex items-center justify-between p-2 rounded-xl sd-card-subtle text-xs border sd-border">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs" style="background-color: {{ $color }};"></span>
+                                    <span class="font-medium text-xs sd-title truncate" title="{{ $cat->name }}">{{ $cat->name }}</span>
                                 </div>
-                                <div class="h-1.5 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
-                                    <div class="h-full rounded-full transition-all duration-500" 
-                                         style="width: {{ max(4, $catPct) }}%; background-color: {{ $color }};"></div>
-                                </div>
+                                <span class="font-mono text-[10px] font-bold sd-muted shrink-0 ml-1">{{ $pct }}%</span>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-xs sd-muted text-center py-4">No category logs available.</p>
+                    <p class="text-xs sd-muted text-center py-6">No category logs available.</p>
                 @endif
             </div>
         </div>
+
+        {{-- CHART.JS INITIALIZATION SCRIPTS --}}
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not yet loaded');
+                return;
+            }
+
+            const isDark = document.documentElement.classList.contains('dark') || 
+                           document.body.classList.contains('dark-theme') || 
+                           localStorage.getItem('capstone_theme_mode') === 'dark' ||
+                           localStorage.getItem('capstone_theme_mode') === 'oled';
+
+            const textMuted = isDark ? '#94a3b8' : '#64748b';
+            const textHeadings = isDark ? '#f8fafc' : '#0f172a';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)';
+
+            // 1. POPULAR SEARCH TOPICS CHART
+            const ctxSearch = document.getElementById('popularSearchChart');
+            if (ctxSearch) {
+                const sLabels = @json($searchLabels);
+                const sValues = @json($searchValues);
+                if (sLabels.length > 0) {
+                    new Chart(ctxSearch, {
+                        type: 'bar',
+                        data: {
+                            labels: sLabels,
+                            datasets: [{
+                                data: sValues,
+                                backgroundColor: function(context) {
+                                    const {ctx, chartArea} = context.chart;
+                                    if (!chartArea) return '#f59e0b';
+                                    const g = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+                                    g.addColorStop(0, '#f59e0b');
+                                    g.addColorStop(1, '#10b981');
+                                    return g;
+                                },
+                                borderRadius: 6,
+                                barThickness: 15,
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#0f172a',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#cbd5e1',
+                                    padding: 8,
+                                    cornerRadius: 8,
+                                    callbacks: {
+                                        label: function(c) {
+                                            return c.raw + ' searches';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: gridColor, drawBorder: false },
+                                    ticks: { color: textMuted, font: { size: 10, weight: '600' } }
+                                },
+                                y: {
+                                    grid: { display: false, drawBorder: false },
+                                    ticks: { color: textHeadings, font: { size: 11, weight: '600' } }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // 2. TOP READ CAPSTONES CHART
+            const ctxTopRead = document.getElementById('topReadChart');
+            if (ctxTopRead) {
+                const tLabels = @json($topStudyLabels);
+                const tFullTitles = @json($topStudyFullTitles);
+                const tViews = @json($topStudyViews);
+                if (tLabels.length > 0) {
+                    new Chart(ctxTopRead, {
+                        type: 'bar',
+                        data: {
+                            labels: tLabels,
+                            datasets: [{
+                                data: tViews,
+                                backgroundColor: function(context) {
+                                    const {ctx, chartArea} = context.chart;
+                                    if (!chartArea) return '#0c4233';
+                                    const g = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+                                    g.addColorStop(0, '#0c4233');
+                                    g.addColorStop(1, '#00f5d4');
+                                    return g;
+                                },
+                                borderRadius: 6,
+                                barThickness: 15,
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#0f172a',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#cbd5e1',
+                                    padding: 8,
+                                    cornerRadius: 8,
+                                    callbacks: {
+                                        title: function(items) {
+                                            const i = items[0].dataIndex;
+                                            return tFullTitles[i] || items[0].label;
+                                        },
+                                        label: function(c) {
+                                            return c.raw + ' views';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: gridColor, drawBorder: false },
+                                    ticks: { color: textMuted, font: { size: 10, weight: '600' } }
+                                },
+                                y: {
+                                    grid: { display: false, drawBorder: false },
+                                    ticks: { color: textHeadings, font: { size: 11, weight: '600' } }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // 3. POPULAR CATEGORIES DOUGHNUT CHART
+            const ctxCat = document.getElementById('popularCategoryChart');
+            if (ctxCat) {
+                const cLabels = @json($catLabels);
+                const cValues = @json($catValues);
+                if (cLabels.length > 0) {
+                    new Chart(ctxCat, {
+                        type: 'doughnut',
+                        data: {
+                            labels: cLabels,
+                            datasets: [{
+                                data: cValues,
+                                backgroundColor: [
+                                    '#10b981',
+                                    '#06b6d4',
+                                    '#8b5cf6',
+                                    '#f59e0b',
+                                    '#ec4899'
+                                ],
+                                borderWidth: 2,
+                                borderColor: isDark ? '#1e293b' : '#ffffff',
+                                hoverOffset: 6,
+                                borderRadius: 4,
+                                spacing: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '72%',
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#0f172a',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#cbd5e1',
+                                    padding: 8,
+                                    cornerRadius: 8,
+                                    callbacks: {
+                                        label: function(c) {
+                                            const total = c.dataset.data.reduce((a, b) => a + b, 0);
+                                            const p = Math.round((c.raw / (total || 1)) * 100);
+                                            return ' ' + c.label + ': ' + c.raw + ' queries (' + p + '%)';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        </script>
     </div>
 </div>
 @endsection
