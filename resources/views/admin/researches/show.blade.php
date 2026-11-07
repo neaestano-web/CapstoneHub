@@ -1166,7 +1166,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-lg">📄</span>
                     <h3 class="font-extrabold text-sm text-slate-900" id="adminViewerLabel">
-                        {{ $isMultiFile ? 'File #1: ' . $attachedFiles->first()->original_name : 'Manuscript Document Preview' }}
+                        {{ $isMultiFile ? 'Continuous Combined Manuscript (Sequential Order)' : 'Manuscript Document Preview' }}
                     </h3>
                 </div>
 
@@ -1178,7 +1178,7 @@
                         <span>📎</span> Re-attach / Update File
                     </button>
                     @if($hasAnyDocument)
-                        <a href="{{ route('document.pdf', $research->id) }}" target="_blank" class="text-xs font-bold text-emerald-800 hover:text-emerald-950 transition">
+                        <a href="{{ route('document.pdf', $research->id) }}{{ $isMultiFile ? '?combined=1' : '' }}" target="_blank" class="text-xs font-bold text-emerald-800 hover:text-emerald-950 transition">
                             Open in New Tab ↗
                         </a>
                     @endif
@@ -1197,14 +1197,14 @@
                                 <button type="button"
                                         id="admin-tab-file-{{ $f->id }}"
                                         onclick="switchAdminViewer('{{ route('document.pdf', $research->id) }}?file_id={{ $f->id }}', 'admin-tab-file-{{ $f->id }}', 'File #{{ $idx + 1 }}: {{ addslashes($f->original_name) }}')"
-                                        class="admin-viewer-tab px-2.5 py-1 text-xs font-bold rounded-lg transition {{ $idx === 0 ? 'bg-[#0c4233] text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
+                                        class="admin-viewer-tab px-2.5 py-1 text-xs font-bold rounded-lg transition bg-white text-slate-700 border border-slate-200 hover:bg-slate-100">
                                     {{ $idx === 0 ? '🥇 #1 ' : '#' . ($idx + 1) . ' ' }}{{ Str::limit($f->original_name, 20) }}
                                 </button>
                             @endforeach
                             <button type="button"
                                     id="admin-tab-combined"
                                     onclick="switchAdminViewer('{{ route('document.pdf', $research->id) }}?combined=1', 'admin-tab-combined', 'Continuous Combined Manuscript (Sequential Order)')"
-                                    class="admin-viewer-tab px-2.5 py-1 text-xs font-bold rounded-lg transition bg-white text-slate-700 border border-slate-200 hover:bg-slate-100">
+                                    class="admin-viewer-tab px-2.5 py-1 text-xs font-bold rounded-lg transition bg-[#0c4233] text-white">
                                 📑 Sequential Combined View
                             </button>
                         </div>
@@ -1214,7 +1214,7 @@
                 {{-- Embedded PDF Viewer iframe --}}
                 <div class="w-full rounded-xl overflow-hidden border border-slate-200 bg-white" style="height: 80vh; min-height: 720px;">
                     <iframe id="adminDocIframe"
-                            src="{{ route('document.pdf', $research->id) }}{{ $isMultiFile ? '?file_id=' . $attachedFiles->first()->id . '&' : '?' }}embedded=1#toolbar=0&navpanes=0&scrollbar=1" 
+                            src="{{ route('document.pdf', $research->id) }}{{ $isMultiFile ? '?combined=1&' : '?' }}embedded=1#toolbar=0&navpanes=0&scrollbar=1" 
                             style="width: 100%; height: 100%; border: none; background: #ffffff;"
                             class="w-full h-full border-0">
                     </iframe>
