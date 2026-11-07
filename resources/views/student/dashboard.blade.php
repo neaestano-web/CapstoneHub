@@ -140,88 +140,15 @@
         </div>
     </div>
 
-    {{-- MAIN 2-COLUMN GRID --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- LEFT COLUMN: MY RECENT SUBMISSIONS --}}
-        <div class="lg:col-span-2 space-y-4">
-            <div class="sd-card p-5 sm:p-6 space-y-4">
-                <div class="flex items-center justify-between pb-3 sd-divider">
-                    <h2 class="text-sm font-bold sd-title flex items-center gap-2">
-                        <span>📑</span>
-                        <span>My Capstone Project</span>
-                    </h2>
-                    <a href="{{ route('student.researches.index') }}" class="text-xs font-bold sd-accent hover:underline">
-                        View All Submissions →
-                    </a>
-                </div>
-
-                @if($recentResearches->count() > 0)
-                    <div class="space-y-3">
-                        @foreach($recentResearches as $research)
-                            <div class="p-4 sd-card-subtle flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                                <div class="space-y-1.5 min-w-0 flex-1">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        @if($research->category)
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
-                                                {{ $research->category->name }}
-                                            </span>
-                                        @endif
-                                        @if($research->status === 'approved')
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">Approved</span>
-                                        @elseif($research->status === 'rejected')
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-800 border border-rose-200/80">Needs Revision</span>
-                                        @else
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">In Review</span>
-                                        @endif
-                                    </div>
-
-                                    <h3 class="font-bold text-xs sd-title line-clamp-1">
-                                        <a href="{{ route('student.researches.show', $research) }}" class="hover:underline transition">
-                                            {{ $research->title }}
-                                        </a>
-                                    </h3>
-
-                                    <div class="flex items-center gap-3 text-[11px] sd-muted flex-wrap">
-                                        <span>Submitted: <strong class="sd-text font-medium">{{ $research->created_at->format('M d, Y') }}</strong></span>
-                                        <span>·</span>
-                                        <span>Authors: <strong class="sd-text font-medium">{{ $research->authors }}</strong></span>
-                                    </div>
-                                </div>
-
-                                <a href="{{ route('student.researches.show', $research) }}" 
-                                   class="px-3 py-1.5 sd-card sd-text hover:opacity-85 font-bold text-xs rounded-lg transition inline-flex items-center gap-1 shrink-0 w-fit">
-                                    View Manuscript →
-                                </a>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="py-12 text-center space-y-3">
-                        <div class="w-10 h-10 rounded-full sd-card-subtle sd-muted flex items-center justify-center mx-auto text-base">
-                            📂
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-xs sd-title">No Capstone Manuscript Submitted Yet</h3>
-                            <p class="text-[11px] sd-muted mt-0.5 max-w-sm mx-auto">
-                                Share your capstone research paper with the institutional repository catalog.
-                            </p>
-                        </div>
-                        <a href="{{ route('student.researches.create') }}" 
-                           class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold text-xs rounded-xl transition shadow-xs">
-                            <span>Upload Your Manuscript</span>
-                        </a>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        {{-- RIGHT COLUMN: REPOSITORY TRENDS --}}
-        <div class="space-y-4">
+    {{-- MAIN 2-COLUMN GRID: EXPANDED GRAPHS (2 COLUMNS) + COMPACT CAPSTONE PROJECT (1 COLUMN) --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {{-- LEFT / MAIN COLUMN (lg:col-span-2): LARGE, PROMINENT INTERACTIVE GRAPHS --}}
+        <div class="lg:col-span-2 space-y-6">
             @php
-                $searchLabels = $mostSearched->pluck('query')->map(fn($q) => strlen($q) > 16 ? substr($q, 0, 16) . '…' : $q)->values();
+                $searchLabels = $mostSearched->pluck('query')->map(fn($q) => strlen($q) > 30 ? substr($q, 0, 30) . '…' : $q)->values();
                 $searchValues = $mostSearched->pluck('total')->values();
 
-                $topStudyLabels = $topStudies->pluck('title')->map(fn($t) => strlen($t) > 20 ? substr($t, 0, 20) . '…' : $t)->values();
+                $topStudyLabels = $topStudies->pluck('title')->map(fn($t) => strlen($t) > 32 ? substr($t, 0, 32) . '…' : $t)->values();
                 $topStudyFullTitles = $topStudies->pluck('title')->values();
                 $topStudyViews = $topStudies->pluck('views_count')->values();
 
@@ -231,121 +158,233 @@
                 $catPalette = ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b', '#ec4899'];
             @endphp
 
-            {{-- 1. Popular Search Topics (Interactive Chart) --}}
-            <div class="sd-card p-5 space-y-3.5">
-                <div class="flex items-center justify-between pb-2 sd-divider">
-                    <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
-                        <span>🔥</span>
-                        <span>Popular Search Topics</span>
-                    </h3>
-                    <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                        Interactive Bar Chart
+            {{-- 1. Popular Search Topics (Large Bar Graph) --}}
+            <div class="sd-card p-6 space-y-4">
+                <div class="flex items-center justify-between pb-3 sd-divider">
+                    <div>
+                        <h3 class="text-sm font-bold sd-title uppercase tracking-wider flex items-center gap-2">
+                            <span>🔥</span>
+                            <span>Popular Search Topics</span>
+                        </h3>
+                        <p class="text-[11px] sd-muted mt-0.5">Most frequent search terms queried across the capstone catalog</p>
+                    </div>
+                    <span class="text-[10px] font-extrabold px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 shrink-0">
+                        Search Frequency Graph
                     </span>
                 </div>
 
                 @if($mostSearched->count() > 0)
-                    {{-- Chart.js Canvas --}}
-                    <div class="relative w-full h-44">
+                    {{-- Large Chart.js Canvas --}}
+                    <div class="relative w-full h-64">
                         <canvas id="popularSearchChart"></canvas>
                     </div>
 
                     {{-- Data Summary Badges --}}
-                    <div class="flex flex-wrap gap-1.5 pt-1">
+                    <div class="flex flex-wrap items-center gap-2 pt-2 border-t sd-divider">
+                        <span class="text-[11px] font-bold sd-muted uppercase tracking-wider">Top Topics:</span>
                         @foreach($mostSearched as $idx => $s)
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold sd-card-subtle sd-title border sd-border" title="{{ $s->query }}">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                <span class="truncate max-w-[120px]">{{ $s->query }}</span>
-                                <span class="font-mono font-bold sd-muted text-[10px]">({{ number_format($s->total) }})</span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold sd-card-subtle sd-title border sd-border" title="{{ $s->query }}">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                <span class="truncate max-w-[150px]">{{ $s->query }}</span>
+                                <span class="font-mono font-bold sd-muted text-[11px]">({{ number_format($s->total) }})</span>
                             </span>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-xs sd-muted text-center py-6">No searches logged yet.</p>
+                    <p class="text-xs sd-muted text-center py-10">No searches logged yet.</p>
                 @endif
             </div>
 
-            {{-- 2. Top Read Capstones (Interactive Chart) --}}
-            <div class="sd-card p-5 space-y-3.5">
-                <div class="flex items-center justify-between pb-2 sd-divider">
-                    <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
-                        <span>📖</span>
-                        <span>Top Read Capstones</span>
-                    </h3>
-                    <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                        Readership Chart
+            {{-- 2. Top Read Capstones (Large Readership Graph) --}}
+            <div class="sd-card p-6 space-y-4">
+                <div class="flex items-center justify-between pb-3 sd-divider">
+                    <div>
+                        <h3 class="text-sm font-bold sd-title uppercase tracking-wider flex items-center gap-2">
+                            <span>📖</span>
+                            <span>Top Read Capstones</span>
+                        </h3>
+                        <p class="text-[11px] sd-muted mt-0.5">Manuscripts with the highest total readership engagement</p>
+                    </div>
+                    <span class="text-[10px] font-extrabold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 shrink-0">
+                        Readership Impact Graph
                     </span>
                 </div>
 
                 @if($topStudies->count() > 0)
-                    {{-- Chart.js Canvas --}}
-                    <div class="relative w-full h-44">
+                    {{-- Large Chart.js Canvas --}}
+                    <div class="relative w-full h-64">
                         <canvas id="topReadChart"></canvas>
                     </div>
 
                     {{-- Ranked Clickable List Underneath --}}
-                    <div class="space-y-2 pt-1 border-t sd-divider">
+                    <div class="space-y-2.5 pt-2 border-t sd-divider">
                         @foreach($topStudies as $idx => $study)
-                            <div class="flex items-center justify-between gap-2 text-xs py-1">
-                                <div class="flex items-center gap-2 min-w-0 flex-1">
-                                    <span class="w-4 h-4 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 {{ $idx === 0 ? 'bg-[#0c4233] text-white' : 'sd-card-subtle sd-muted' }}">
-                                        {{ $idx + 1 }}
+                            <div class="p-2.5 rounded-xl sd-card-subtle border sd-border flex items-center justify-between gap-3 text-xs transition hover:bg-slate-50 dark:hover:bg-white/[0.03]">
+                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <span class="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold shrink-0 {{ $idx === 0 ? 'bg-[#0c4233] text-white shadow-xs' : 'sd-card sd-muted' }}">
+                                        #{{ $idx + 1 }}
                                     </span>
-                                    <a href="{{ route('repository.show', $study->id) }}" class="font-semibold text-xs sd-title hover:underline truncate" title="{{ $study->title }}">
-                                        {{ $study->title }}
-                                    </a>
+                                    <div class="min-w-0 flex-1">
+                                        <a href="{{ route('repository.show', $study->id) }}" class="font-bold text-xs sd-title hover:underline line-clamp-1 truncate block" title="{{ $study->title }}">
+                                            {{ $study->title }}
+                                        </a>
+                                        <span class="text-[10px] sd-muted truncate block">{{ $study->category->name ?? 'Uncategorized' }}</span>
+                                    </div>
                                 </div>
-                                <span class="font-mono font-extrabold text-[11px] sd-accent shrink-0">
+                                <span class="font-mono font-extrabold text-xs sd-accent shrink-0 px-2 py-1 rounded-lg sd-card border sd-border">
                                     {{ number_format($study->views_count) }} views
                                 </span>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-xs sd-muted text-center py-6">No studies published yet.</p>
+                    <p class="text-xs sd-muted text-center py-10">No studies published yet.</p>
                 @endif
             </div>
 
-            {{-- 3. Popular Categories (Doughnut Chart) --}}
-            <div class="sd-card p-5 space-y-3.5">
-                <div class="flex items-center justify-between pb-2 sd-divider">
-                    <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
-                        <span>📁</span>
-                        <span>Popular Categories</span>
-                    </h3>
-                    <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
-                        Doughnut Chart
+            {{-- 3. Popular Categories (Large Doughnut Graph) --}}
+            <div class="sd-card p-6 space-y-4">
+                <div class="flex items-center justify-between pb-3 sd-divider">
+                    <div>
+                        <h3 class="text-sm font-bold sd-title uppercase tracking-wider flex items-center gap-2">
+                            <span>📁</span>
+                            <span>Popular Categories</span>
+                        </h3>
+                        <p class="text-[11px] sd-muted mt-0.5">Distribution of exploration queries across research domains</p>
+                    </div>
+                    <span class="text-[10px] font-extrabold px-3 py-1 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 shrink-0">
+                        Category Distribution Graph
                     </span>
                 </div>
 
                 @if($mostExploredCategories->count() > 0)
-                    {{-- Interactive Doughnut Chart --}}
-                    <div class="relative w-full h-48 flex items-center justify-center">
+                    {{-- Large Doughnut Chart with Center Cutout Metric --}}
+                    <div class="relative w-full h-64 flex items-center justify-center">
                         <canvas id="popularCategoryChart"></canvas>
                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                            <span class="text-lg font-mono font-black sd-title leading-none">{{ number_format($totalCatQueries) }}</span>
-                            <span class="text-[10px] font-bold sd-muted uppercase tracking-wider mt-0.5">Queries</span>
+                            <span class="text-2xl sm:text-3xl font-mono font-black sd-title leading-none">{{ number_format($totalCatQueries) }}</span>
+                            <span class="text-[11px] font-bold sd-muted uppercase tracking-wider mt-1">Total Queries</span>
                         </div>
                     </div>
 
-                    {{-- Category Legend Badges with Percentages --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                    {{-- Category Legend Badges with Percentages in Spacious Grid --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-2 border-t sd-divider">
                         @foreach($mostExploredCategories as $idx => $cat)
                             @php
                                 $color = $catPalette[$idx % count($catPalette)];
                                 $pct = round(($cat->search_logs_count / $totalCatQueries) * 100);
                             @endphp
-                            <div class="flex items-center justify-between p-2 rounded-xl sd-card-subtle text-xs border sd-border">
-                                <div class="flex items-center gap-1.5 min-w-0">
-                                    <span class="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs" style="background-color: {{ $color }};"></span>
-                                    <span class="font-medium text-xs sd-title truncate" title="{{ $cat->name }}">{{ $cat->name }}</span>
+                            <div class="p-2.5 rounded-xl sd-card-subtle flex items-center justify-between text-xs border sd-border">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="w-3 h-3 rounded-full shrink-0 shadow-xs" style="background-color: {{ $color }};"></span>
+                                    <span class="font-semibold text-xs sd-title truncate" title="{{ $cat->name }}">{{ $cat->name }}</span>
                                 </div>
-                                <span class="font-mono text-[10px] font-bold sd-muted shrink-0 ml-1">{{ $pct }}%</span>
+                                <div class="text-right shrink-0 ml-1">
+                                    <span class="font-mono text-xs font-bold sd-title block">{{ number_format($cat->search_logs_count) }}</span>
+                                    <span class="font-mono text-[10px] sd-muted font-bold block">{{ $pct }}%</span>
+                                </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-xs sd-muted text-center py-6">No category logs available.</p>
+                    <p class="text-xs sd-muted text-center py-10">No category logs available.</p>
                 @endif
+            </div>
+        </div>
+
+        {{-- RIGHT COLUMN (lg:col-span-1): COMPACT MY CAPSTONE PROJECT & RESEARCH TOOLS --}}
+        <div class="space-y-4">
+            {{-- Compact My Capstone Project Card --}}
+            <div class="sd-card p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 sd-divider">
+                    <h2 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5">
+                        <span>📑</span>
+                        <span>My Capstone Project</span>
+                    </h2>
+                    <a href="{{ route('student.researches.index') }}" class="text-[11px] font-bold sd-accent hover:underline">
+                        Manage →
+                    </a>
+                </div>
+
+                @if($recentResearches->count() > 0)
+                    @php $myPaper = $recentResearches->first(); @endphp
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            @if($myPaper->category)
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                                    {{ $myPaper->category->name }}
+                                </span>
+                            @endif
+                            @if($myPaper->status === 'approved')
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">Approved</span>
+                            @elseif($myPaper->status === 'rejected')
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-800 border border-rose-200/80">Needs Revision</span>
+                            @else
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">In Review</span>
+                            @endif
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-sm sd-title hover:underline line-clamp-2 leading-snug">
+                                <a href="{{ route('student.researches.show', $myPaper) }}">
+                                    {{ $myPaper->title }}
+                                </a>
+                            </h3>
+                            <p class="text-[11px] sd-muted mt-1.5 truncate">
+                                Authors: <strong class="sd-text font-medium">{{ $myPaper->authors }}</strong>
+                            </p>
+                            <p class="text-[11px] sd-muted mt-0.5">
+                                Submitted: <strong class="sd-text font-medium">{{ $myPaper->created_at->format('M d, Y') }}</strong>
+                            </p>
+                        </div>
+
+                        <a href="{{ route('student.researches.show', $myPaper) }}" 
+                           class="w-full py-2 px-3 sd-card sd-text hover:opacity-85 font-bold text-xs rounded-xl transition inline-flex items-center justify-center gap-1.5 border sd-border shadow-2xs">
+                            <span>View Manuscript Details</span>
+                            <span>→</span>
+                        </a>
+                    </div>
+                @else
+                    <div class="py-8 text-center space-y-3">
+                        <div class="w-10 h-10 rounded-full sd-card-subtle sd-muted flex items-center justify-center mx-auto text-base">
+                            📂
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xs sd-title">No Manuscript Submitted</h3>
+                            <p class="text-[11px] sd-muted mt-0.5 max-w-xs mx-auto">
+                                Share your capstone paper with the institutional repository.
+                            </p>
+                        </div>
+                        <a href="{{ route('student.researches.create') }}" 
+                           class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0c4233] hover:bg-[#082d23] text-white font-bold text-xs rounded-xl transition shadow-xs">
+                            <span>Upload Manuscript</span>
+                        </a>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Research Shortcuts Card --}}
+            <div class="sd-card p-5 space-y-3">
+                <h3 class="text-xs font-bold sd-title uppercase tracking-wider flex items-center gap-1.5 pb-2 sd-divider">
+                    <span>⚡</span>
+                    <span>Research Tools</span>
+                </h3>
+                <div class="space-y-2">
+                    <a href="{{ route('similarity-checker') }}" class="p-2.5 rounded-xl sd-card-subtle flex items-center justify-between text-xs hover:opacity-85 transition border sd-border">
+                        <div class="flex items-center gap-2">
+                            <span>🔍</span>
+                            <span class="font-semibold sd-title">Similarity Checker</span>
+                        </div>
+                        <span class="text-[10px] font-bold sd-accent">Launch →</span>
+                    </a>
+                    <a href="{{ route('repository.index') }}" class="p-2.5 rounded-xl sd-card-subtle flex items-center justify-between text-xs hover:opacity-85 transition border sd-border">
+                        <div class="flex items-center gap-2">
+                            <span>📚</span>
+                            <span class="font-semibold sd-title">Browse Repository</span>
+                        </div>
+                        <span class="text-[10px] font-bold sd-accent">Explore →</span>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -366,7 +405,7 @@
             const textHeadings = isDark ? '#f8fafc' : '#0f172a';
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)';
 
-            // 1. POPULAR SEARCH TOPICS CHART
+            // 1. POPULAR SEARCH TOPICS CHART (Large, Spacious)
             const ctxSearch = document.getElementById('popularSearchChart');
             if (ctxSearch) {
                 const sLabels = @json($searchLabels);
@@ -386,8 +425,8 @@
                                     g.addColorStop(1, '#10b981');
                                     return g;
                                 },
-                                borderRadius: 6,
-                                barThickness: 15,
+                                borderRadius: 8,
+                                barThickness: 22,
                             }]
                         },
                         options: {
@@ -400,11 +439,11 @@
                                     backgroundColor: '#0f172a',
                                     titleColor: '#ffffff',
                                     bodyColor: '#cbd5e1',
-                                    padding: 8,
+                                    padding: 10,
                                     cornerRadius: 8,
                                     callbacks: {
                                         label: function(c) {
-                                            return c.raw + ' searches';
+                                            return ' ' + c.raw + ' searches';
                                         }
                                     }
                                 }
@@ -412,11 +451,11 @@
                             scales: {
                                 x: {
                                     grid: { color: gridColor, drawBorder: false },
-                                    ticks: { color: textMuted, font: { size: 10, weight: '600' } }
+                                    ticks: { color: textMuted, font: { size: 11, weight: '600' } }
                                 },
                                 y: {
                                     grid: { display: false, drawBorder: false },
-                                    ticks: { color: textHeadings, font: { size: 11, weight: '600' } }
+                                    ticks: { color: textHeadings, font: { size: 12, weight: '700' } }
                                 }
                             }
                         }
@@ -424,7 +463,7 @@
                 }
             }
 
-            // 2. TOP READ CAPSTONES CHART
+            // 2. TOP READ CAPSTONES CHART (Large, Spacious)
             const ctxTopRead = document.getElementById('topReadChart');
             if (ctxTopRead) {
                 const tLabels = @json($topStudyLabels);
@@ -445,8 +484,8 @@
                                     g.addColorStop(1, '#00f5d4');
                                     return g;
                                 },
-                                borderRadius: 6,
-                                barThickness: 15,
+                                borderRadius: 8,
+                                barThickness: 22,
                             }]
                         },
                         options: {
@@ -459,7 +498,7 @@
                                     backgroundColor: '#0f172a',
                                     titleColor: '#ffffff',
                                     bodyColor: '#cbd5e1',
-                                    padding: 8,
+                                    padding: 10,
                                     cornerRadius: 8,
                                     callbacks: {
                                         title: function(items) {
@@ -467,7 +506,7 @@
                                             return tFullTitles[i] || items[0].label;
                                         },
                                         label: function(c) {
-                                            return c.raw + ' views';
+                                            return ' ' + c.raw + ' views';
                                         }
                                     }
                                 }
@@ -475,11 +514,11 @@
                             scales: {
                                 x: {
                                     grid: { color: gridColor, drawBorder: false },
-                                    ticks: { color: textMuted, font: { size: 10, weight: '600' } }
+                                    ticks: { color: textMuted, font: { size: 11, weight: '600' } }
                                 },
                                 y: {
                                     grid: { display: false, drawBorder: false },
-                                    ticks: { color: textHeadings, font: { size: 11, weight: '600' } }
+                                    ticks: { color: textHeadings, font: { size: 12, weight: '700' } }
                                 }
                             }
                         }
@@ -487,7 +526,7 @@
                 }
             }
 
-            // 3. POPULAR CATEGORIES DOUGHNUT CHART
+            // 3. POPULAR CATEGORIES DOUGHNUT CHART (Large, Spacious)
             const ctxCat = document.getElementById('popularCategoryChart');
             if (ctxCat) {
                 const cLabels = @json($catLabels);
@@ -506,24 +545,24 @@
                                     '#f59e0b',
                                     '#ec4899'
                                 ],
-                                borderWidth: 2,
+                                borderWidth: 3,
                                 borderColor: isDark ? '#1e293b' : '#ffffff',
-                                hoverOffset: 6,
-                                borderRadius: 4,
-                                spacing: 2
+                                hoverOffset: 8,
+                                borderRadius: 6,
+                                spacing: 3
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            cutout: '72%',
+                            cutout: '70%',
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
                                     backgroundColor: '#0f172a',
                                     titleColor: '#ffffff',
                                     bodyColor: '#cbd5e1',
-                                    padding: 8,
+                                    padding: 10,
                                     cornerRadius: 8,
                                     callbacks: {
                                         label: function(c) {
