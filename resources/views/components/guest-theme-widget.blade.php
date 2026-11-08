@@ -54,17 +54,17 @@
                     </div>
 
                     <div class="guest-theme-grid">
-                        <!-- Cyber Dark (Default) -->
-                        <button type="button" class="guest-theme-card" data-mode="dark" onclick="selectThemeMode('dark')">
-                            <span class="theme-swatch swatch-dark"></span>
-                            <span class="theme-card-name">Cyber Dark</span>
+                        <!-- Clean Light (Default) -->
+                        <button type="button" class="guest-theme-card active" data-mode="light" onclick="selectThemeMode('light')">
+                            <span class="theme-swatch swatch-light"></span>
+                            <span class="theme-card-name">Clean Light (Default)</span>
                             <span class="theme-active-check">✓</span>
                         </button>
 
-                        <!-- Clean Light -->
-                        <button type="button" class="guest-theme-card" data-mode="light" onclick="selectThemeMode('light')">
-                            <span class="theme-swatch swatch-light"></span>
-                            <span class="theme-card-name">Clean Light</span>
+                        <!-- Cyber Dark -->
+                        <button type="button" class="guest-theme-card" data-mode="dark" onclick="selectThemeMode('dark')">
+                            <span class="theme-swatch swatch-dark"></span>
+                            <span class="theme-card-name">Cyber Dark</span>
                             <span class="theme-active-check">✓</span>
                         </button>
 
@@ -943,12 +943,12 @@
         const STORAGE_KEY = 'capstone_guest_display_theme';
         const POS_STORAGE_KEY = 'capstone_guest_widget_coords';
 
-        // Default Theme Configuration
+        // Default Theme Configuration (Clean Light Academic White)
         const defaults = {
-            mode: 'dark',
-            accent: '#00f5d4',
-            customBg: '#0b1119',
-            customText: '#f8fafc',
+            mode: 'light',
+            accent: '#0c4233',
+            customBg: '#ffffff',
+            customText: '#1e293b',
             fontSize: '1rem'
         };
 
