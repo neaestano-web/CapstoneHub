@@ -266,8 +266,8 @@
         width: 17px;
         height: 17px;
         border-radius: 4px;
-        background: var(--guest-bg-input, #ffffff);
-        border: 1.5px solid var(--guest-border, #cbd5e1);
+        background: #ffffff;
+        border: 2px solid #64748b;
         cursor: pointer;
         position: relative;
         display: inline-flex;
@@ -279,11 +279,12 @@
 
     .custom-checkbox:hover {
         border-color: var(--guest-accent, #0c4233);
+        background: #f8fafc;
     }
 
     .custom-checkbox:checked {
-        background: var(--guest-accent, #0c4233);
-        border-color: var(--guest-accent, #0c4233);
+        background: var(--guest-accent, #0c4233) !important;
+        border-color: var(--guest-accent, #0c4233) !important;
         box-shadow: 0 0 8px var(--guest-accent-glow, rgba(12, 66, 51, 0.3));
     }
 

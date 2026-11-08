@@ -773,10 +773,24 @@
             color: var(--guest-text-main) !important;
         }
 
-        html[data-guest-theme="light"] .custom-checkbox,
-        html[data-guest-theme="sepia"] .custom-checkbox {
-            background: var(--guest-bg-input) !important;
-            border-color: var(--guest-border) !important;
+        html[data-guest-theme="light"] .custom-checkbox:not(:checked) {
+            background: #ffffff !important;
+            border: 2px solid #64748b !important;
+        }
+
+        html[data-guest-theme="light"] .custom-checkbox:checked {
+            background: var(--guest-accent, #0c4233) !important;
+            border-color: var(--guest-accent, #0c4233) !important;
+        }
+
+        html[data-guest-theme="sepia"] .custom-checkbox:not(:checked) {
+            background: #fbf7ee !important;
+            border: 2px solid #8c8273 !important;
+        }
+
+        html[data-guest-theme="sepia"] .custom-checkbox:checked {
+            background: var(--guest-accent, #0c4233) !important;
+            border-color: var(--guest-accent, #0c4233) !important;
         }
 
         /* Dynamic Reading Text Size for Research Titles & Abstracts */
