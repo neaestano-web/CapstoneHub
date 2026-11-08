@@ -60,8 +60,9 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::ATTR_TIMEOUT => (int) env('DB_TIMEOUT', 5),
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', (!in_array(env('DB_HOST', '127.0.0.1'), ['127.0.0.1', 'localhost']) && file_exists(base_path('cacert.pem'))) ? base_path('cacert.pem') : (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : null)),
-            ]) : [],
+            ], fn ($value) => !is_null($value)) : [],
         ],
 
         'mariadb' => [
@@ -80,8 +81,9 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::ATTR_TIMEOUT => (int) env('DB_TIMEOUT', 5),
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', (!in_array(env('DB_HOST', '127.0.0.1'), ['127.0.0.1', 'localhost']) && file_exists(base_path('cacert.pem'))) ? base_path('cacert.pem') : (file_exists('/etc/ssl/certs/ca-certificates.crt') ? '/etc/ssl/certs/ca-certificates.crt' : null)),
-            ]) : [],
+            ], fn ($value) => !is_null($value)) : [],
         ],
 
         'pgsql' => [
