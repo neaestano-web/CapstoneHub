@@ -167,7 +167,7 @@
                             <span class="text-2xl sm:text-3xl font-mono font-black text-[#2d2b56] leading-none">
                                 {{ number_format($totalApprovedCategorized) }}
                             </span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Papers</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Projects</span>
                         </div>
                     </div>
 
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 label: function(c) {
                                     const total = c.dataset.data.reduce((a, b) => a + b, 0);
                                     const pct = total > 0 ? Math.round((c.raw / total) * 100) : 0;
-                                    return ` ${c.label}: ${c.raw} papers (${pct}%)`;
+                                    return ` ${c.label}: ${c.raw} projects (${pct}%)`;
                                 }
                             }
                         }

@@ -24,18 +24,20 @@ class DashboardController extends Controller
               });
         })->count();
 
-        // 1. Category Distribution (Approved Researches per Category)
+        // 1. Category Distribution (Approved Projects per Primary Category)
+        // Groups each unique project strictly once under its primary discipline
         $categoryDistribution = ResearchCategory::withCount([
-            'classifiedResearches as approved_researches_count' => fn ($query) => $query->where('status', 'approved')
+            'researches as approved_researches_count' => fn ($query) => $query->where('status', 'approved')
         ])
             ->having('approved_researches_count', '>', 0)
             ->orderByDesc('approved_researches_count')
             ->take(6)
             ->get();
 
+        // Fallback to many-to-many classifications if legacy records lack primary category
         if ($categoryDistribution->isEmpty()) {
             $categoryDistribution = ResearchCategory::withCount([
-                'researches as approved_researches_count' => fn ($query) => $query->where('status', 'approved')
+                'classifiedResearches as approved_researches_count' => fn ($query) => $query->where('status', 'approved')
             ])
                 ->having('approved_researches_count', '>', 0)
                 ->orderByDesc('approved_researches_count')

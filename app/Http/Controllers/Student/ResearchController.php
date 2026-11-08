@@ -73,12 +73,22 @@ class ResearchController extends Controller
             ->get();
 
         $categoryDistribution = ResearchCategory::withCount([
-            'classifiedResearches as approved_researches_count' => fn ($researches) => $researches->where('status', 'approved'),
+            'researches as approved_researches_count' => fn ($researches) => $researches->where('status', 'approved'),
         ])
             ->having('approved_researches_count', '>', 0)
             ->orderByDesc('approved_researches_count')
             ->take(5)
             ->get();
+
+        if ($categoryDistribution->isEmpty()) {
+            $categoryDistribution = ResearchCategory::withCount([
+                'classifiedResearches as approved_researches_count' => fn ($researches) => $researches->where('status', 'approved'),
+            ])
+                ->having('approved_researches_count', '>', 0)
+                ->orderByDesc('approved_researches_count')
+                ->take(5)
+                ->get();
+        }
 
         $mostExploredCategories = ResearchCategory::withCount('searchLogs')
             ->having('search_logs_count', '>', 0)
