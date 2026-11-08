@@ -35,13 +35,14 @@
                 }
 
                 var raw = localStorage.getItem('capstone_guest_display_theme');
-                if (raw) {
-                    var s = JSON.parse(raw);
-                    if (s.mode) {
-                        document.documentElement.setAttribute('data-guest-theme', s.mode);
-                        document.documentElement.setAttribute('data-student-theme', s.mode);
-                        document.documentElement.setAttribute('data-admin-theme', s.mode);
-                    }
+                var s = raw ? JSON.parse(raw) : null;
+                var adminSaved = localStorage.getItem('student_theme_mode');
+                var mode = (s && s.mode) ? s.mode : (adminSaved ? adminSaved : 'light');
+                document.documentElement.setAttribute('data-guest-theme', mode);
+                document.documentElement.setAttribute('data-student-theme', mode);
+                document.documentElement.setAttribute('data-admin-theme', mode);
+
+                if (s) {
                     if (s.accent) {
                         document.documentElement.style.setProperty('--guest-accent', s.accent);
                         var rgb = hexToRgb(s.accent);
@@ -66,11 +67,6 @@
                             document.documentElement.style.setProperty('--guest-text-headings', s.customText);
                         }
                     }
-                } else {
-                    var saved = localStorage.getItem('student_theme_mode') || 'dark';
-                    document.documentElement.setAttribute('data-guest-theme', saved);
-                    document.documentElement.setAttribute('data-student-theme', saved);
-                    document.documentElement.setAttribute('data-admin-theme', saved);
                 }
             } catch(e) {}
         })();
@@ -100,10 +96,10 @@
         
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--guest-bg-base, #0c4233) !important;
+            background-color: var(--guest-bg-base, #ffffff) !important;
             background-image: var(--guest-page-gradient, none) !important;
             background-attachment: fixed !important;
-            color: var(--guest-text-main, #2d2b56);
+            color: var(--guest-text-main, #334155);
             min-height: 100vh;
             overflow-x: hidden;
             transition: background-color 0.25s ease, color 0.25s ease;
@@ -112,7 +108,24 @@
         /* ═══════════════════════════════════════════════════════════════
            THEME ENGINE (CYBER DARK, LIGHT, SEPIA, OLED, CUSTOM)
         ═══════════════════════════════════════════════════════════════ */
-        :root,
+        :root {
+            /* Defaults: Clean Academic White */
+            --guest-bg-base: #ffffff;
+            --guest-page-gradient: none;
+            --guest-bg-surface: #ffffff;
+            --guest-bg-sidebar: #0c4233;
+            --guest-bg-input: #f8fafc;
+            --guest-text-main: #334155;
+            --guest-text-muted: #64748b;
+            --guest-text-headings: #0f172a;
+            --guest-border: #e2e8f0;
+            --guest-card-border-grad: linear-gradient(135deg, var(--guest-accent, #0c4233) 0%, rgba(6, 182, 212, 0.4) 40%, rgba(139, 92, 246, 0.35) 100%);
+            --guest-card-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            --guest-accent: #0c4233;
+            --guest-accent-glow: rgba(12, 66, 51, 0.18);
+        }
+
+        /* CYBER DARK PRESET */
         html[data-guest-theme="dark"],
         html[data-admin-theme="dark"],
         html[data-student-theme="dark"] {
@@ -136,25 +149,23 @@
             --guest-accent-glow: rgba(0, 245, 212, 0.35);
         }
 
-        /* CLEAN LIGHT PRESET */
+        /* CLEAN LIGHT PRESET (Default) */
         html[data-guest-theme="light"],
         html[data-admin-theme="light"],
         html[data-student-theme="light"] {
-            --guest-bg-base: #f0fdf4;
-            --guest-page-gradient: 
-                radial-gradient(circle at 50% 18%, rgba(16, 185, 129, 0.08) 0%, rgba(56, 189, 248, 0.06) 35%, transparent 60%),
-                radial-gradient(ellipse at 50% 45%, #f8fafc 0%, #e2e8f0 100%);
+            --guest-bg-base: #ffffff;
+            --guest-page-gradient: none;
             --guest-bg-surface: #ffffff;
             --guest-bg-sidebar: #0c4233;
             --guest-bg-input: #f8fafc;
             --guest-text-main: #334155;
             --guest-text-muted: #64748b;
             --guest-text-headings: #0f172a;
-            --guest-border: #cbd5e1;
-            --guest-card-border-grad: linear-gradient(135deg, var(--guest-accent, #059669) 0%, rgba(6, 182, 212, 0.4) 40%, rgba(139, 92, 246, 0.35) 100%);
+            --guest-border: #e2e8f0;
+            --guest-card-border-grad: linear-gradient(135deg, var(--guest-accent, #0c4233) 0%, rgba(6, 182, 212, 0.4) 40%, rgba(139, 92, 246, 0.35) 100%);
             --guest-card-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
-            --guest-accent: #059669;
-            --guest-accent-glow: rgba(5, 150, 105, 0.2);
+            --guest-accent: #0c4233;
+            --guest-accent-glow: rgba(12, 66, 51, 0.18);
         }
 
         /* WARM SEPIA PRESET */
