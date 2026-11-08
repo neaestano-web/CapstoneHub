@@ -194,16 +194,41 @@ class SimilarityController extends Controller
     }
 
     /**
-     * Compute Jaccard/Dice token similarity percentage.
+     * Compute hybrid token similarity incorporating Jaccard, Overlap/Containment, and String similarity.
+     * Prevents false negatives when school prefixes (e.g. 'jhcsc') or minor stop-words skew set union sizes.
      */
     private function computeTokenSimilarity(array $tokens1, array $tokens2): float
     {
         if (empty($tokens1) || empty($tokens2)) {
             return 0.0;
         }
-        $intersection = count(array_intersect($tokens1, $tokens2));
-        $union = count(array_unique(array_merge($tokens1, $tokens2)));
-        if ($union === 0) return 0.0;
-        return round(($intersection / $union) * 100, 1);
+
+        // Filter out common noise / institutional prefix tokens like 'jhcsc'
+        $noiseWords = ['jhcsc', 'for', 'and', 'the', 'with', 'using', 'based', 'toward', 'towards'];
+        $filtered1 = array_values(array_filter($tokens1, fn($t) => !in_array($t, $noiseWords)));
+        $filtered2 = array_values(array_filter($tokens2, fn($t) => !in_array($t, $noiseWords)));
+
+        $t1 = !empty($filtered1) ? $filtered1 : $tokens1;
+        $t2 = !empty($filtered2) ? $filtered2 : $tokens2;
+
+        $intersection = count(array_intersect($t1, $t2));
+        if ($intersection === 0) {
+            return 0.0;
+        }
+
+        // 1. Jaccard Index
+        $union = count(array_unique(array_merge($t1, $t2)));
+        $jaccard = $union > 0 ? ($intersection / $union) * 100 : 0;
+
+        // 2. Overlap / Containment Coefficient (vital for shared core topics)
+        $overlap = ($intersection / min(count($t1), count($t2))) * 100;
+
+        // 3. Dice Coefficient
+        $dice = (2 * $intersection) / (count($t1) + count($t2)) * 100;
+
+        // Weighted hybrid score: strong containment represents real subject duplication
+        $score = ($overlap * 0.45) + ($dice * 0.35) + ($jaccard * 0.20);
+
+        return round(min(100.0, max($score, $overlap * 0.90)), 1);
     }
 }
