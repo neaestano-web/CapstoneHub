@@ -40,8 +40,8 @@ class AIService
         }
 
         try {
-            // Render free-tier cold starts may take up to 35-40s if inactive
-            $response = Http::timeout(45)->post(
+            // Set 12s timeout to ensure request never exceeds web server gateway limits if AI service is waking up
+            $response = Http::timeout(12)->connectTimeout(4)->post(
                 $this->url.'/embedding',
                 [
                     'text' => $text

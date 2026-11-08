@@ -117,13 +117,18 @@
                                     {{ $item['research']->title }}
                                 </a>
 
-                                @if(!empty($item['primary_match']))
-                                    <div class="pt-0.5">
+                                <div class="pt-0.5 flex items-center gap-1.5 flex-wrap">
+                                    @if(!empty($item['primary_match']))
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                                             Match: {{ $item['primary_match'] }}
                                         </span>
-                                    </div>
-                                @endif
+                                    @endif
+                                    @if(!empty($item['overall_similarity']))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold {{ $item['overall_similarity'] >= 80 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-800 border border-amber-200' }}">
+                                            {{ $item['overall_similarity'] }}% Similarity
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
 
                             <a href="{{ route('repository.show', $item['research']->id) }}" target="_blank" 
