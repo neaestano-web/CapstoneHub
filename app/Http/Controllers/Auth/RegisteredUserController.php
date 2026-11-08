@@ -25,7 +25,6 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        Log::info('GET /register page accessed from IP: ' . request()->ip());
         return view('auth.register');
     }
 

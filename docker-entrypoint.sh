@@ -31,5 +31,10 @@ php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
 
+# Re-ensure Apache user www-data owns storage, cache, and logs created by artisan
+touch /var/www/html/storage/logs/laravel.log || true
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
+
 # Start Apache in the foreground
 exec apache2-foreground

@@ -25,7 +25,7 @@
             </div>
         @endif
 
-        @if ($errors->any())
+        @if (isset($errors) && $errors->any())
             <div class="auth-alert auth-alert-error" style="flex-direction: column; align-items: flex-start; text-align: left;">
                 @foreach ($errors->all() as $error)
                     <p class="flex items-center gap-1.5" style="margin: 2px 0;">
