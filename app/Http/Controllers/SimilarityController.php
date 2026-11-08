@@ -130,11 +130,6 @@ class SimilarityController extends Controller
                     );
                 }
 
-                // Fallback for context score if existing AI embedding row has not yet computed context_embedding
-                if ($contextScore === null && $ctxStr !== '') {
-                    $contextScore = $this->computeTokenSimilarity($inputTokens, $this->tokenize($ctxStr));
-                }
-
                 // Collect all available scores
                 $availableScores = array_filter([
                     'title' => $titleScore,
@@ -214,8 +209,8 @@ class SimilarityController extends Controller
     }
 
     /**
-     * Compute hybrid token similarity incorporating Jaccard, Overlap/Containment, and String similarity.
-     * Prevents false negatives when school prefixes (e.g. 'jhcsc') or minor stop-words skew set union sizes.
+     * Compute hybrid token similarity incorporating Jaccard, Overlap/Containment, and Dice similarity.
+     * Prevents false positives by filtering non-distinctive academic stopwords and balancing containment with set size.
      */
     private function computeTokenSimilarity(array $tokens1, array $tokens2): float
     {
@@ -223,8 +218,11 @@ class SimilarityController extends Controller
             return 0.0;
         }
 
-        // Filter out common noise / institutional prefix tokens like 'jhcsc'
-        $noiseWords = ['jhcsc', 'for', 'and', 'the', 'with', 'using', 'based', 'toward', 'towards'];
+        // Filter out non-distinctive academic stopwords and institutional prefixes
+        $noiseWords = [
+            'jhcsc', 'for', 'and', 'the', 'with', 'using', 'based', 'toward', 'towards', 
+            'via', 'into', 'from', 'system', 'systems', 'study', 'project'
+        ];
         $filtered1 = array_values(array_filter($tokens1, fn($t) => !in_array($t, $noiseWords)));
         $filtered2 = array_values(array_filter($tokens2, fn($t) => !in_array($t, $noiseWords)));
 
@@ -240,21 +238,35 @@ class SimilarityController extends Controller
             return 0.0;
         }
 
+        $minCount = min(count($t1), count($t2));
+        $maxCount = max(count($t1), count($t2));
+
         // 1. Jaccard Index
         $union = count(array_unique(array_merge($t1, $t2)));
         $jaccard = $union > 0 ? ($intersection / $union) * 100.0 : 0.0;
 
-        // 2. Overlap / Containment Coefficient (vital for shared core topics)
-        $minCount = min(count($t1), count($t2));
+        // 2. Overlap / Containment Coefficient
         $overlap = $minCount > 0 ? ($intersection / $minCount) * 100.0 : 0.0;
 
         // 3. Dice Coefficient
         $sumCount = count($t1) + count($t2);
         $dice = $sumCount > 0 ? (2.0 * $intersection / $sumCount) * 100.0 : 0.0;
 
-        // Weighted hybrid score: strong containment represents real subject duplication
+        // Weighted hybrid score
         $score = ($overlap * 0.45) + ($dice * 0.35) + ($jaccard * 0.20);
 
-        return round(min(100.0, max($score, $overlap * 0.90)), 1);
+        // When complete containment occurs (all distinctive tokens of smaller set are in the larger set)
+        $lengthRatio = $maxCount > 0 ? ($minCount / $maxCount) : 1.0;
+        if ($intersection >= $minCount) {
+            $containmentBoost = 85.0 * (0.6 + 0.4 * $lengthRatio);
+            return round(min(100.0, max($score, $containmentBoost)), 1);
+        }
+
+        // Partial match: require at least 2 distinct matching keywords, and use balanced score
+        if ($intersection < 2 && $minCount > 1) {
+            return round(min(45.0, $score), 1);
+        }
+
+        return round(min(100.0, $score), 1);
     }
 }
