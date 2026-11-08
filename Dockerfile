@@ -23,12 +23,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure PHP upload and execution limits (64MB)
+# Configure PHP upload and execution limits for 512MB RAM environment
 RUN echo "upload_max_filesize = 64M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 64M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_input_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini
+    && echo "memory_limit = 128M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time = 60" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_input_time = 60" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "opcache.enable = 1" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "opcache.memory_consumption = 32" >> /usr/local/etc/php/conf.d/uploads.ini
+
+# Tune Apache MPM prefork to strictly prevent OOM (Out Of Memory) crashes on Render Free 512MB
+RUN { \
+        echo '<IfModule mpm_prefork_module>'; \
+        echo '    StartServers             2'; \
+        echo '    MinSpareServers          1'; \
+        echo '    MaxSpareServers          2'; \
+        echo '    MaxRequestWorkers        4'; \
+        echo '    MaxConnectionsPerChild   100'; \
+        echo '</IfModule>'; \
+    } > /etc/apache2/mods-available/mpm_prefork.conf
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
