@@ -1264,28 +1264,6 @@
 
         </main>
 
-        <!-- SUB-HERO: DISCIPLINE TAGS & ARCHIVED COUNT -->
-        <div class="bottom-section">
-            <div class="discipline-row">
-                <span>Explore by discipline:</span>
-                @forelse($disciplines as $discipline)
-                    <a href="{{ route('repository.index', ['category' => $discipline->id]) }}" class="discipline-tag">
-                        <span>{{ $discipline->name }}</span>
-                    </a>
-                @empty
-                    @foreach($categories->take(4) as $cat)
-                        <a href="{{ route('repository.index', ['category' => $cat->id]) }}" class="discipline-tag">
-                            <span>{{ $cat->name }}</span>
-                        </a>
-                    @endforeach
-                @endforelse
-            </div>
-
-            <p class="stats-text">
-                <span class="stats-count-accent">{{ number_format($totalCount) }}</span> capstone {{ Str::plural('project', $totalCount) }} archived.
-            </p>
-        </div>
-
         <!-- FOOTER LINKS -->
         <footer class="site-footer">
             <button type="button" class="footer-link" onclick="openModal('aboutModal')">About</button>
