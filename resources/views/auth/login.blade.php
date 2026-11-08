@@ -33,7 +33,7 @@
                         required 
                         autofocus 
                         autocomplete="username"
-                        placeholder="email" 
+                        placeholder="Email" 
                         class="auth-field"
                     >
                 </div>
