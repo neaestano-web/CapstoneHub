@@ -117,6 +117,7 @@
             font-size: 0.92rem;
             font-weight: 500;
             transition: color 0.2s ease;
+            white-space: nowrap;
         }
 
         .nav-link:hover {
@@ -143,6 +144,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn-get-started:hover {
@@ -800,68 +803,306 @@
 
         @media (max-width: 900px) {
             main.hero-stage {
-                flex-direction: column;
-                gap: 2rem;
-                padding: 1rem 0;
-            }
-            .seal-column {
-                display: flex;
-                flex-direction: row;
-                gap: 2rem;
+                gap: 1.5rem;
+                padding: 1.5rem 0;
             }
             .seal-reactor-container {
-                width: 155px;
-                height: 155px;
+                width: 160px;
+                height: 160px;
             }
             .metallic-bezel {
-                width: 138px;
-                height: 138px;
+                width: 142px;
+                height: 142px;
             }
             .seal-inner-frame {
-                width: 118px;
-                height: 118px;
+                width: 122px;
+                height: 122px;
             }
             .brand-title {
-                font-size: 2.6rem;
+                font-size: 2.8rem;
             }
             .search-container {
                 max-width: 100%;
             }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .page-wrapper {
-                padding: 1rem;
+                padding: 1rem 1.2rem 0.6rem;
+                min-height: 100vh;
+                min-height: 100dvh;
             }
+
             header.top-nav {
-                gap: 1.2rem;
+                gap: 1.1rem;
                 justify-content: center;
+                padding: 0.35rem 0;
             }
+
+            .nav-link {
+                font-size: 0.88rem;
+            }
+
+            .btn-get-started {
+                font-size: 0.86rem;
+                padding: 0.45rem 1.15rem;
+            }
+
+            /* Minimal Mobile Layout for Hero Stage: Paired seals side-by-side above center content */
+            main.hero-stage {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-areas:
+                    "seal-left seal-right"
+                    "center center";
+                justify-items: center;
+                align-items: center;
+                gap: 0.85rem 1rem;
+                padding: 0.5rem 0;
+                margin: auto 0;
+            }
+
+            .seal-column-left {
+                grid-area: seal-left;
+                justify-self: end;
+                margin-right: 6px;
+            }
+
+            .seal-column-right {
+                grid-area: seal-right;
+                justify-self: start;
+                margin-left: 6px;
+            }
+
+            .center-column {
+                grid-area: center;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .center-column::before {
+                width: 280px;
+                height: 200px;
+                filter: blur(24px);
+            }
+
+            /* Sleek paired emblems instead of heavy 3D reactors */
+            .seal-reactor-container {
+                width: 76px;
+                height: 76px;
+            }
+
+            .reactor-hud-orbit {
+                display: none !important;
+            }
+
+            .metallic-bezel {
+                width: 72px;
+                height: 72px;
+            }
+
+            .bezel-notch {
+                display: none !important;
+            }
+
+            .seal-inner-frame {
+                width: 62px;
+                height: 62px;
+            }
+
+            .jhcsc-metallic-bezel {
+                box-shadow: 
+                    0 0 0 1.5px rgba(52, 211, 153, 0.75),
+                    0 0 18px rgba(16, 185, 129, 0.4),
+                    0 6px 14px rgba(0, 0, 0, 0.5);
+            }
+
+            .scs-metallic-bezel {
+                box-shadow: 
+                    0 0 0 1.5px rgba(0, 245, 212, 0.75),
+                    0 0 18px rgba(0, 245, 212, 0.4),
+                    0 6px 14px rgba(0, 0, 0, 0.5);
+            }
+
+            .tech-status-badge {
+                font-size: 0.68rem;
+                padding: 4px 13px;
+                gap: 7px;
+                margin-bottom: 0.85rem;
+            }
+
+            .brand-header {
+                margin-bottom: 1.35rem;
+            }
+
             .brand-title {
-                font-size: 2.1rem;
+                font-size: 2.3rem;
             }
+
             .grad-cap-icon svg {
                 width: 28px;
                 height: 28px;
             }
-            .seal-reactor-container {
-                width: 120px;
-                height: 120px;
+
+            .brand-subtitle {
+                font-size: 0.72rem;
+                letter-spacing: 0.24em;
+                margin-top: 0.45rem;
             }
-            .metallic-bezel {
-                width: 108px;
-                height: 108px;
+
+            /* Hide keyboard shortcut badge on touchscreens */
+            .shortcut-badge {
+                display: none !important;
             }
-            .seal-inner-frame {
-                width: 92px;
-                height: 92px;
+
+            .search-pill-bar {
+                padding: 7px 12px 7px 18px;
+                gap: 10px;
             }
+
+            .search-input {
+                font-size: 0.9rem;
+            }
+
+            .search-input::placeholder {
+                font-size: 0.86rem;
+            }
+
+            .bottom-section {
+                margin-top: 1rem;
+                gap: 0.75rem;
+            }
+
             .discipline-row {
-                font-size: 0.78rem;
+                font-size: 0.8rem;
+                gap: 6px;
+                padding: 0 4px;
             }
+
+            .discipline-row > span {
+                width: 100%;
+                text-align: center;
+                font-size: 0.76rem;
+                color: var(--text-muted);
+                margin-bottom: 2px;
+            }
+
             .discipline-tag {
-                font-size: 0.75rem;
-                padding: 4px 11px;
+                font-size: 0.76rem;
+                padding: 4px 12px;
+            }
+
+            .stats-text {
+                font-size: 0.8rem;
+            }
+
+            footer.site-footer {
+                gap: 1.4rem;
+                padding: 0.8rem 0 0.3rem;
+            }
+
+            .footer-link {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-wrapper {
+                padding: 0.75rem 0.9rem 0.4rem;
+            }
+
+            header.top-nav {
+                gap: 0.65rem;
+                padding: 0.2rem 0;
+            }
+
+            .nav-link {
+                font-size: 0.82rem;
+            }
+
+            .btn-get-started {
+                font-size: 0.8rem;
+                padding: 0.38rem 0.88rem;
+            }
+
+            main.hero-stage {
+                gap: 0.65rem 0.75rem;
+                padding: 0.35rem 0;
+            }
+
+            .seal-reactor-container {
+                width: 66px;
+                height: 66px;
+            }
+
+            .metallic-bezel {
+                width: 62px;
+                height: 62px;
+            }
+
+            .seal-inner-frame {
+                width: 54px;
+                height: 54px;
+            }
+
+            .tech-status-badge {
+                font-size: 0.64rem;
+                padding: 3.5px 11px;
+                gap: 6px;
+                margin-bottom: 0.7rem;
+            }
+
+            .brand-header {
+                margin-bottom: 1.15rem;
+            }
+
+            .brand-title {
+                font-size: 1.95rem;
+            }
+
+            .grad-cap-icon svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .brand-subtitle {
+                font-size: 0.66rem;
+                letter-spacing: 0.2em;
+                margin-top: 0.35rem;
+            }
+
+            .search-pill-bar {
+                padding: 6px 10px 6px 15px;
+            }
+
+            .search-terminal-prompt {
+                font-size: 0.95rem;
+            }
+
+            .search-input {
+                font-size: 0.85rem;
+            }
+
+            .search-input::placeholder {
+                font-size: 0.82rem;
+            }
+
+            .discipline-tag {
+                font-size: 0.72rem;
+                padding: 3.5px 10px;
+            }
+
+            .stats-text {
+                font-size: 0.76rem;
+            }
+
+            footer.site-footer {
+                gap: 1rem;
+                padding: 0.65rem 0 0.2rem;
+            }
+
+            .footer-link {
+                font-size: 0.76rem;
             }
         }
     </style>
@@ -909,7 +1150,7 @@
         <main class="hero-stage">
 
             <!-- LEFT SEAL: J.H. Cerilles State College (JHCSC Emerald Cyber Reactor) -->
-            <div class="seal-column">
+            <div class="seal-column seal-column-left">
                 <div class="seal-reactor-container seal-reactor-left" title="J.H. Cerilles State College">
                     <!-- Concentric Sci-Fi HUD Orbit Ring -->
                     <svg class="reactor-hud-orbit" viewBox="0 0 320 320" aria-hidden="true">
@@ -997,7 +1238,7 @@
             </div>
 
             <!-- RIGHT SEAL: School of Computing Studies - JHCSC (Chrome/Titanium Cyber Reactor) -->
-            <div class="seal-column">
+            <div class="seal-column seal-column-right">
                 <div class="seal-reactor-container seal-reactor-right" title="School of Computing Studies — J.H. Cerilles State College">
                     <!-- Concentric Sci-Fi HUD Orbit Ring -->
                     <svg class="reactor-hud-orbit" viewBox="0 0 320 320" aria-hidden="true">
