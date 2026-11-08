@@ -160,12 +160,12 @@
                     </span>
                 </div>
 
-                @if(!empty($catLabels) && $totalApprovedCategorized > 0)
+                @if(!empty($catLabels) && $approvedResearches > 0)
                     <div class="relative w-full h-64 sm:h-72 flex items-center justify-center">
                         <canvas id="adminCategoryChart"></canvas>
                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
                             <span class="text-2xl sm:text-3xl font-mono font-black text-[#2d2b56] leading-none">
-                                {{ number_format($totalApprovedCategorized) }}
+                                {{ number_format($approvedResearches) }}
                             </span>
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Projects</span>
                         </div>
@@ -177,7 +177,7 @@
                             @php
                                 $color = $catPalette[$idx % count($catPalette)];
                                 $val = $cat->approved_researches_count ?? 0;
-                                $pct = $totalApprovedCategorized > 0 ? round(($val / $totalApprovedCategorized) * 100) : 0;
+                                $pct = $approvedResearches > 0 ? round(($val / $approvedResearches) * 100) : 0;
                             @endphp
                             <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
                                 <div class="flex items-center gap-2 min-w-0">
