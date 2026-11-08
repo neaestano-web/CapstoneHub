@@ -30,6 +30,7 @@
                 var raw = localStorage.getItem('capstone_guest_display_theme');
                 var s = raw ? JSON.parse(raw) : null;
                 var mode = (s && s.mode) ? s.mode : 'light';
+                if (mode === 'dark' || mode === 'oled') mode = 'light';
                 document.documentElement.setAttribute('data-guest-theme', mode);
                 if (s) {
                     if (s.accent) {
@@ -95,31 +96,6 @@
             --text-muted: var(--guest-text-muted);
         }
 
-        /* ── THEME PRESET: CYBER DARK ── */
-        html[data-guest-theme="dark"] {
-            --guest-bg-base: #0b1119;
-            --guest-page-gradient: 
-                radial-gradient(circle at 50% 24%, rgba(16, 185, 129, 0.20) 0%, rgba(56, 189, 248, 0.10) 35%, transparent 65%),
-                radial-gradient(circle at 16% 48%, rgba(16, 185, 129, 0.18) 0%, transparent 45%),
-                radial-gradient(circle at 84% 48%, rgba(0, 245, 212, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 50% 92%, rgba(56, 189, 248, 0.10) 0%, transparent 52%),
-                radial-gradient(ellipse at 50% 45%, #152538 0%, #0b1119 100%);
-            --guest-bg-surface: rgba(14, 22, 33, 0.94);
-            --guest-bg-sidebar: rgba(13, 21, 32, 0.92);
-            --guest-bg-input: rgba(8, 14, 22, 0.85);
-            --guest-text-main: #f8fafc;
-            --guest-text-muted: #94a3b8;
-            --guest-text-headings: #ffffff;
-            --guest-border: rgba(255, 255, 255, 0.12);
-            --guest-card-border-grad: linear-gradient(135deg, var(--guest-accent, #00f5d4) 0%, #06b6d4 35%, #10b981 70%, #34d399 100%);
-            --guest-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-            --guest-accent: #00f5d4;
-            --guest-accent-glow: rgba(0, 245, 212, 0.35);
-            --guest-nav-bg: rgba(11, 17, 25, 0.88);
-            --guest-nav-border: rgba(255, 255, 255, 0.08);
-            --guest-overlay-opacity: 1;
-        }
-
         /* ── THEME PRESET: CLEAN LIGHT (Default White) ── */
         html[data-guest-theme="light"] {
             --guest-bg-base: #ffffff;
@@ -160,26 +136,6 @@
             --guest-nav-bg: rgba(251, 247, 238, 0.96);
             --guest-nav-border: rgba(222, 210, 192, 0.9);
             --guest-overlay-opacity: 0.06;
-        }
-
-        /* ── THEME PRESET: MIDNIGHT OLED ── */
-        html[data-guest-theme="oled"] {
-            --guest-bg-base: #000000;
-            --guest-page-gradient: none;
-            --guest-bg-surface: #0a0a0a;
-            --guest-bg-sidebar: #090909;
-            --guest-bg-input: #141414;
-            --guest-text-main: #e4e4e7;
-            --guest-text-muted: #a1a1aa;
-            --guest-text-headings: #ffffff;
-            --guest-border: #27272a;
-            --guest-card-border-grad: linear-gradient(135deg, #00f5d4 0%, #8b5cf6 100%);
-            --guest-card-shadow: 0 6px 24px rgba(0, 0, 0, 0.95);
-            --guest-accent: #00f5d4;
-            --guest-accent-glow: rgba(0, 245, 212, 0.3);
-            --guest-nav-bg: rgba(0, 0, 0, 0.96);
-            --guest-nav-border: #27272a;
-            --guest-overlay-opacity: 0.25;
         }
         
         html {
@@ -612,7 +568,6 @@
         /* Modals Adaptations */
         html[data-guest-theme="light"] .modal-card,
         html[data-guest-theme="sepia"] .modal-card,
-        html[data-guest-theme="oled"] .modal-card,
         html[data-guest-theme="custom"] .modal-card {
             background: var(--guest-bg-surface) !important;
             border-color: var(--guest-border) !important;
@@ -622,21 +577,18 @@
 
         html[data-guest-theme="light"] .modal-title,
         html[data-guest-theme="sepia"] .modal-title,
-        html[data-guest-theme="oled"] .modal-title,
         html[data-guest-theme="custom"] .modal-title {
             color: var(--guest-text-headings) !important;
         }
 
         html[data-guest-theme="light"] .modal-body,
         html[data-guest-theme="sepia"] .modal-body,
-        html[data-guest-theme="oled"] .modal-body,
         html[data-guest-theme="custom"] .modal-body {
             color: var(--guest-text-muted) !important;
         }
 
         html[data-guest-theme="light"] .modal-body strong,
         html[data-guest-theme="sepia"] .modal-body strong,
-        html[data-guest-theme="oled"] .modal-body strong,
         html[data-guest-theme="custom"] .modal-body strong {
             color: var(--guest-text-headings) !important;
         }
@@ -644,14 +596,12 @@
         /* Browse Page Adaptations */
         html[data-guest-theme="light"] .browse-page-container,
         html[data-guest-theme="sepia"] .browse-page-container,
-        html[data-guest-theme="oled"] .browse-page-container,
         html[data-guest-theme="custom"] .browse-page-container {
             color: var(--guest-text-main) !important;
         }
 
         html[data-guest-theme="light"] .filter-sidebar,
         html[data-guest-theme="sepia"] .filter-sidebar,
-        html[data-guest-theme="oled"] .filter-sidebar,
         html[data-guest-theme="custom"] .filter-sidebar {
             background: linear-gradient(var(--guest-bg-sidebar), var(--guest-bg-sidebar)) padding-box,
                         var(--guest-card-border-grad) border-box !important;
@@ -660,35 +610,30 @@
 
         html[data-guest-theme="light"] .filter-header-title,
         html[data-guest-theme="sepia"] .filter-header-title,
-        html[data-guest-theme="oled"] .filter-header-title,
         html[data-guest-theme="custom"] .filter-header-title {
             color: var(--guest-text-headings) !important;
         }
 
         html[data-guest-theme="light"] .filter-section-title,
         html[data-guest-theme="sepia"] .filter-section-title,
-        html[data-guest-theme="oled"] .filter-section-title,
         html[data-guest-theme="custom"] .filter-section-title {
             color: var(--guest-text-muted) !important;
         }
 
         html[data-guest-theme="light"] .filter-item-label,
         html[data-guest-theme="sepia"] .filter-item-label,
-        html[data-guest-theme="oled"] .filter-item-label,
         html[data-guest-theme="custom"] .filter-item-label {
             color: var(--guest-text-main) !important;
         }
 
         html[data-guest-theme="light"] .filter-item-label:hover,
         html[data-guest-theme="sepia"] .filter-item-label:hover,
-        html[data-guest-theme="oled"] .filter-item-label:hover,
         html[data-guest-theme="custom"] .filter-item-label:hover {
             color: var(--guest-text-headings) !important;
         }
 
         html[data-guest-theme="light"] .filter-search-input,
         html[data-guest-theme="sepia"] .filter-search-input,
-        html[data-guest-theme="oled"] .filter-search-input,
         html[data-guest-theme="custom"] .filter-search-input {
             background: var(--guest-bg-input) !important;
             color: var(--guest-text-headings) !important;
@@ -697,21 +642,18 @@
 
         html[data-guest-theme="light"] .projects-title,
         html[data-guest-theme="sepia"] .projects-title,
-        html[data-guest-theme="oled"] .projects-title,
         html[data-guest-theme="custom"] .projects-title {
             color: var(--guest-text-headings) !important;
         }
 
         html[data-guest-theme="light"] .projects-subtitle,
         html[data-guest-theme="sepia"] .projects-subtitle,
-        html[data-guest-theme="oled"] .projects-subtitle,
         html[data-guest-theme="custom"] .projects-subtitle {
             color: var(--guest-text-muted) !important;
         }
 
         html[data-guest-theme="light"] .capstone-card,
         html[data-guest-theme="sepia"] .capstone-card,
-        html[data-guest-theme="oled"] .capstone-card,
         html[data-guest-theme="custom"] .capstone-card {
             background: linear-gradient(var(--guest-bg-surface), var(--guest-bg-surface)) padding-box,
                         var(--guest-card-border-grad) border-box !important;
@@ -720,28 +662,24 @@
 
         html[data-guest-theme="light"] .card-title-link,
         html[data-guest-theme="sepia"] .card-title-link,
-        html[data-guest-theme="oled"] .card-title-link,
         html[data-guest-theme="custom"] .card-title-link {
             color: var(--guest-text-headings) !important;
         }
 
         html[data-guest-theme="light"] .card-author-name,
         html[data-guest-theme="sepia"] .card-author-name,
-        html[data-guest-theme="oled"] .card-author-name,
         html[data-guest-theme="custom"] .card-author-name {
             color: var(--guest-text-main) !important;
         }
 
         html[data-guest-theme="light"] .card-abstract-text,
         html[data-guest-theme="sepia"] .card-abstract-text,
-        html[data-guest-theme="oled"] .card-abstract-text,
         html[data-guest-theme="custom"] .card-abstract-text {
             color: var(--guest-text-muted) !important;
         }
 
         html[data-guest-theme="light"] .sort-dropdown,
         html[data-guest-theme="sepia"] .sort-dropdown,
-        html[data-guest-theme="oled"] .sort-dropdown,
         html[data-guest-theme="custom"] .sort-dropdown {
             background: var(--guest-bg-surface) !important;
             color: var(--guest-text-headings) !important;
@@ -763,7 +701,6 @@
         /* Similarity Checker Page Adaptations */
         html[data-guest-theme="light"] .sim-public-card,
         html[data-guest-theme="sepia"] .sim-public-card,
-        html[data-guest-theme="oled"] .sim-public-card,
         html[data-guest-theme="custom"] .sim-public-card {
             background: linear-gradient(var(--guest-bg-surface), var(--guest-bg-surface)) padding-box,
                         var(--guest-card-border-grad) border-box !important;
@@ -772,7 +709,6 @@
 
         html[data-guest-theme="light"] .sim-public-input,
         html[data-guest-theme="sepia"] .sim-public-input,
-        html[data-guest-theme="oled"] .sim-public-input,
         html[data-guest-theme="custom"] .sim-public-input {
             background: var(--guest-bg-input) !important;
             color: var(--guest-text-headings) !important;
@@ -781,7 +717,6 @@
 
         html[data-guest-theme="light"] .sim-result-card-public,
         html[data-guest-theme="sepia"] .sim-result-card-public,
-        html[data-guest-theme="oled"] .sim-result-card-public,
         html[data-guest-theme="custom"] .sim-result-card-public {
             background: var(--guest-bg-surface) !important;
             border-color: var(--guest-border) !important;

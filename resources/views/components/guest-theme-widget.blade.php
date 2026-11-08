@@ -61,24 +61,10 @@
                             <span class="theme-active-check">✓</span>
                         </button>
 
-                        <!-- Cyber Dark -->
-                        <button type="button" class="guest-theme-card" data-mode="dark" onclick="selectThemeMode('dark')">
-                            <span class="theme-swatch swatch-dark"></span>
-                            <span class="theme-card-name">Cyber Dark</span>
-                            <span class="theme-active-check">✓</span>
-                        </button>
-
                         <!-- Warm Sepia -->
                         <button type="button" class="guest-theme-card" data-mode="sepia" onclick="selectThemeMode('sepia')">
                             <span class="theme-swatch swatch-sepia"></span>
                             <span class="theme-card-name">Warm Sepia</span>
-                            <span class="theme-active-check">✓</span>
-                        </button>
-
-                        <!-- Midnight OLED -->
-                        <button type="button" class="guest-theme-card" data-mode="oled" onclick="selectThemeMode('oled')">
-                            <span class="theme-swatch swatch-oled"></span>
-                            <span class="theme-card-name">Midnight OLED</span>
                             <span class="theme-active-check">✓</span>
                         </button>
 
@@ -530,10 +516,6 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
-    .swatch-dark {
-        background: #0b1119;
-        border: 1.5px solid #00f5d4;
-    }
     .swatch-light {
         background: #f8fafc;
         border: 1.5px solid #94a3b8;
@@ -541,10 +523,6 @@
     .swatch-sepia {
         background: #fbf7ee;
         border: 1.5px solid #d97706;
-    }
-    .swatch-oled {
-        background: #000000;
-        border: 1.5px solid #475569;
     }
     .swatch-custom {
         background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
@@ -1133,6 +1111,9 @@
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     currentSettings = { ...defaults, ...parsed };
+                    if (currentSettings.mode === 'dark' || currentSettings.mode === 'oled') {
+                        currentSettings.mode = 'light';
+                    }
                 }
             } catch (e) {
                 console.error(e);
@@ -1256,14 +1237,13 @@
         }
 
         window.selectThemeMode = function(mode) {
+            if (mode === 'dark' || mode === 'oled') mode = 'light';
             currentSettings.mode = mode;
-            // Provide gentle default accents matching mode if default cyan was unchanged
-            if (mode === 'light' && currentSettings.accent === '#00f5d4') {
-                currentSettings.accent = '#059669';
-            } else if (mode === 'sepia' && currentSettings.accent === '#00f5d4') {
+            // Provide gentle default accents matching mode if default forest green was unchanged
+            if (mode === 'light' && (currentSettings.accent === '#00f5d4' || currentSettings.accent === '#b45309')) {
+                currentSettings.accent = '#0c4233';
+            } else if (mode === 'sepia' && (currentSettings.accent === '#00f5d4' || currentSettings.accent === '#0c4233')) {
                 currentSettings.accent = '#b45309';
-            } else if (mode === 'dark' && (currentSettings.accent === '#059669' || currentSettings.accent === '#b45309')) {
-                currentSettings.accent = '#00f5d4';
             }
 
             applyTheme();
@@ -1323,13 +1303,10 @@
 
         function updateContrastFeedback() {
             const bg = (currentSettings.mode === 'custom') ? currentSettings.customBg : 
-                       (currentSettings.mode === 'light') ? '#f3f6fa' :
-                       (currentSettings.mode === 'sepia') ? '#fbf7ee' :
-                       (currentSettings.mode === 'oled') ? '#000000' : '#0b1119';
+                       (currentSettings.mode === 'sepia') ? '#fbf7ee' : '#ffffff';
 
             const text = (currentSettings.mode === 'custom') ? currentSettings.customText :
-                         (currentSettings.mode === 'light') ? '#0f172a' :
-                         (currentSettings.mode === 'sepia') ? '#262019' : '#ffffff';
+                         (currentSettings.mode === 'sepia') ? '#262019' : '#0f172a';
 
             const ratio = calculateContrastRatio(bg, text);
             const badge = document.getElementById('contrastBadge');

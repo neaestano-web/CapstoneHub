@@ -39,6 +39,7 @@
                     var s = raw ? JSON.parse(raw) : null;
                     var studentSaved = localStorage.getItem('student_theme_mode');
                     var mode = (s && s.mode) ? s.mode : (studentSaved ? studentSaved : 'light');
+                    if (mode === 'dark' || mode === 'oled') mode = 'light';
                     document.documentElement.setAttribute('data-guest-theme', mode);
                     document.documentElement.setAttribute('data-student-theme', mode);
 
@@ -142,7 +143,7 @@
             }
 
             /* ═══════════════════════════════════════════════════════════════
-               THEME ENGINE (SAME AS GUEST) — CYBER DARK, LIGHT, SEPIA, OLED, CUSTOM
+               THEME ENGINE (CLEAN LIGHT, SEPIA, CUSTOM)
             ═══════════════════════════════════════════════════════════════ */
             :root {
                 /* Defaults: Clean Academic White */
@@ -159,29 +160,6 @@
                 --guest-card-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
                 --guest-accent: #0c4233;
                 --guest-accent-glow: rgba(12, 66, 51, 0.18);
-            }
-
-            /* ── CYBER DARK PRESET ── */
-            html[data-guest-theme="dark"],
-            html[data-student-theme="dark"] {
-                --guest-bg-base: #0b1119;
-                --guest-page-gradient: 
-                    radial-gradient(circle at 50% 24%, rgba(16, 185, 129, 0.20) 0%, rgba(56, 189, 248, 0.10) 35%, transparent 65%),
-                    radial-gradient(circle at 16% 48%, rgba(16, 185, 129, 0.18) 0%, transparent 45%),
-                    radial-gradient(circle at 84% 48%, rgba(0, 245, 212, 0.12) 0%, transparent 45%),
-                    radial-gradient(circle at 50% 92%, rgba(56, 189, 248, 0.10) 0%, transparent 52%),
-                    radial-gradient(ellipse at 50% 45%, #152538 0%, #0b1119 100%);
-                --guest-bg-surface: rgba(14, 22, 33, 0.94);
-                --guest-bg-sidebar: rgba(13, 21, 32, 0.92);
-                --guest-bg-input: rgba(8, 14, 22, 0.85);
-                --guest-text-main: #f8fafc;
-                --guest-text-muted: #94a3b8;
-                --guest-text-headings: #ffffff;
-                --guest-border: rgba(255, 255, 255, 0.12);
-                --guest-card-border-grad: linear-gradient(135deg, var(--guest-accent, #00f5d4) 0%, #06b6d4 35%, #10b981 70%, #34d399 100%);
-                --guest-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-                --guest-accent: #00f5d4;
-                --guest-accent-glow: rgba(0, 245, 212, 0.35);
             }
 
             /* ── CLEAN LIGHT PRESET (Default) ── */
@@ -222,254 +200,10 @@
                 --guest-accent-glow: rgba(180, 83, 9, 0.2);
             }
 
-            /* ── MIDNIGHT OLED PRESET ── */
-            html[data-guest-theme="oled"],
-            html[data-student-theme="oled"] {
-                --guest-bg-base: #000000;
-                --guest-page-gradient: none;
-                --guest-bg-surface: #0a0a0a;
-                --guest-bg-sidebar: #090909;
-                --guest-bg-input: #141414;
-                --guest-text-main: #e4e4e7;
-                --guest-text-muted: #a1a1aa;
-                --guest-text-headings: #ffffff;
-                --guest-border: #27272a;
-                --guest-card-border-grad: linear-gradient(135deg, var(--guest-accent, #00f5d4) 0%, #8b5cf6 100%);
-                --guest-card-shadow: 0 6px 24px rgba(0, 0, 0, 0.95);
-                --guest-accent: #00f5d4;
-                --guest-accent-glow: rgba(0, 245, 212, 0.3);
-            }
-
             /* ── CUSTOM CANVAS PRESET ── */
             html[data-guest-theme="custom"],
             html[data-student-theme="custom"] {
                 --guest-page-gradient: none;
-            }
-
-            /* Dark Typography Across Student Views */
-            html[data-guest-theme="dark"] h1,
-            html[data-guest-theme="dark"] h2,
-            html[data-guest-theme="dark"] h3,
-            html[data-student-theme="dark"] h1,
-            html[data-student-theme="dark"] h2,
-            html[data-student-theme="dark"] h3,
-            html[data-guest-theme="dark"] .text-\[\#2d2b56\],
-            html[data-student-theme="dark"] .text-\[\#2d2b56\] {
-                color: #ffffff !important;
-            }
-
-            html[data-guest-theme="dark"] .text-\[\#0c4233\],
-            html[data-student-theme="dark"] .text-\[\#0c4233\] {
-                color: var(--guest-accent, #00f5d4) !important;
-            }
-
-            html[data-guest-theme="dark"] .text-slate-500,
-            html[data-guest-theme="dark"] .text-gray-500,
-            html[data-guest-theme="dark"] .text-slate-600,
-            html[data-student-theme="dark"] .text-slate-500,
-            html[data-student-theme="dark"] .text-gray-500,
-            html[data-student-theme="dark"] .text-slate-600 {
-                color: #94a3b8 !important;
-            }
-
-            html[data-guest-theme="dark"] .border-b,
-            html[data-guest-theme="dark"] .border-slate-100,
-            html[data-guest-theme="dark"] .border-slate-200,
-            html[data-guest-theme="dark"] .border-slate-200\/80,
-            html[data-student-theme="dark"] .border-b,
-            html[data-student-theme="dark"] .border-slate-100,
-            html[data-student-theme="dark"] .border-slate-200,
-            html[data-student-theme="dark"] .border-slate-200\/80 {
-                border-color: rgba(255, 255, 255, 0.1) !important;
-            }
-
-            /* Cards & Panels with Glowing Cyber Borders */
-            html[data-guest-theme="dark"] .sim-auth-card,
-            html[data-guest-theme="dark"] .table-container-card,
-            html[data-guest-theme="dark"] .form-card,
-            html[data-guest-theme="dark"] .section-card,
-            html[data-student-theme="dark"] .sim-auth-card,
-            html[data-student-theme="dark"] .table-container-card,
-            html[data-student-theme="dark"] .form-card,
-            html[data-student-theme="dark"] .section-card {
-                background: linear-gradient(var(--guest-bg-surface), var(--guest-bg-surface)) padding-box,
-                            var(--guest-card-border-grad) border-box !important;
-                border: 1.5px solid transparent !important;
-                color: #f8fafc !important;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 18px rgba(0, 245, 212, 0.12) !important;
-                backdrop-filter: blur(16px) !important;
-                -webkit-backdrop-filter: blur(16px) !important;
-            }
-
-            /* Input Fields Across All Views */
-            html[data-student-theme="dark"] .sim-auth-input,
-            html[data-student-theme="dark"] .form-input,
-            html[data-student-theme="dark"] input[type="text"]:not(.native-color-picker),
-            html[data-student-theme="dark"] input[type="search"],
-            html[data-student-theme="dark"] textarea,
-            html[data-student-theme="dark"] select {
-                background: rgba(8, 14, 22, 0.85) !important;
-                border-color: rgba(255, 255, 255, 0.18) !important;
-                color: #ffffff !important;
-            }
-
-            html[data-student-theme="dark"] .sim-auth-input:focus,
-            html[data-student-theme="dark"] .form-input:focus,
-            html[data-student-theme="dark"] textarea:focus,
-            html[data-student-theme="dark"] select:focus {
-                background: rgba(12, 20, 30, 0.95) !important;
-                border-color: var(--guest-accent, #00f5d4) !important;
-                box-shadow: 0 0 0 4px var(--guest-accent-glow, rgba(0, 245, 212, 0.22)) !important;
-            }
-
-            /* Labels & Checkboxes */
-            html[data-student-theme="dark"] .form-label {
-                color: #e2e8f0 !important;
-            }
-
-            html[data-student-theme="dark"] .check-card {
-                background: rgba(8, 14, 22, 0.85) !important;
-                border-color: rgba(255, 255, 255, 0.12) !important;
-                color: #e2e8f0 !important;
-            }
-
-            html[data-student-theme="dark"] .check-card:hover {
-                border-color: var(--guest-accent, #00f5d4) !important;
-                background: rgba(0, 245, 212, 0.08) !important;
-            }
-
-            html[data-student-theme="dark"] .check-card.checked,
-            html[data-student-theme="dark"] .check-card.is-checked {
-                border-color: var(--guest-accent, #00f5d4) !important;
-                background: var(--guest-accent-glow, rgba(0, 245, 212, 0.14)) !important;
-                color: #ffffff !important;
-            }
-
-            html[data-student-theme="dark"] .classification-panel {
-                background: rgba(88, 64, 187, 0.16) !important;
-                border-color: rgba(139, 92, 246, 0.35) !important;
-            }
-
-            html[data-student-theme="dark"] .classification-panel-title {
-                color: #c084fc !important;
-            }
-
-            /* Tables (Submissions, Lists) */
-            html[data-student-theme="dark"] table th {
-                background: rgba(8, 14, 22, 0.95) !important;
-                color: #94a3b8 !important;
-                border-color: rgba(255, 255, 255, 0.08) !important;
-            }
-
-            html[data-student-theme="dark"] table td {
-                border-color: rgba(255, 255, 255, 0.08) !important;
-                color: #f8fafc !important;
-            }
-
-            html[data-student-theme="dark"] table tr:hover td {
-                background: rgba(255, 255, 255, 0.03) !important;
-            }
-
-            /* Buttons & Actions */
-            html[data-student-theme="dark"] .btn-cancel {
-                background: rgba(255, 255, 255, 0.06) !important;
-                color: #cbd5e1 !important;
-                border-color: rgba(255, 255, 255, 0.14) !important;
-            }
-
-            html[data-student-theme="dark"] .btn-cancel:hover {
-                background: rgba(255, 255, 255, 0.12) !important;
-                color: #ffffff !important;
-            }
-
-            html[data-student-theme="dark"] .back-btn-pill {
-                background: rgba(139, 92, 246, 0.15) !important;
-                color: #c084fc !important;
-                border-color: rgba(139, 92, 246, 0.3) !important;
-            }
-
-            /* Browse Repository Adapters in Student View */
-            html[data-student-theme="dark"] .browse-page-container {
-                color: var(--guest-text-main) !important;
-            }
-
-            html[data-student-theme="dark"] .filter-sidebar {
-                background: linear-gradient(var(--guest-bg-sidebar), var(--guest-bg-sidebar)) padding-box,
-                            var(--guest-card-border-grad) border-box !important;
-                box-shadow: var(--guest-card-shadow) !important;
-            }
-
-            html[data-student-theme="dark"] .filter-header-title {
-                color: var(--guest-text-headings) !important;
-            }
-
-            html[data-student-theme="dark"] .filter-section-title {
-                color: var(--guest-text-muted) !important;
-            }
-
-            html[data-student-theme="dark"] .filter-item-label {
-                color: var(--guest-text-main) !important;
-            }
-
-            html[data-student-theme="dark"] .filter-search-input {
-                background: var(--guest-bg-input) !important;
-                color: var(--guest-text-headings) !important;
-                border-color: var(--guest-border) !important;
-            }
-
-            html[data-student-theme="dark"] .capstone-card {
-                background: linear-gradient(var(--guest-bg-surface), var(--guest-bg-surface)) padding-box,
-                            var(--guest-card-border-grad) border-box !important;
-                box-shadow: var(--guest-card-shadow) !important;
-            }
-
-            html[data-student-theme="dark"] .card-title-link {
-                color: var(--guest-text-headings) !important;
-            }
-
-            /* Additional Table, Card & Alert Enhancements */
-            html[data-student-theme="dark"] .bg-slate-50,
-            html[data-student-theme="dark"] .bg-slate-50\/80 {
-                background: rgba(8, 14, 22, 0.95) !important;
-            }
-            html[data-student-theme="dark"] tr:hover {
-                background: rgba(255, 255, 255, 0.04) !important;
-            }
-            html[data-student-theme="dark"] .sim-wrapper .bg-white {
-                background: rgba(14, 23, 34, 0.94) !important;
-                border-color: rgba(255, 255, 255, 0.12) !important;
-                color: #f8fafc !important;
-            }
-            html[data-student-theme="dark"] .bg-purple-50 {
-                background: rgba(139, 92, 246, 0.16) !important;
-                border-color: rgba(139, 92, 246, 0.3) !important;
-                color: #c084fc !important;
-            }
-            html[data-student-theme="dark"] .bg-amber-50\/80,
-            html[data-student-theme="dark"] .bg-amber-50\/90 {
-                background: rgba(217, 119, 6, 0.15) !important;
-                border-color: rgba(217, 119, 6, 0.35) !important;
-                color: #fde68a !important;
-            }
-            html[data-student-theme="dark"] .bg-amber-100 {
-                background: rgba(245, 158, 11, 0.18) !important;
-                color: #fbbf24 !important;
-            }
-            html[data-student-theme="dark"] .bg-emerald-100 {
-                background: rgba(16, 185, 129, 0.18) !important;
-                color: #34d399 !important;
-            }
-            html[data-student-theme="dark"] .text-amber-900,
-            html[data-student-theme="dark"] .text-amber-950 {
-                color: #fde68a !important;
-            }
-            html[data-student-theme="dark"] .bg-slate-100 {
-                background: rgba(255, 255, 255, 0.08) !important;
-                color: #ffffff !important;
-            }
-            html[data-student-theme="dark"] .text-slate-700,
-            html[data-student-theme="dark"] .text-slate-800 {
-                color: #f8fafc !important;
             }
 
             /* ── WARM SEPIA PRESET FOR STUDENT ── */
@@ -483,19 +217,6 @@
             html[data-student-theme="sepia"] .sim-auth-card {
                 background: #ffffff !important;
                 border-color: #ded2c0 !important;
-            }
-
-            /* ── MIDNIGHT OLED PRESET FOR STUDENT ── */
-            html[data-student-theme="oled"] .student-main-canvas {
-                background: #000000 !important;
-                color: #ffffff !important;
-            }
-            html[data-student-theme="oled"] .form-card,
-            html[data-student-theme="oled"] .section-card,
-            html[data-student-theme="oled"] .table-container-card,
-            html[data-student-theme="oled"] .sim-auth-card {
-                background: #0a0a0a !important;
-                border-color: #27272a !important;
             }
 
             /* ── CUSTOM CANVAS PRESET (SAME AS GUEST) ── */
