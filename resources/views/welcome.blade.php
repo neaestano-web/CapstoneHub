@@ -1354,7 +1354,7 @@
                     • <strong>Search:</strong> Type keywords, authors, or topics in the search bar. Use <code>⌘K</code> or <code>Ctrl+K</code> to jump straight to the search box.
                 </p>
                 <p>
-                    • <strong>Similarity Check:</strong> Registered students and faculty can check manuscript uniqueness via the <a href="{{ route('similarity-checker') }}" style="color:#10b981; text-decoration:underline;">Similarity Checker</a>.
+                    • <strong>Similarity Check:</strong> Students and faculty can check manuscript uniqueness via the <a href="{{ route('similarity-checker') }}" style="color:#10b981; text-decoration:underline;">Similarity Checker</a>.
                 </p>
             </div>
         </div>
