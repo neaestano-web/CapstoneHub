@@ -151,12 +151,12 @@
                     <div>
                         <h3 class="text-sm font-extrabold text-[#2d2b56] uppercase tracking-wider flex items-center gap-2">
                             <span>📁</span>
-                            <span>Category Distribution</span>
+                            <span>Project Categories</span>
                         </h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Approved capstones grouped by institutional discipline</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Approved capstones grouped by project category</p>
                     </div>
                     <span class="text-[10px] font-extrabold px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200/80 shrink-0">
-                        Disciplines
+                        Categories
                     </span>
                 </div>
 
