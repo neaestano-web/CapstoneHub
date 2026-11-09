@@ -546,7 +546,7 @@ class SimilarityController extends Controller
 
         // Highlight category or contextual distinctiveness
         if ($research->category && !empty($research->category->name)) {
-            $parts[] = "This published manuscript is categorized under **{$research->category->name}**.";
+            $parts[] = "This manuscript is categorized under **{$research->category->name}**.";
         }
 
         $combined = $bestEval['combined'];
