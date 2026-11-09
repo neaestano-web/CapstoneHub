@@ -160,9 +160,6 @@
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-[#0c4233] text-white">
                                         #{{ $loop->iteration }} Ranked Match
                                     </span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">
-                                        {{ $item['overall_similarity'] }}% Similarity
-                                    </span>
                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-800 border border-slate-200">
                                         <span class="text-emerald-700 font-bold">🎯 Best Match:</span> {{ $item['best_matching_field'] }}
                                     </span>
@@ -210,30 +207,17 @@
                             </div>
                         </div>
 
-                        {{-- Cross-Field Scores Breakdown & Metadata --}}
-                        <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-slate-500 flex-wrap">
-                            {{-- Metadata --}}
-                            <div class="flex items-center gap-2.5 flex-wrap">
-                                <span>Authors: <strong class="text-slate-700 font-semibold">{{ $item['research']->authors }}</strong></span>
+                        {{-- Metadata --}}
+                        <div class="pt-2 border-t border-slate-100 flex items-center gap-2.5 text-xs text-slate-500 flex-wrap">
+                            <span>Authors: <strong class="text-slate-700 font-semibold">{{ $item['research']->authors }}</strong></span>
+                            <span>·</span>
+                            <span>Year: <strong class="text-slate-700 font-semibold font-mono">{{ $item['research']->year }}</strong></span>
+                            @if($item['research']->category)
                                 <span>·</span>
-                                <span>Year: <strong class="text-slate-700 font-semibold font-mono">{{ $item['research']->year }}</strong></span>
-                                @if($item['research']->category)
-                                    <span>·</span>
-                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/60 rounded text-[11px] font-semibold">
-                                        {{ $item['research']->category->name }}
-                                    </span>
-                                @endif
-                            </div>
-
-                            {{-- Field comparison scores summary --}}
-                            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 font-mono flex-wrap">
-                                @foreach($item['field_evaluations'] as $fKey => $fData)
-                                    <span title="{{ $fData['name'] }}: Combined {{ $fData['combined'] }}% (Semantic {{ $fData['semantic'] }}%, Textual {{ $fData['textual'] }}%)"
-                                          class="px-2 py-0.5 rounded {{ $fKey === $item['best_field_key'] ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300' : 'bg-slate-100 text-slate-600' }}">
-                                        {{ str_replace(['Research ', 'Project '], '', $fData['name']) }}: {{ $fData['combined'] }}%
-                                    </span>
-                                @endforeach
-                            </div>
+                                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/60 rounded text-[11px] font-semibold">
+                                    {{ $item['research']->category->name }}
+                                </span>
+                            @endif
                         </div>
                     </div>
                 @endforeach
