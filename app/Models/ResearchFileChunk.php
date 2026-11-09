@@ -19,3 +19,4 @@ class ResearchFileChunk extends Model
         return $this->belongsTo(ResearchFile::class, 'research_file_id');
     }
 }
+

@@ -25,23 +25,320 @@
         overflow-x: clip;
     }
 
+    /* ===== MOBILE OFF-CANVAS FILTER DRAWER & RESPONSIVE LAYOUT ===== */
     @media (max-width: 1024px) {
+        .browse-page-container {
+            padding: 0 1rem 3.5rem;
+        }
+
         .browse-layout {
             grid-template-columns: 1fr;
+            gap: 1rem;
         }
 
         .filter-sidebar-wrapper {
-            width: 100% !important;
+            width: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: contents !important;
         }
 
-        .filter-sidebar {
-            position: static !important;
-            width: 100% !important;
-            left: auto !important;
-            top: auto !important;
-            max-height: none !important;
-            overflow-y: visible !important;
+        /* Dark overlay backdrop for mobile drawer */
+        .filter-drawer-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        .filter-drawer-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Slide-over off-canvas drawer */
+        .filter-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            width: min(340px, 86vw) !important;
+            max-width: 360px !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            border-radius: 0 20px 20px 0 !important;
+            border: 1px solid var(--guest-border, #e2e8f0) !important;
+            border-left: none !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35) !important;
+            z-index: 999 !important;
+            transform: translateX(-105%) !important;
+            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            background: var(--guest-bg-surface, #ffffff) !important;
+        }
+
+        .filter-sidebar.mobile-open {
+            transform: translateX(0) !important;
+        }
+
+        #browseFilterForm {
+            height: 100% !important;
+            max-height: 100dvh !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .filter-mobile-close-btn {
+            display: inline-flex !important;
+        }
+
+        .filter-mobile-footer {
+            display: block !important;
+        }
+
+        .mobile-filter-bar {
+            display: flex !important;
+        }
+
+        .desktop-sort-wrap {
+            display: none !important;
+        }
+
+        .projects-header-row {
+            top: 60px;
+            padding: 0.5rem 0 0.5rem;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.85rem;
+        }
+
+        .projects-title {
+            font-size: 1.35rem;
+        }
+    }
+
+    @media (min-width: 1025px) {
+        .filter-drawer-backdrop {
+            display: none !important;
+        }
+
+        .filter-mobile-close-btn {
+            display: none !important;
+        }
+
+        .filter-mobile-footer {
+            display: none !important;
+        }
+
+        .mobile-filter-bar {
+            display: none !important;
+        }
+
+        .desktop-sort-wrap {
+            display: flex !important;
+        }
+    }
+
+    /* Lock body scroll when drawer is open on mobile */
+    body.filter-drawer-locked {
+        overflow: hidden !important;
+        touch-action: none !important;
+    }
+
+    /* Mobile Filter Bar & Trigger Button */
+    .mobile-filter-bar {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        width: 100%;
+        padding-top: 0.25rem;
+    }
+
+    .mobile-filter-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 1.15rem;
+        background: var(--guest-bg-surface, #ffffff);
+        border: 1.5px solid var(--guest-border, #cbd5e1);
+        border-radius: 9999px;
+        color: var(--guest-text-headings, #0f172a);
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .mobile-filter-toggle-btn:hover {
+        border-color: var(--guest-accent, #0c4233);
+        color: var(--guest-accent, #0c4233);
+    }
+
+    .mobile-filter-toggle-btn.has-active {
+        background: #0c4233;
+        color: #ffffff;
+        border-color: #0c4233;
+        box-shadow: 0 4px 12px rgba(12, 66, 51, 0.25);
+    }
+
+    .mobile-filter-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        background: #10b981;
+        color: #ffffff;
+        font-size: 0.7rem;
+        font-weight: 800;
+        border-radius: 9999px;
+    }
+
+    .mobile-filter-toggle-btn.has-active .mobile-filter-badge {
+        background: #ffffff;
+        color: #0c4233;
+    }
+
+    .mobile-sort-control {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Mobile Close Button in Drawer Header */
+    .filter-mobile-close-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--guest-bg-input, #f1f5f9);
+        border: 1px solid var(--guest-border, #cbd5e1);
+        color: var(--guest-text-headings, #0f172a);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-mobile-close-btn:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #b91c1c;
+    }
+
+    /* Mobile Drawer Sticky Bottom Action Bar */
+    .filter-mobile-footer {
+        display: none;
+        flex-shrink: 0;
+        padding: 0.85rem 1.15rem;
+        background: var(--guest-bg-surface, #ffffff);
+        border-top: 1px solid var(--guest-border, #e2e8f0);
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+        z-index: 10;
+    }
+
+    .btn-show-mobile-results {
+        width: 100%;
+        padding: 0.65rem 1rem;
+        background: var(--guest-accent, #0c4233);
+        color: #ffffff;
+        border: none;
+        border-radius: 9999px;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(12, 66, 51, 0.3);
+    }
+
+    .btn-show-mobile-results:hover {
+        background: #082d23;
+    }
+
+    .link-clear-all-mobile {
+        display: block;
+        text-align: center;
+        margin-top: 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #ef4444;
+        text-decoration: none;
+    }
+
+    /* Active Filter Chips Bar */
+    .active-filter-chips-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0;
+    }
+
+    .active-chips-title {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--guest-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .active-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.25rem 0.65rem;
+        background: var(--guest-bg-surface, #ffffff);
+        border: 1px solid var(--guest-border, #cbd5e1);
+        border-radius: 9999px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--guest-text-headings, #0f172a);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .chip-remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #64748b;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .chip-remove:hover {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .active-clear-all {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--guest-accent, #0c4233);
+        text-decoration: underline;
+        margin-left: 0.35rem;
+        cursor: pointer;
     }
 
     /* ===== LEFT SIDEBAR: FILTER PROJECTS (Fixed Position + Independent Scroll) ===== */
@@ -696,25 +993,36 @@
 
     <div class="browse-layout">
 
-        <!-- ================= LEFT COLUMN: FILTER PROJECTS (Fixed) ================= -->
+        <!-- Dark overlay backdrop for mobile filter drawer -->
+        <div class="filter-drawer-backdrop" id="filterDrawerBackdrop" onclick="closeMobileFilter()"></div>
+
+        <!-- ================= LEFT COLUMN: FILTER PROJECTS (Fixed on Desktop, Off-Canvas Drawer on Mobile) ================= -->
         <div class="filter-sidebar-wrapper">
-            <aside class="filter-sidebar">
+            <aside class="filter-sidebar" id="browseFilterSidebar">
             <form action="{{ route('repository.index') }}" method="GET" id="browseFilterForm">
                 @if(request('sort'))
                     <input type="hidden" name="sort" value="{{ request('sort') }}">
                 @endif
 
-                <!-- Pinned Fixed Top Header: Filter Projects + Search Icon -->
+                <!-- Pinned Fixed Top Header: Filter Projects + Search Icon + Mobile Close Button -->
                 <div class="filter-header-pinned">
                     <!-- Filter Header -->
                     <div class="filter-header">
                         <span class="filter-header-title">FILTER PROJECTS</span>
-                        <button type="button" class="filter-search-btn" id="filterSearchToggle" title="Filter by keyword">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"/>
-                                <path d="M21 21l-4.35-4.35"/>
-                            </svg>
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" class="filter-search-btn" id="filterSearchToggle" title="Filter by keyword">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="M21 21l-4.35-4.35"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="filter-mobile-close-btn" onclick="closeMobileFilter()" title="Close filters">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Hidden Keyword Search Box (Toggled) -->
@@ -901,12 +1209,27 @@
                     </a>
                 @endif
                 </div><!-- End .filter-scrollable-body -->
+
+                <!-- Mobile Drawer Sticky Bottom Action Bar -->
+                <div class="filter-mobile-footer">
+                    <button type="button" class="btn-show-mobile-results" onclick="closeMobileFilter()">
+                        Show {{ number_format($researches->total()) }} Projects
+                    </button>
+                    @if(!empty($selectedCategories) || !empty($selectedYears) || !empty($selectedAuthors) || request('keyword') || request('search') || request('q'))
+                        <a href="{{ route('repository.index') }}" class="link-clear-all-mobile">
+                            ✕ Reset All Filters
+                        </a>
+                    @endif
+                </div>
             </form>
         </aside>
         </div>
 
         <!-- ================= RIGHT COLUMN: CAPSTONE PROJECTS SHOWCASE ================= -->
         <main class="projects-main">
+            @php
+                $activeFilterCount = count($selectedCategories ?? []) + count($selectedYears ?? []) + count($selectedAuthors ?? []) + (request('keyword') || request('search') || request('q') ? 1 : 0);
+            @endphp
 
             <!-- Header Row: Title, Project Count, and Sort Dropdown -->
             <div class="projects-header-row">
@@ -917,8 +1240,8 @@
                     </p>
                 </div>
 
-                <!-- Sort By Dropdown Pill -->
-                <div class="sort-control-wrap">
+                <!-- Desktop Sort By Dropdown Pill -->
+                <div class="sort-control-wrap desktop-sort-wrap">
                     <span>Sort by:</span>
                     <select class="sort-dropdown" onchange="applySort(this.value)">
                         <option value="newest" {{ ($selectedSort ?? 'newest') === 'newest' ? 'selected' : '' }}>Newest First ⌵</option>
@@ -927,7 +1250,72 @@
                         <option value="title" {{ ($selectedSort ?? '') === 'title' ? 'selected' : '' }}>Title (A-Z)</option>
                     </select>
                 </div>
+
+                <!-- Mobile Action Bar: Filter Trigger + Sort Dropdown -->
+                <div class="mobile-filter-bar">
+                    <button type="button" class="mobile-filter-toggle-btn {{ $activeFilterCount > 0 ? 'has-active' : '' }}" onclick="openMobileFilter()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="21" x2="4" y2="14"></line>
+                            <line x1="4" y1="10" x2="4" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12" y2="3"></line>
+                            <line x1="20" y1="21" x2="20" y2="16"></line>
+                            <line x1="20" y1="12" x2="20" y2="3"></line>
+                            <line x1="1" y1="14" x2="7" y2="14"></line>
+                            <line x1="9" y1="8" x2="15" y2="8"></line>
+                            <line x1="17" y1="16" x2="23" y2="16"></line>
+                        </svg>
+                        <span>Filter Projects</span>
+                        @if($activeFilterCount > 0)
+                            <span class="mobile-filter-badge">{{ $activeFilterCount }}</span>
+                        @endif
+                    </button>
+
+                    <div class="mobile-sort-control">
+                        <select class="sort-dropdown" onchange="applySort(this.value)">
+                            <option value="newest" {{ ($selectedSort ?? 'newest') === 'newest' ? 'selected' : '' }}>Newest ⌵</option>
+                            <option value="oldest" {{ ($selectedSort ?? '') === 'oldest' ? 'selected' : '' }}>Oldest</option>
+                            <option value="views" {{ ($selectedSort ?? '') === 'views' ? 'selected' : '' }}>Views</option>
+                            <option value="title" {{ ($selectedSort ?? '') === 'title' ? 'selected' : '' }}>A-Z</option>
+                        </select>
+                    </div>
+                </div>
             </div>
+
+            <!-- Active Filter Chips Row -->
+            @if($activeFilterCount > 0)
+                <div class="active-filter-chips-row">
+                    <span class="active-chips-title">Active:</span>
+                    @foreach($selectedCategories as $catId)
+                        @php $c = $categories->firstWhere('id', $catId); @endphp
+                        @if($c)
+                            <span class="active-chip">
+                                {{ $c->name }}
+                                <a href="javascript:void(0)" onclick="removeCategoryFilter({{ $catId }})" class="chip-remove" title="Remove category">✕</a>
+                            </span>
+                        @endif
+                    @endforeach
+                    @foreach($selectedYears as $yr)
+                        <span class="active-chip">
+                            {{ $yr }}
+                            <a href="javascript:void(0)" onclick="removeYearFilter('{{ $yr }}')" class="chip-remove" title="Remove year">✕</a>
+                        </span>
+                    @endforeach
+                    @foreach($selectedAuthors as $auth)
+                        <span class="active-chip">
+                            {{ $auth }}
+                            <a href="javascript:void(0)" onclick="removeAuthorFilter('{{ addslashes($auth) }}')" class="chip-remove" title="Remove author">✕</a>
+                        </span>
+                    @endforeach
+                    @if(request('keyword') || request('search') || request('q'))
+                        <span class="active-chip">
+                            "{{ request('keyword', request('search', request('q')))}}"
+                            <a href="javascript:void(0)" onclick="removeKeywordFilter()" class="chip-remove" title="Remove keyword">✕</a>
+                        </span>
+                    @endif
+                    <a href="{{ route('repository.index') }}" class="active-clear-all">Reset All</a>
+                </div>
+            @endif
 
             <!-- 3-Column Capstone Cards Grid -->
             <div class="capstone-cards-grid" id="capstoneCardsGrid">
@@ -1257,5 +1645,66 @@
             }, { passive: false });
         }
     });
+    // ===== Mobile Off-Canvas Drawer Functions =====
+    window.openMobileFilter = function() {
+        const sidebar = document.getElementById('browseFilterSidebar');
+        const backdrop = document.getElementById('filterDrawerBackdrop');
+        if (sidebar && backdrop) {
+            sidebar.classList.add('mobile-open');
+            backdrop.classList.add('active');
+            document.body.classList.add('filter-drawer-locked');
+        }
+    };
+
+    window.closeMobileFilter = function() {
+        const sidebar = document.getElementById('browseFilterSidebar');
+        const backdrop = document.getElementById('filterDrawerBackdrop');
+        if (sidebar && backdrop) {
+            sidebar.classList.remove('mobile-open');
+            backdrop.classList.remove('active');
+            document.body.classList.remove('filter-drawer-locked');
+        }
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMobileFilter();
+        }
+    });
+
+    // Helper functions to remove individual filter chips
+    window.removeCategoryFilter = function(catId) {
+        const cb = document.querySelector(`.filter-category-cb[value="${catId}"]`);
+        if (cb) {
+            cb.checked = false;
+        }
+        document.getElementById('browseFilterForm').submit();
+    };
+
+    window.removeYearFilter = function(yr) {
+        const cb = document.querySelector(`.filter-year-cb[value="${yr}"]`);
+        if (cb) {
+            cb.checked = false;
+        }
+        document.getElementById('browseFilterForm').submit();
+    };
+
+    window.removeAuthorFilter = function(authorName) {
+        const cbs = document.querySelectorAll('.filter-author-cb');
+        cbs.forEach(cb => {
+            if (cb.value === authorName) {
+                cb.checked = false;
+            }
+        });
+        document.getElementById('browseFilterForm').submit();
+    };
+
+    window.removeKeywordFilter = function() {
+        const input = document.getElementById('filterKeywordInput');
+        if (input) {
+            input.value = '';
+        }
+        document.getElementById('browseFilterForm').submit();
+    };
 </script>
 @endsection
