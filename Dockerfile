@@ -26,9 +26,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Configure PHP upload and execution limits for 512MB RAM environment
 RUN echo "upload_max_filesize = 64M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 64M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit = 128M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_execution_time = 60" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_input_time = 60" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time = 120" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_input_time = 120" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "opcache.enable = 1" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "opcache.memory_consumption = 32" >> /usr/local/etc/php/conf.d/uploads.ini
 

@@ -652,24 +652,14 @@ class DocumentViewController extends Controller
      */
     private function ensureFileRestoredFromDatabase(?ResearchFile $file): void
     {
-        if (!$file || empty($file->file_path) || empty($file->file_data)) {
+        if (!$file || empty($file->file_path)) {
             return;
         }
 
         if (!Storage::disk('public')->exists($file->file_path)) {
-            try {
-                $content = base64_decode($file->file_data);
-                if ($content !== false && strlen($content) > 0) {
-                    $absPath = Storage::disk('public')->path($file->file_path);
-                    $dir = dirname($absPath);
-                    if (!is_dir($dir)) {
-                        @mkdir($dir, 0755, true);
-                    }
-                    Storage::disk('public')->put($file->file_path, $content);
-                    Log::info("Restored missing manuscript file from TiDB database: {$file->file_path}");
-                }
-            } catch (\Throwable $e) {
-                Log::warning("Failed to restore file from TiDB: " . $e->getMessage());
+            $restored = $file->restoreToDisk();
+            if ($restored) {
+                Log::info("Restored missing manuscript file from TiDB database: {$file->file_path}");
             }
         }
     }

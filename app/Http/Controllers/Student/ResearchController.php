@@ -274,112 +274,117 @@ class ResearchController extends Controller
                 ->with('error', 'Limit Reached: You already have 1 active capstone submission. You can only replace it after deleting your current submission.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'abstract' => 'required|string',
-            'project_context' => 'required|string',
-            'objectives' => 'required|string',
-            'keywords' => 'nullable|string',
-            'authors' => 'required',
-            'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'category_ids' => 'required|array|min:1',
-            'category_ids.*' => 'exists:research_categories,id',
-            'project_type_ids' => 'nullable|array',
-            'project_type_ids.*' => 'exists:project_types,id',
-            'files' => 'nullable|array|min:1',
-            'files.*' => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
-            'pdf' => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
-        ], [
-            'files.*.uploaded'   => 'Could not upload document. It may have exceeded the upload size limit (30MB) or was rejected by the server. Please compress or choose a smaller file.',
-            'files.*.max'        => 'The file size is too large. Maximum file size is 30MB each.',
-            'files.*.mimes'      => 'Only PDF (.pdf) or Word (.docx) files are supported.',
-        ]);
-
-        $rawAuthors = $request->input('authors');
-        if (is_array($rawAuthors)) {
-            $authorsList = array_values(array_filter(array_map('trim', $rawAuthors)));
-            $authorsString = implode(', ', $authorsList);
-        } else {
-            $authorsString = trim((string) $rawAuthors);
-        }
-
-        if (empty($authorsString)) {
-            return back()->withErrors(['authors' => 'Please provide at least one author.'])->withInput();
-        }
-
-        $uploadedFiles = $request->file('files') ?? [];
-        if (empty($uploadedFiles) && $request->hasFile('pdf')) {
-            $uploadedFiles = [$request->file('pdf')];
-        }
-
-        if (empty($uploadedFiles)) {
-            return back()->withErrors(['files' => 'Please upload at least one PDF or DOCX file.'])->withInput();
-        }
-
-        // Check if an existing research with the same or matching title already exists
-        $existing = Research::findExistingByTitle($request->title);
-
-        $categoryIds = array_values(array_unique($request->category_ids));
-        // Use the first selected category as the primary category (backward compat)
-        $primaryCategoryId = $categoryIds[0] ?? null;
-
-        $research = Research::create([
-            'user_id' => Auth::id(),
-            'research_category_id' => $primaryCategoryId,
-            'title' => $request->title,
-            'abstract' => $request->abstract,
-            'project_context' => $request->project_context,
-            'objectives' => $request->objectives,
-            'keywords' => $request->keywords,
-            'authors' => $authorsString,
-            'year' => $request->year,
-            'pdf_path' => '',
-            'status' => 'pending'
-        ]);
-
-        $firstPath = null;
-        foreach ($uploadedFiles as $index => $file) {
-            $path = $file->store('researches', 'public');
-            if ($index === 0) {
-                $firstPath = $path;
-            }
-
-            $fileData = null;
-            try {
-                $fileData = base64_encode(file_get_contents($file->getRealPath()));
-            } catch (\Throwable $e) {
-                \Log::warning('Could not encode file to base64: ' . $e->getMessage());
-            }
-
-            $research->files()->create([
-                'file_path'     => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'mime_type'     => $file->getClientMimeType(),
-                'file_size'     => $file->getSize(),
-                'sort_order'    => $index + 1,
-                'file_data'     => $fileData,
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'abstract' => 'required|string',
+                'project_context' => 'required|string',
+                'objectives' => 'required|string',
+                'keywords' => 'nullable|string',
+                'authors' => 'required',
+                'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+                'category_ids' => 'required|array|min:1',
+                'category_ids.*' => 'exists:research_categories,id',
+                'project_type_ids' => 'nullable|array',
+                'project_type_ids.*' => 'exists:project_types,id',
+                'files' => 'nullable|array|min:1',
+                'files.*' => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+                'pdf' => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+            ], [
+                'files.*.uploaded'   => 'Could not upload document. It may have exceeded the upload size limit (30MB) or was rejected by the server. Please compress or choose a smaller file.',
+                'files.*.max'        => 'The file size is too large. Maximum file size is 30MB each.',
+                'files.*.mimes'      => 'Only PDF (.pdf) or Word (.docx) files are supported.',
             ]);
+
+            $rawAuthors = $request->input('authors');
+            if (is_array($rawAuthors)) {
+                $authorsList = array_values(array_filter(array_map('trim', $rawAuthors)));
+                $authorsString = implode(', ', $authorsList);
+            } else {
+                $authorsString = trim((string) $rawAuthors);
+            }
+
+            if (empty($authorsString)) {
+                return back()->withErrors(['authors' => 'Please provide at least one author.'])->withInput();
+            }
+
+            $uploadedFiles = $request->file('files') ?? [];
+            if (empty($uploadedFiles) && $request->hasFile('pdf')) {
+                $uploadedFiles = [$request->file('pdf')];
+            }
+
+            if (empty($uploadedFiles)) {
+                return back()->withErrors(['files' => 'Please upload at least one PDF or DOCX file.'])->withInput();
+            }
+
+            // Check if an existing research with the same or matching title already exists
+            $existing = Research::findExistingByTitle($request->title);
+
+            $categoryIds = array_values(array_unique($request->category_ids));
+            // Use the first selected category as the primary category (backward compat)
+            $primaryCategoryId = $categoryIds[0] ?? null;
+
+            $research = Research::create([
+                'user_id' => Auth::id(),
+                'research_category_id' => $primaryCategoryId,
+                'title' => $request->title,
+                'abstract' => $request->abstract,
+                'project_context' => $request->project_context,
+                'objectives' => $request->objectives,
+                'keywords' => $request->keywords,
+                'authors' => $authorsString,
+                'year' => $request->year,
+                'pdf_path' => '',
+                'status' => 'pending'
+            ]);
+
+            $firstPath = null;
+            foreach ($uploadedFiles as $index => $file) {
+                $path = $file->store('researches', 'public');
+                if ($index === 0) {
+                    $firstPath = $path;
+                }
+
+                $fileRecord = $research->files()->create([
+                    'file_path'     => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type'     => $file->getClientMimeType(),
+                    'file_size'     => $file->getSize(),
+                    'sort_order'    => $index + 1,
+                    'file_data'     => null,
+                ]);
+
+                // Store in small ~1MB database chunks safely without blocking or memory spikes
+                $fileRecord->storeChunksFromFile($file->getRealPath());
+            }
+
+            $research->update(['pdf_path' => $firstPath]);
+
+            // Sync many-to-many relationships
+            $research->categories()->sync($categoryIds);
+            if ($request->project_type_ids) {
+                $research->projectTypes()->sync(array_values(array_unique($request->project_type_ids)));
+            }
+
+            $catNames = ResearchCategory::whereIn('id', $categoryIds)->pluck('name')->implode(', ');
+            $fileCount = count($uploadedFiles);
+            $successMsg = "Research submitted successfully with {$fileCount} file(s)! Classified under: {$catNames}. Waiting for admin approval.";
+
+            // If title already existed in repository, attach warning alert to the session
+            if ($existing) {
+                session()->flash('warning', "⚠️ Warning: The uploaded capstone has a title identical or very similar to an existing study: \"{$existing->title}\" ({$existing->year}). Please verify originality during admin review.");
+            }
+
+            return redirect()->route('student.researches.index')
+                ->with('success', $successMsg);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Student research upload failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->withInput()->with('error', 'Upload failed: ' . $e->getMessage());
         }
-
-        $research->update(['pdf_path' => $firstPath]);
-
-        // Sync many-to-many relationships
-        $research->categories()->sync($categoryIds);
-        if ($request->project_type_ids) {
-            $research->projectTypes()->sync(array_values(array_unique($request->project_type_ids)));
-        }
-
-        $catNames = ResearchCategory::whereIn('id', $categoryIds)->pluck('name')->implode(', ');
-        $fileCount = count($uploadedFiles);
-        $successMsg = "Research submitted successfully with {$fileCount} file(s)! Classified under: {$catNames}. Waiting for admin approval.";
-
-        // If title already existed in repository, attach warning alert to the session
-        if ($existing) {
-            session()->flash('warning', "⚠️ Warning: The uploaded capstone has a title identical or very similar to an existing study: \"{$existing->title}\" ({$existing->year}). Please verify originality during admin review.");
-        }
-
-        return redirect()->route('student.researches.index')
-            ->with('success', $successMsg);
     }
 
     /**
@@ -428,92 +433,97 @@ class ResearchController extends Controller
                 ->with('error', 'Cannot update research that is already approved or approved.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'abstract' => 'required|string',
-            'project_context' => 'required|string',
-            'objectives' => 'required|string',
-            'keywords' => 'nullable|string',
-            'authors' => 'required',
-            'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'category_ids' => 'required|array|min:1',
-            'category_ids.*' => 'exists:research_categories,id',
-            'project_type_ids' => 'nullable|array',
-            'project_type_ids.*' => 'exists:project_types,id',
-            'files' => 'nullable|array',
-            'files.*' => 'mimes:pdf,docx|max:15360',
-            'pdf' => 'nullable|mimes:pdf,docx|max:15360',
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'abstract' => 'required|string',
+                'project_context' => 'required|string',
+                'objectives' => 'required|string',
+                'keywords' => 'nullable|string',
+                'authors' => 'required',
+                'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+                'category_ids' => 'required|array|min:1',
+                'category_ids.*' => 'exists:research_categories,id',
+                'project_type_ids' => 'nullable|array',
+                'project_type_ids.*' => 'exists:project_types,id',
+                'files' => 'nullable|array',
+                'files.*' => 'file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+                'pdf' => 'nullable|file|mimes:pdf,docx,zip|extensions:pdf,docx|max:30720',
+            ]);
 
-        $rawAuthors = $request->input('authors');
-        if (is_array($rawAuthors)) {
-            $authorsList = array_values(array_filter(array_map('trim', $rawAuthors)));
-            $authorsString = implode(', ', $authorsList);
-        } else {
-            $authorsString = trim((string) $rawAuthors);
-        }
-
-        if (empty($authorsString)) {
-            return back()->withErrors(['authors' => 'Please provide at least one author.'])->withInput();
-        }
-
-        $data = [
-            'title' => $request->title,
-            'abstract' => $request->abstract,
-            'project_context' => $request->project_context,
-            'objectives' => $request->objectives,
-            'keywords' => $request->keywords,
-            'authors' => $authorsString,
-            'year' => $request->year,
-            'research_category_id' => $request->category_ids[0] ?? null,
-        ];
-
-        $uploadedFiles = $request->file('files') ?? [];
-        if (empty($uploadedFiles) && $request->hasFile('pdf')) {
-            $uploadedFiles = [$request->file('pdf')];
-        }
-
-        if (!empty($uploadedFiles)) {
-            // Delete old files from storage
-            foreach ($research->files as $existingFile) {
-                if ($existingFile->file_path && \Storage::disk('public')->exists($existingFile->file_path)) {
-                    \Storage::disk('public')->delete($existingFile->file_path);
-                }
-                $existingFile->delete();
+            $rawAuthors = $request->input('authors');
+            if (is_array($rawAuthors)) {
+                $authorsList = array_values(array_filter(array_map('trim', $rawAuthors)));
+                $authorsString = implode(', ', $authorsList);
+            } else {
+                $authorsString = trim((string) $rawAuthors);
             }
 
-            $firstPath = null;
-            foreach ($uploadedFiles as $index => $file) {
-                $path = $file->store('researches', 'public');
-                if ($index === 0) {
-                    $firstPath = $path;
-                }
-
-                $fileData = null;
-                try {
-                    $fileData = base64_encode(file_get_contents($file->getRealPath()));
-                } catch (\Throwable $e) {
-                    \Log::warning('Could not encode file to base64: ' . $e->getMessage());
-                }
-
-                $research->files()->create([
-                    'file_path'     => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'mime_type'     => $file->getClientMimeType(),
-                    'file_size'     => $file->getSize(),
-                    'sort_order'    => $index + 1,
-                    'file_data'     => $fileData,
-                ]);
+            if (empty($authorsString)) {
+                return back()->withErrors(['authors' => 'Please provide at least one author.'])->withInput();
             }
-            $data['pdf_path'] = $firstPath;
+
+            $data = [
+                'title' => $request->title,
+                'abstract' => $request->abstract,
+                'project_context' => $request->project_context,
+                'objectives' => $request->objectives,
+                'keywords' => $request->keywords,
+                'authors' => $authorsString,
+                'year' => $request->year,
+                'research_category_id' => $request->category_ids[0] ?? null,
+            ];
+
+            $uploadedFiles = $request->file('files') ?? [];
+            if (empty($uploadedFiles) && $request->hasFile('pdf')) {
+                $uploadedFiles = [$request->file('pdf')];
+            }
+
+            if (!empty($uploadedFiles)) {
+                // Delete old files from storage
+                foreach ($research->files as $existingFile) {
+                    if ($existingFile->file_path && \Storage::disk('public')->exists($existingFile->file_path)) {
+                        \Storage::disk('public')->delete($existingFile->file_path);
+                    }
+                    $existingFile->delete();
+                }
+
+                $firstPath = null;
+                foreach ($uploadedFiles as $index => $file) {
+                    $path = $file->store('researches', 'public');
+                    if ($index === 0) {
+                        $firstPath = $path;
+                    }
+
+                    $fileRecord = $research->files()->create([
+                        'file_path'     => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'mime_type'     => $file->getClientMimeType(),
+                        'file_size'     => $file->getSize(),
+                        'sort_order'    => $index + 1,
+                        'file_data'     => null,
+                    ]);
+
+                    // Store in small ~1MB database chunks safely without blocking or memory spikes
+                    $fileRecord->storeChunksFromFile($file->getRealPath());
+                }
+                $data['pdf_path'] = $firstPath;
+            }
+
+            $research->update($data);
+            $research->categories()->sync($request->category_ids);
+            $research->projectTypes()->sync($request->project_type_ids ?? []);
+
+            return redirect()->route('student.researches.index')
+                ->with('success', 'Research updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Student research update failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->withInput()->with('error', 'Update failed: ' . $e->getMessage());
         }
-
-        $research->update($data);
-        $research->categories()->sync($request->category_ids);
-        $research->projectTypes()->sync($request->project_type_ids ?? []);
-
-        return redirect()->route('student.researches.index')
-            ->with('success', 'Research updated successfully.');
     }
 
     /**
