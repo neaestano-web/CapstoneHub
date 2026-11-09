@@ -165,9 +165,9 @@
                         <canvas id="adminCategoryChart"></canvas>
                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
                             <span class="text-2xl sm:text-3xl font-mono font-black text-[#2d2b56] leading-none">
-                                {{ number_format($approvedResearches) }}
+                                {{ number_format($totalCategories ?? count($catLabels)) }}
                             </span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Projects</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Categories</span>
                         </div>
                     </div>
 

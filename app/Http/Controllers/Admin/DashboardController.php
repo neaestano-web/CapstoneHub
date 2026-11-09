@@ -26,12 +26,13 @@ class DashboardController extends Controller
 
         // 1. Category Distribution (Approved Projects per Primary Category)
         // Groups each unique project strictly once under its primary discipline
+        $totalCategories = ResearchCategory::count();
+
         $categoryDistribution = ResearchCategory::withCount([
             'researches as approved_researches_count' => fn ($query) => $query->where('status', 'approved')
         ])
             ->having('approved_researches_count', '>', 0)
             ->orderByDesc('approved_researches_count')
-            ->take(6)
             ->get();
 
         // Fallback to many-to-many classifications if legacy records lack primary category
@@ -41,7 +42,6 @@ class DashboardController extends Controller
             ])
                 ->having('approved_researches_count', '>', 0)
                 ->orderByDesc('approved_researches_count')
-                ->take(6)
                 ->get();
         }
 
@@ -81,6 +81,7 @@ class DashboardController extends Controller
             'approvedResearches',
             'pendingResearches',
             'totalUsers',
+            'totalCategories',
             'categoryDistribution',
             'catLabels',
             'catValues',
