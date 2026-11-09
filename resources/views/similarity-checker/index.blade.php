@@ -51,7 +51,7 @@
         }
 
         .sim-mobile-result-card {
-            padding: 0.85rem 1rem !important;
+            padding: 0.9rem 1rem !important;
             border-radius: 16px !important;
         }
     }
@@ -70,7 +70,7 @@
             @endif
             <h1 class="sim-mobile-title text-2xl font-extrabold text-slate-900 tracking-tight mt-1">Research Similarity Checker</h1>
             <p class="sim-mobile-subtitle text-slate-500 text-xs font-medium mt-0.5">
-                Screen proposed capstone titles, abstracts, or objectives against published manuscripts to guarantee originality.
+                Screen proposed capstone titles, project context, general objectives, or specific objectives against published manuscripts to guarantee originality.
             </p>
         </div>
     </div>
@@ -92,7 +92,7 @@
             <div class="space-y-2">
                 <div class="flex items-center justify-between text-xs font-semibold">
                     <label for="query" class="text-slate-700">
-                        Enter Title, Abstract, or Objectives
+                        Enter Research Title, Context, General Objective, or Specific Objectives
                     </label>
                     <div class="flex items-center gap-2 text-slate-400 font-mono text-[11px]">
                         <span id="queryCharCount">0 chars</span>
@@ -111,14 +111,14 @@
                         rows="4"
                         required
                         class="sim-mobile-textarea w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs font-medium text-slate-900 outline-none focus:border-[#0c4233] focus:bg-white focus:ring-1 focus:ring-[#0c4233] transition leading-relaxed resize-y"
-                        placeholder="Paste or type your proposed capstone title, background, or specific objectives here..."
+                        placeholder="Paste or enter your proposed research title, project context, general objective, or specific objectives here..."
                     >{{ old('query', $inputQuery ?? $inputTitle ?? $inputObjectives ?? '') }}</textarea>
                 </div>
             </div>
 
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
                 <span class="sim-mobile-footnote text-xs text-slate-400 font-medium">
-                    Evaluates title, abstract, and objectives simultaneously using cosine vector similarity.
+                    Evaluates textual overlap and semantic intent against research titles, context, general objectives, and specific objectives.
                 </span>
 
                 <button type="submit" 
@@ -137,49 +137,103 @@
     @if(isset($results) && $results->count() > 0)
         <div class="space-y-4 pt-2">
             <div class="flex items-center justify-between flex-wrap gap-2">
-                <h2 class="text-sm font-bold text-slate-900">
-                    Similarity Analysis Results
-                </h2>
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">
+                        Top {{ $results->count() }} Most Relevant Research {{ Str::plural('Project', $results->count()) }}
+                    </h2>
+                    <p class="text-[11px] text-slate-500">
+                        Ranked using combined textual keywords and Sentence Transformer semantic embeddings.
+                    </p>
+                </div>
                 <span class="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold rounded-lg">
-                    Found {{ $results->count() }} Similar {{ Str::plural('Manuscript', $results->count()) }}
+                    {{ $results->count() }} {{ Str::plural('Match', $results->count()) }} Evaluated
                 </span>
             </div>
 
-            <div class="space-y-3">
+            <div class="space-y-4">
                 @foreach($results as $item)
-                    <div class="sim-mobile-result-card bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs hover:border-slate-300 transition space-y-3">
+                    <div class="sim-mobile-result-card bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs hover:border-slate-300 transition space-y-3.5">
+                        {{-- Header Row: Rank, Similarity Badge, Best-Matching Field, and Action Button --}}
                         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                            <div class="space-y-1 flex-1">
+                            <div class="space-y-1.5 flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-[#0c4233] text-white">
+                                        #{{ $loop->iteration }} Ranked Match
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">
+                                        {{ $item['overall_similarity'] }}% Similarity
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-800 border border-slate-200">
+                                        <span class="text-emerald-700 font-bold">🎯 Best Match:</span> {{ $item['best_matching_field'] }}
+                                    </span>
+                                </div>
+
                                 <a href="{{ route('repository.show', $item['research']->id) }}" target="_blank" 
-                                   class="text-sm font-bold text-slate-900 hover:text-emerald-700 transition leading-snug block">
+                                   class="text-sm sm:text-base font-extrabold text-slate-900 hover:text-emerald-700 transition leading-snug block pt-0.5">
                                     {{ $item['research']->title }}
                                 </a>
-
-                                @if(!empty($item['primary_match']))
-                                    <div class="pt-0.5">
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                                            Match: {{ $item['primary_match'] }}
-                                        </span>
-                                    </div>
-                                @endif
                             </div>
 
                             <a href="{{ route('repository.show', $item['research']->id) }}" target="_blank" 
-                               class="w-full sm:w-auto text-center justify-center px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition inline-flex items-center gap-1 shrink-0">
-                                View Manuscript →
+                               class="w-full sm:w-auto text-center justify-center px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition inline-flex items-center gap-1.5 shrink-0">
+                                <span>View Manuscript</span>
+                                <span>→</span>
                             </a>
                         </div>
 
-                        <div class="flex items-center gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100 flex-wrap">
-                            <span>Authors: <strong class="text-slate-700 font-semibold">{{ $item['research']->authors }}</strong></span>
-                            <span>·</span>
-                            <span>Year: <strong class="text-slate-700 font-semibold font-mono">{{ $item['research']->year }}</strong></span>
-                            @if($item['research']->category)
+                        {{-- Explanations: Similarities & Differences --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
+                            {{-- Explanation of Similarities --}}
+                            <div class="bg-emerald-50/60 border border-emerald-100/90 rounded-xl p-3 sm:p-3.5 space-y-1">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
+                                    <svg class="w-3.5 h-3.5 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>Explanation of Similarities</span>
+                                </div>
+                                <p class="text-xs text-slate-700 leading-relaxed font-normal">
+                                    {!! Str::markdown($item['similarity_explanation']) !!}
+                                </p>
+                            </div>
+
+                            {{-- Important Differences --}}
+                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 sm:p-3.5 space-y-1">
+                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                    <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                    </svg>
+                                    <span>Important Differences</span>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                                    {!! Str::markdown($item['differences_explanation']) !!}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Cross-Field Scores Breakdown & Metadata --}}
+                        <div class="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-slate-500 flex-wrap">
+                            {{-- Metadata --}}
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <span>Authors: <strong class="text-slate-700 font-semibold">{{ $item['research']->authors }}</strong></span>
                                 <span>·</span>
-                                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/60 rounded text-[11px] font-semibold">
-                                    {{ $item['research']->category->name }}
-                                </span>
-                            @endif
+                                <span>Year: <strong class="text-slate-700 font-semibold font-mono">{{ $item['research']->year }}</strong></span>
+                                @if($item['research']->category)
+                                    <span>·</span>
+                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/60 rounded text-[11px] font-semibold">
+                                        {{ $item['research']->category->name }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            {{-- Field comparison scores summary --}}
+                            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 font-mono flex-wrap">
+                                @foreach($item['field_evaluations'] as $fKey => $fData)
+                                    <span title="{{ $fData['name'] }}: Combined {{ $fData['combined'] }}% (Semantic {{ $fData['semantic'] }}%, Textual {{ $fData['textual'] }}%)"
+                                          class="px-2 py-0.5 rounded {{ $fKey === $item['best_field_key'] ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300' : 'bg-slate-100 text-slate-600' }}">
+                                        {{ str_replace(['Research ', 'Project '], '', $fData['name']) }}: {{ $fData['combined'] }}%
+                                    </span>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -192,7 +246,7 @@
             </div>
             <h3 class="font-bold text-sm text-slate-900">No Similar Manuscripts Found</h3>
             <p class="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                High originality detected. Automated semantic analysis did not find overlapping research studies in the repository.
+                High originality detected. Both textual keyword overlap and Sentence Transformer semantic analysis did not find overlapping research studies in the repository.
             </p>
         </div>
     @endif
