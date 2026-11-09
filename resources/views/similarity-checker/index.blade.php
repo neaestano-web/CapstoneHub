@@ -37,7 +37,7 @@
             <div class="space-y-2">
                 <div class="flex items-center justify-between text-xs font-semibold">
                     <label for="query" class="text-slate-700">
-                        Proposed Title, Context, or Objectives
+                        Enter Title, Abstract, or Objectives
                     </label>
                     <div class="flex items-center gap-2 text-slate-400 font-mono text-[11px]">
                         <span id="queryCharCount">0 chars</span>
