@@ -72,7 +72,7 @@ class SimilarityController extends Controller
 
             $results = [];
 
-            $minScoreThreshold = (float) config('similarity.minimum_score', 40.0);
+            $minScoreThreshold = (float) config('similarity.minimum_score', 60.0);
             $semanticWeight = (float) config('similarity.semantic_weight', 0.60);
             $textualWeight = (float) config('similarity.textual_weight', 0.40);
             $primaryFieldWeight = (float) config('similarity.primary_field_weight', 0.85);
@@ -458,6 +458,7 @@ class SimilarityController extends Controller
 
             // Generic academic boilerplate, institutional prefixes, and empty research fillers
             'jhcsc', 'jh', 'cerilles', 'state', 'college', 'dumingag', 'mati', 'pagadian', 'canuto',
+            'main', 'campus', 'school', 'department', 'faculty', 'student', 'students',
             'repository', 'capstone', 'study', 'project', 'system', 'systems', 'proposed', 'develop',
             'development', 'developed', 'developing', 'design', 'designed', 'designing', 'implement',
             'implementation', 'implemented', 'evaluate', 'evaluation', 'evaluated', 'specifically',
@@ -465,7 +466,9 @@ class SimilarityController extends Controller
             'general', 'specific', 'provide', 'providing', 'based', 'using', 'used', 'towards',
             'toward', 'via', 'into', 'paper', 'research', 'thesis', 'present', 'presents', 'presented',
             'users', 'user', 'allow', 'allows', 'allowed', 'enable', 'enables', 'help', 'helps',
-            'order', 'effective', 'efficient', 'level', 'process', 'management'
+            'order', 'effective', 'efficient', 'level', 'process', 'management',
+            'easy', 'access', 'improve', 'improving', 'improved', 'interactive', 'information',
+            'academic', 'semester', 'device', 'devices', 'interface', 'responsive'
         ];
 
         $stopMap = array_flip($stopWords);

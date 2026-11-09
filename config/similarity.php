@@ -2,7 +2,8 @@
 
 return [
     // Studies below this combined similarity score are filtered out as non-matches (high originality).
-    'minimum_score' => env('SIMILARITY_MIN_SCORE', 40),
+    // Strictly display only studies that achieve 60% and above similarity alignment.
+    'minimum_score' => env('SIMILARITY_MIN_SCORE', 60),
 
     // Maximum number of ranked results to return
     'max_results' => env('SIMILARITY_MAX_RESULTS', 5),
