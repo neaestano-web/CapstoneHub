@@ -363,11 +363,13 @@ class ResearchController extends Controller
     }
 
     /**
-     * Update project cards details (Project Context, Objective, Abstract, Keywords).
+     * Update project cards details (Project Context, Objective, Abstract, Keywords, Title, Year).
      */
     public function updateDetails(Request $request, Research $research, AIService $ai)
     {
         $request->validate([
+            'title'           => 'nullable|string|max:255',
+            'year'            => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'project_context' => 'nullable|string',
             'objectives'      => 'nullable|string',
             'abstract'        => 'nullable|string',
@@ -375,6 +377,12 @@ class ResearchController extends Controller
         ]);
 
         $dataToUpdate = [];
+        if ($request->filled('title')) {
+            $dataToUpdate['title'] = $request->input('title');
+        }
+        if ($request->filled('year')) {
+            $dataToUpdate['year'] = (int) $request->input('year');
+        }
         if ($request->has('project_context')) {
             $dataToUpdate['project_context'] = $request->input('project_context');
         }
@@ -398,14 +406,21 @@ class ResearchController extends Controller
                     $contentEmbedding = $ai->generateEmbedding($content);
                     $objectiveEmbedding = $ai->generateEmbedding($research->objectives);
                     $contextEmbedding = !empty($research->project_context) ? $ai->generateEmbedding($research->project_context) : null;
+                    $titleEmbedding = isset($dataToUpdate['title']) ? $ai->generateEmbedding($research->title) : null;
+
+                    $embeddingUpdate = [
+                        'content_embedding'   => !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null,
+                        'objective_embedding' => !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null,
+                        'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
+                    ];
+
+                    if (!empty($titleEmbedding['embedding'])) {
+                        $embeddingUpdate['title_embedding'] = json_encode($titleEmbedding['embedding']);
+                    }
 
                     ResearchEmbedding::updateOrCreate(
                         ['research_id' => $research->id],
-                        [
-                            'content_embedding'   => !empty($contentEmbedding['embedding']) ? json_encode($contentEmbedding['embedding']) : null,
-                            'objective_embedding' => !empty($objectiveEmbedding['embedding']) ? json_encode($objectiveEmbedding['embedding']) : null,
-                            'context_embedding'   => !empty($contextEmbedding['embedding']) ? json_encode($contextEmbedding['embedding']) : null,
-                        ]
+                        $embeddingUpdate
                     );
                 }
             } catch (\Throwable $e) {

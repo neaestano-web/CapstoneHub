@@ -524,7 +524,7 @@
         @endif
 
         {{-- MANUSCRIPT OVERVIEW CARD --}}
-        <div class="min-card space-y-5">
+        <div class="min-card space-y-5" x-data="{ editingTitleYear: false }">
 
             {{-- Category Pill & Year Header --}}
             <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -537,6 +537,12 @@
                     <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-200/60">
                         🗓 Year {{ $research->year }}
                     </span>
+                    <button type="button" 
+                            @click="editingTitleYear = !editingTitleYear" 
+                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/80 transition cursor-pointer">
+                        <span x-show="!editingTitleYear">✏️ Edit Title & Year</span>
+                        <span x-show="editingTitleYear" x-cloak>✕ Cancel</span>
+                    </button>
                 </div>
 
                 {{-- Views Count pill --}}
@@ -545,10 +551,44 @@
                 </span>
             </div>
 
-            {{-- Main Title --}}
-            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug tracking-tight">
-                {{ $research->title }}
-            </h1>
+            {{-- Main Title (Normal View) --}}
+            <div x-show="!editingTitleYear">
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug tracking-tight">
+                    {{ $research->title }}
+                </h1>
+            </div>
+
+            {{-- Inline Edit Form for Title and Year --}}
+            <div x-show="editingTitleYear" x-cloak class="p-4 sm:p-5 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3">
+                <form action="{{ route('admin.researches.updateDetails', $research) }}" method="POST" class="space-y-3">
+                    @csrf
+                    @method('PATCH')
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="sm:col-span-3 space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Research Title</label>
+                            <input type="text" name="title" value="{{ old('title', $research->title) }}" required
+                                   placeholder="Enter Research Title..."
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-xs font-semibold text-slate-900 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Academic Year</label>
+                            <input type="number" name="year" value="{{ old('year', $research->year) }}" min="1990" max="{{ date('Y') + 1 }}" required
+                                   placeholder="e.g. 2026"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-xs font-semibold text-slate-900 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+                        <button type="button" @click="editingTitleYear = false" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-lg transition cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-1.5 bg-[#0c4233] hover:bg-[#082a20] text-white font-bold text-xs rounded-lg transition shadow-xs flex items-center gap-1 cursor-pointer">
+                            ✓ Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
 
             {{-- 3-Column Key Info Grid --}}
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100">
