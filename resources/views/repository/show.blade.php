@@ -470,18 +470,20 @@
 
     /* View Full Project Action Box (For Guest Users) */
     .view-full-project-box {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%);
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        border-radius: 20px;
-        padding: 1.6rem 2rem;
+        background: linear-gradient(135deg, rgba(12, 66, 51, 0.04) 0%, rgba(16, 185, 129, 0.03) 100%), var(--view-bg-subtle);
+        border: 1px solid var(--view-border);
+        border-left: 4px solid var(--guest-accent, #0c4233);
+        border-radius: 18px;
+        padding: 1.35rem 1.7rem;
         display: flex;
         flex-direction: column;
-        gap: 1.3rem;
-        margin-top: 0.4rem;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        gap: 1.2rem;
+        margin-top: 0.5rem;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        transition: all 0.2s ease;
     }
 
-    @media (min-width: 680px) {
+    @media (min-width: 768px) {
         .view-full-project-box {
             flex-direction: row;
             align-items: center;
@@ -491,36 +493,40 @@
 
     .view-full-project-info {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 14px;
+        flex: 1;
+        min-width: 0;
     }
 
     .lock-icon-wrap {
         width: 44px;
         height: 44px;
-        border-radius: 50%;
-        background: rgba(16, 185, 129, 0.14);
-        border: 1.5px solid rgba(16, 185, 129, 0.35);
-        color: var(--view-accent-soft);
+        border-radius: 12px;
+        background: rgba(12, 66, 51, 0.08);
+        border: 1px solid rgba(12, 66, 51, 0.18);
+        color: var(--guest-accent, #0c4233);
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        font-size: 1.2rem;
+        transition: all 0.2s ease;
     }
 
     .view-full-project-heading {
-        font-size: 1.05rem;
+        font-size: 1rem;
         font-weight: 800;
         color: var(--view-text-headings);
+        letter-spacing: -0.01em;
+        line-height: 1.35;
     }
 
     .view-full-project-desc {
         font-size: 0.82rem;
         color: var(--view-text-muted);
-        line-height: 1.55;
-        margin-top: 3px;
-        max-width: 580px;
+        line-height: 1.5;
+        margin-top: 2px;
+        max-width: 600px;
     }
 
     .guest-action-buttons {
@@ -536,24 +542,25 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        padding: 0.72rem 1.65rem;
-        background: #10b981;
-        color: #ffffff;
-        border-radius: 9999px;
-        font-size: 0.86rem;
+        padding: 0.65rem 1.45rem;
+        background: var(--guest-accent, #0c4233);
+        color: #ffffff !important;
+        border-radius: 10px;
+        font-size: 0.84rem;
         font-weight: 700;
         text-decoration: none;
-        transition: all 0.22s ease;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         white-space: nowrap;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
-        border: none;
+        border: 1px solid transparent;
         cursor: pointer;
+        box-shadow: 0 2px 8px rgba(12, 66, 51, 0.2);
     }
 
     .btn-view-full-project:hover {
-        transform: translateY(-2px);
-        background: #059669;
-        color: #ffffff;
+        filter: brightness(1.15);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(12, 66, 51, 0.28);
+        color: #ffffff !important;
     }
 
     .btn-register-secondary {
@@ -561,21 +568,95 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        padding: 0.72rem 1.4rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--view-border);
-        color: var(--view-text-headings);
-        border-radius: 9999px;
+        padding: 0.65rem 1.35rem;
+        background: var(--view-bg-surface);
+        border: 1.5px solid var(--view-border);
+        color: var(--view-text-headings) !important;
+        border-radius: 10px;
         font-size: 0.84rem;
         font-weight: 700;
         text-decoration: none;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         white-space: nowrap;
+        cursor: pointer;
     }
 
     .btn-register-secondary:hover {
-        border-color: rgba(16, 185, 129, 0.4);
-        color: var(--view-accent-soft);
+        background: var(--view-bg-surface);
+        border-color: var(--guest-accent, #0c4233);
+        color: var(--guest-accent, #0c4233) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    /* Dark Mode Specific Polish for Guest Action Box */
+    html[data-guest-theme="dark"] .view-full-project-box {
+        border-color: var(--view-border);
+        border-left-color: #10b981;
+    }
+
+    html[data-guest-theme="dark"] .lock-icon-wrap {
+        background: rgba(16, 185, 129, 0.14);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #34d399;
+    }
+
+    html[data-guest-theme="dark"] .btn-view-full-project {
+        background: #059669;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    html[data-guest-theme="dark"] .btn-register-secondary:hover {
+        border-color: #34d399;
+        color: #34d399 !important;
+    }
+
+    /* Mobile Responsive Polish for Guest Action Box */
+    @media (max-width: 640px) {
+        .view-full-project-box {
+            padding: 1.15rem 1.15rem;
+            border-radius: 16px;
+            gap: 1rem;
+        }
+
+        .view-full-project-info {
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .lock-icon-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+        }
+
+        .lock-icon-wrap svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .view-full-project-heading {
+            font-size: 0.95rem;
+        }
+
+        .view-full-project-desc {
+            font-size: 0.78rem;
+            line-height: 1.45;
+        }
+
+        .guest-action-buttons {
+            width: 100%;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-view-full-project,
+        .btn-register-secondary {
+            width: 100%;
+            justify-content: center;
+            padding: 0.65rem 1rem;
+            font-size: 0.82rem;
+        }
     }
 
     /* ===== CITATION MODAL ===== */
@@ -1088,7 +1169,13 @@
                         <span>Sign In to Read Full PDF</span>
                     </a>
                     <a href="{{ route('register') }}" class="btn-register-secondary">
-                        Create Account
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                        </svg>
+                        <span>Create Account</span>
                     </a>
                 </div>
             </div>
