@@ -41,32 +41,6 @@
             line-height: 1.45 !important;
         }
 
-        /* Clean single-row minimal scroll for sample topics on mobile */
-        .sim-mobile-sample-row {
-            flex-wrap: nowrap !important;
-            overflow-x: auto !important;
-            scrollbar-width: none !important;
-            -webkit-overflow-scrolling: touch !important;
-            padding-bottom: 2px !important;
-        }
-
-        .sim-mobile-sample-row::-webkit-scrollbar {
-            display: none !important;
-        }
-
-        .sim-mobile-sample-label {
-            flex-shrink: 0 !important;
-            font-size: 0.7rem !important;
-        }
-
-        .sim-mobile-chip {
-            flex-shrink: 0 !important;
-            white-space: nowrap !important;
-            font-size: 0.72rem !important;
-            padding: 0.28rem 0.65rem !important;
-            border-radius: 9999px !important;
-        }
-
         .sim-mobile-footnote {
             display: none !important;
         }
@@ -139,23 +113,6 @@
                         class="sim-mobile-textarea w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs font-medium text-slate-900 outline-none focus:border-[#0c4233] focus:bg-white focus:ring-1 focus:ring-[#0c4233] transition leading-relaxed resize-y"
                         placeholder="Paste or type your proposed capstone title, background, or specific objectives here..."
                     >{{ old('query', $inputQuery ?? $inputTitle ?? $inputObjectives ?? '') }}</textarea>
-                </div>
-
-                {{-- Example Chips (Wrapping on Desktop, Single-Row Minimal Scroll on Mobile) --}}
-                <div class="sim-mobile-sample-row flex items-center gap-2 flex-wrap pt-1">
-                    <span class="sim-mobile-sample-label text-[11px] font-bold text-slate-400">Sample topics:</span>
-                    <button type="button" class="sim-mobile-chip px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-medium transition" onclick="fillExample('Research Repository System for Capstone Projects')">
-                        Research Repository
-                    </button>
-                    <button type="button" class="sim-mobile-chip px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-medium transition" onclick="fillExample('Arduino-Based Flood Warning with SMS Notification')">
-                        Flood Warning Alert
-                    </button>
-                    <button type="button" class="sim-mobile-chip px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-medium transition" onclick="fillExample('Decision Support System for Freshmen College Sectioning')">
-                        College Sectioning DSS
-                    </button>
-                    <button type="button" class="sim-mobile-chip px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-medium transition" onclick="fillExample('Mobile Vehicle Booking and Reservation System')">
-                        Vehicle Booking App
-                    </button>
                 </div>
             </div>
 
@@ -247,15 +204,6 @@
         if (el) {
             el.value = '';
             el.focus();
-            updateSimCounters();
-        }
-    }
-
-    function fillExample(text) {
-        const queryEl = document.getElementById('query');
-        if (queryEl) {
-            queryEl.value = text;
-            queryEl.focus();
             updateSimCounters();
         }
     }
