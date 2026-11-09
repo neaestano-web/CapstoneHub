@@ -178,33 +178,17 @@
                             </a>
                         </div>
 
-                        {{-- Explanations: Similarities & Differences --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-0.5">
-                            {{-- Explanation of Similarities --}}
-                            <div class="bg-emerald-50/60 border border-emerald-100/90 rounded-xl p-3 sm:p-3.5 space-y-1">
-                                <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
-                                    <svg class="w-3.5 h-3.5 text-emerald-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    <span>Explanation of Similarities</span>
-                                </div>
-                                <p class="text-xs text-slate-700 leading-relaxed font-normal">
-                                    {!! Str::markdown($item['similarity_explanation']) !!}
-                                </p>
+                        {{-- Important Differences --}}
+                        <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 sm:p-3.5 space-y-1">
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                </svg>
+                                <span>Important Differences</span>
                             </div>
-
-                            {{-- Important Differences --}}
-                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 sm:p-3.5 space-y-1">
-                                <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                                    <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                                    </svg>
-                                    <span>Important Differences</span>
-                                </div>
-                                <p class="text-xs text-slate-600 leading-relaxed font-normal">
-                                    {!! Str::markdown($item['differences_explanation']) !!}
-                                </p>
-                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed font-normal">
+                                {!! Str::markdown($item['differences_explanation']) !!}
+                            </p>
                         </div>
 
                         {{-- Metadata --}}
