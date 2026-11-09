@@ -1288,7 +1288,7 @@
             </h2>
             <div class="modal-body">
                 <p style="margin-bottom: 0.8rem;">
-                    <strong>capstoneHub</strong> is the official digital capstone research repository system of the <strong>School of Computing Studies (SCS)</strong> at J.H. Cerilles State College (JHCSC), partnered with the <strong>Cyberian Club</strong>.
+                    <strong>capstoneHub</strong> is the digital capstone research repository system of the <strong>School of Computing Studies (SCS)</strong> at J.H. Cerilles State College (JHCSC).
                 </p>
                 <p>
                     Engineered to preserve academic integrity, streamline manuscript archiving, and facilitate research discovery using smart semantic matching and similarity verification algorithms.
