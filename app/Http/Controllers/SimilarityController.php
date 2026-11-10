@@ -467,7 +467,7 @@ class SimilarityController extends Controller
             'toward', 'via', 'into', 'paper', 'research', 'thesis', 'present', 'presents', 'presented',
             'users', 'user', 'allow', 'allows', 'allowed', 'enable', 'enables', 'help', 'helps',
             'order', 'effective', 'efficient', 'level', 'process', 'management',
-            'easy', 'access', 'improve', 'improving', 'improved', 'interactive', 'information',
+            'easy', 'improve', 'improving', 'improved',
             'academic', 'semester', 'device', 'devices', 'interface', 'responsive'
         ];
 
