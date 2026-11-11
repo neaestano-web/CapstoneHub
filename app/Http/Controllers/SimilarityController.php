@@ -130,14 +130,14 @@ class SimilarityController extends Controller
                     $semanticScore = 0.0;
                     if ($hasAiEmbedding && !empty($fieldData['embedding'])) {
                         $simRes = $ai->compare($inputEmbedding, $fieldData['embedding']);
-                        $semanticScore = (float) ($simRes['similarity'] ?? 0.0);
+                        $semanticScore = max(0.0, (float) ($simRes['similarity'] ?? 0.0));
                     } else {
                         // Fallback when embedding is temporarily unavailable
                         $semanticScore = $textualScore;
                     }
 
                     // C. Calibrated Combined Field Score
-                    $combinedFieldScore = $this->calibrateCombinedScore($semanticScore, $textualScore, $semanticWeight, $textualWeight, count($textualResult['shared_keywords']));
+                    $combinedFieldScore = max(0.0, $this->calibrateCombinedScore($semanticScore, $textualScore, $semanticWeight, $textualWeight, count($textualResult['shared_keywords'])));
 
                     $fieldEvaluations[$fieldKey] = [
                         'name' => $fieldData['name'],
@@ -155,10 +155,10 @@ class SimilarityController extends Controller
 
                 // 3. Identify the Best-Matching Research Field
                 $bestFieldKey = null;
-                $highestFieldScore = -1.0;
+                $highestFieldScore = -INF;
 
                 foreach ($fieldEvaluations as $k => $eval) {
-                    if ($eval['combined'] > $highestFieldScore) {
+                    if ($bestFieldKey === null || $eval['combined'] > $highestFieldScore) {
                         $highestFieldScore = $eval['combined'];
                         $bestFieldKey = $k;
                     }
