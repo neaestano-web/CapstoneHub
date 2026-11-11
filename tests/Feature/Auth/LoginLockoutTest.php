@@ -63,10 +63,16 @@ class LoginLockoutTest extends TestCase
         $this->assertGreaterThan(1700, $data['lockoutSeconds']);
         $this->assertLessThanOrEqual(1800, $data['lockoutSeconds']);
 
-        // Simulate submitting locked email from a completely different IP after refresh
+        // Simulate submitting locked email with the CORRECT password from a different IP:
+        // Auth::attempt() was mocked for only 5 calls above, proving it is never even reached while locked.
         try {
-            $makeRequest('203.0.113.55')->authenticate();
-            $this->fail('Expected lockout to persist across IP changes.');
+            $correctReq = LoginRequest::create('/login', 'POST', [
+                'email' => $email,
+                'password' => 'correct-password',
+            ]);
+            $correctReq->server->set('REMOTE_ADDR', '203.0.113.55');
+            $correctReq->authenticate();
+            $this->fail('Expected lockout to block even a correct password while locked.');
         } catch (ValidationException $e) {
             $this->assertStringContainsString('30 minutes', $e->errors()['email'][0] ?? '');
         }

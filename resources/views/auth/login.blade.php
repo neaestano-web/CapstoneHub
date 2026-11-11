@@ -21,11 +21,12 @@
 
         <!-- Persistent Lockout Warning (survives browser refresh) -->
         @if (($lockoutSeconds ?? 0) > 0 && !empty($lockoutEmail))
+            @php $lockoutMins = (int) ceil($lockoutSeconds / 60); @endphp
             <div class="auth-alert auth-alert-error" id="lockoutBanner" style="align-items: flex-start; text-align: left;">
                 <span>🔒</span>
                 <span>
                     Too many failed login attempts for <strong>{{ $lockoutEmail }}</strong>.
-                    Please try again in <strong id="lockoutTimerText"></strong>.
+                    Please try again in <strong id="lockoutTimerText">{{ $lockoutMins }} {{ Str::plural('minute', $lockoutMins) }}</strong>.
                 </span>
             </div>
         @endif
@@ -175,6 +176,17 @@
 
             if (emailInput) {
                 emailInput.addEventListener('input', syncLockoutUi);
+            }
+
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function (e) {
+                    const currentEmail = (emailInput ? emailInput.value : '').trim().toLowerCase();
+                    if (remaining > 0 && (currentEmail === '' || currentEmail === lockedEmail)) {
+                        e.preventDefault();
+                        syncLockoutUi();
+                    }
+                });
             }
 
             syncLockoutUi();
