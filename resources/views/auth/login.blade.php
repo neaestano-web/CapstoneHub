@@ -19,6 +19,17 @@
             </div>
         @endif
 
+        <!-- Persistent Lockout Warning (survives browser refresh) -->
+        @if (($lockoutSeconds ?? 0) > 0 && !empty($lockoutEmail))
+            <div class="auth-alert auth-alert-error" id="lockoutBanner" style="align-items: flex-start; text-align: left;">
+                <span>🔒</span>
+                <span>
+                    Too many failed login attempts for <strong>{{ $lockoutEmail }}</strong>.
+                    Please try again in <strong id="lockoutTimerText"></strong>.
+                </span>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login') }}" class="auth-form-body" id="loginForm">
             @csrf
 
@@ -29,7 +40,7 @@
                         id="email" 
                         type="email" 
                         name="email" 
-                        value="{{ old('email') }}" 
+                        value="{{ old('email', ($lockoutSeconds ?? 0) > 0 ? ($lockoutEmail ?? '') : '') }}" 
                         required 
                         autofocus 
                         autocomplete="username"
@@ -38,7 +49,9 @@
                     >
                 </div>
                 @error('email')
-                    <p class="auth-field-error">{{ $message }}</p>
+                    @if (($lockoutSeconds ?? 0) <= 0 || !str_contains($message, 'Too many failed login attempts'))
+                        <p class="auth-field-error">{{ $message }}</p>
+                    @endif
                 @enderror
             </div>
 
@@ -108,5 +121,70 @@
                 ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
                 : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
         }
+
+        (function initLockoutCountdown() {
+            const lockedEmail = @json(strtolower((string) ($lockoutEmail ?? '')));
+            let remaining = {{ (int) ($lockoutSeconds ?? 0) }};
+
+            if (!lockedEmail || remaining <= 0) return;
+
+            const timerText = document.getElementById('lockoutTimerText');
+            const banner = document.getElementById('lockoutBanner');
+            const emailInput = document.getElementById('email');
+            const submitBtn = document.getElementById('submitBtn');
+
+            function formatDuration(sec) {
+                const m = Math.floor(sec / 60);
+                const s = sec % 60;
+                return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            }
+
+            function syncLockoutUi() {
+                if (remaining <= 0) {
+                    if (banner) banner.style.display = 'none';
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '';
+                        submitBtn.style.cursor = '';
+                        submitBtn.textContent = 'Login';
+                    }
+                    return;
+                }
+
+                const formatted = formatDuration(remaining);
+                const mins = Math.ceil(remaining / 60);
+                if (timerText) {
+                    timerText.textContent = mins + ' ' + (mins === 1 ? 'minute' : 'minutes') + ' (' + formatted + ')';
+                }
+
+                const currentEmail = (emailInput ? emailInput.value : '').trim().toLowerCase();
+                if (submitBtn) {
+                    if (currentEmail === '' || currentEmail === lockedEmail) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.65';
+                        submitBtn.style.cursor = 'not-allowed';
+                        submitBtn.textContent = 'Locked (' + formatted + ')';
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '';
+                        submitBtn.style.cursor = '';
+                        submitBtn.textContent = 'Login';
+                    }
+                }
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener('input', syncLockoutUi);
+            }
+
+            syncLockoutUi();
+            const interval = setInterval(function () {
+                remaining = Math.max(0, remaining - 1);
+                syncLockoutUi();
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        })();
     </script>
 </x-guest-layout>

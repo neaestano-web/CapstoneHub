@@ -7,7 +7,10 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -15,9 +18,34 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.login');
+        $lockoutEmail = null;
+        $lockoutSeconds = 0;
+
+        $candidateEmail = trim((string) (
+            old('email')
+            ?: ($request->hasSession() ? $request->session()->get('login_lockout_email') : '')
+            ?: (Cache::get(LoginRequest::ipLockCacheKey($request->ip()))['email'] ?? '')
+        ));
+
+        if ($candidateEmail !== '') {
+            $ipEmailKey = LoginRequest::makeIpEmailKey($candidateEmail, (string) $request->ip());
+            $emailKey = LoginRequest::makeEmailKey($candidateEmail);
+
+            if (RateLimiter::tooManyAttempts($ipEmailKey, LoginRequest::MAX_ATTEMPTS)
+                || RateLimiter::tooManyAttempts($emailKey, LoginRequest::MAX_ATTEMPTS)) {
+                $lockoutSeconds = max(
+                    RateLimiter::availableIn($ipEmailKey),
+                    RateLimiter::availableIn($emailKey)
+                );
+                if ($lockoutSeconds > 0) {
+                    $lockoutEmail = Str::lower($candidateEmail);
+                }
+            }
+        }
+
+        return view('auth.login', compact('lockoutEmail', 'lockoutSeconds'));
     }
 
     /**
