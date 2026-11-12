@@ -68,10 +68,14 @@ class SemanticSearchController extends Controller
             ->sortByDesc('similarity')
             ->values();
 
-        SearchLog::create([
-            'user_id' => auth()->id(),
-            'query' => $query
-        ]);
+        try {
+            SearchLog::create([
+                'user_id' => auth()->id(),
+                'query' => mb_substr($query, 0, 250),
+            ]);
+        } catch (\Throwable $e) {
+            \Log::warning('SearchLog insert skipped: ' . $e->getMessage());
+        }
 
         return view('semantic-search.results', [
             'results' => $results,

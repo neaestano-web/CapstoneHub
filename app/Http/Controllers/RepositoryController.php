@@ -56,11 +56,15 @@ class RepositoryController extends Controller
 
         // ── Semantic Search for Authenticated Users ──
         if ($isAuth && $query !== '') {
-            SearchLog::create([
-                'user_id'              => auth()->id(),
-                'query'                => $query,
-                'research_category_id' => $categoryId,
-            ]);
+            try {
+                SearchLog::create([
+                    'user_id'              => auth()->id(),
+                    'query'                => mb_substr($query, 0, 250),
+                    'research_category_id' => $categoryId,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::warning('SearchLog insert skipped: ' . $e->getMessage());
+            }
 
             $searchMode = 'semantic';
             $results    = collect();
@@ -112,6 +116,7 @@ class RepositoryController extends Controller
                     ->where(function ($q) use ($query) {
                         $q->where('title', 'like', "%{$query}%")
                           ->orWhere('abstract', 'like', "%{$query}%")
+                          ->orWhere('project_context', 'like', "%{$query}%")
                           ->orWhere('keywords', 'like', "%{$query}%")
                           ->orWhere('authors', 'like', "%{$query}%")
                           ->orWhere('objectives', 'like', "%{$query}%");

@@ -32,12 +32,16 @@ class SearchController extends Controller
         $searchMode = 'none';
 
         if ($query !== '') {
-            // Log search term
-            SearchLog::create([
-                'user_id'              => auth()->id(),
-                'query'                => $query,
-                'research_category_id' => $categoryId,
-            ]);
+            // Log search term (truncate to fit VARCHAR(255) column safely)
+            try {
+                SearchLog::create([
+                    'user_id'              => auth()->id(),
+                    'query'                => mb_substr($query, 0, 250),
+                    'research_category_id' => $categoryId,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::warning('SearchLog insert skipped: ' . $e->getMessage());
+            }
 
             $searchMode = 'semantic';
 
@@ -100,6 +104,7 @@ class SearchController extends Controller
                         } else {
                             $q->orWhere('title', 'like', "%{$qv}%")
                               ->orWhere('abstract', 'like', "%{$qv}%")
+                              ->orWhere('project_context', 'like', "%{$qv}%")
                               ->orWhere('keywords', 'like', "%{$qv}%")
                               ->orWhere('authors', 'like', "%{$qv}%")
                               ->orWhere('objectives', 'like', "%{$qv}%");
