@@ -302,7 +302,7 @@
                         </svg>
                     </div>
                     <input type="text" name="query" value="{{ $query }}"
-                           placeholder="Search by title, author, context, or semantic topic..."
+                           placeholder="Search by topic, concept, author, or keywords…"
                            class="min-search-input" autocomplete="off">
                     @if($categoryId)
                         <input type="hidden" name="category" value="{{ $categoryId }}">
