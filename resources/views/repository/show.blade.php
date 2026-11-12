@@ -353,7 +353,7 @@
     .expand-modal-backdrop {
         position: fixed;
         inset: 0;
-        z-index: 1050;
+        z-index: 9999;
         background: rgba(5, 10, 20, 0.82);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -933,30 +933,12 @@
         </div>
 
         {{-- SINGLE ROW INTERACTIVE CARDS: ABSTRACT, PROJECT CONTEXT, & STUDY OBJECTIVES --}}
-        <div x-data="{
-            activeDetailModal: null,
-            modalIcons: {
-                abstract: '📝',
-                context: '🏢',
-                objectives: '🎯'
-            },
-            modalTags: {
-                abstract: 'Abstract',
-                context: 'Project Context',
-                objectives: 'Objective'
-            },
-            modalTitles: {
-                abstract: 'Abstract',
-                context: 'Project Context',
-                objectives: 'Objective'
-            }
-        }" id="projectDetailsSection">
+        <div id="projectDetailsSection">
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
                 
                 {{-- 1. ABSTRACT CARD --}}
-                <div @click="activeDetailModal = 'abstract'; document.body.style.overflow = 'hidden'" 
-                     onclick="openDetailModal('abstract')"
+                <div onclick="openDetailModal('abstract')"
                      class="research-mini-card"
                      title="Click to view full Abstract">
                     <div class="space-y-2">
@@ -979,8 +961,7 @@
                 </div>
 
                 {{-- 2. PROJECT CONTEXT CARD --}}
-                <div @click="activeDetailModal = 'context'; document.body.style.overflow = 'hidden'" 
-                     onclick="openDetailModal('context')"
+                <div onclick="openDetailModal('context')"
                      class="research-mini-card"
                      title="Click to view full Project Context">
                     <div class="space-y-2">
@@ -1003,8 +984,7 @@
                 </div>
 
                 {{-- 3. STUDY OBJECTIVES CARD --}}
-                <div @click="activeDetailModal = 'objectives'; document.body.style.overflow = 'hidden'" 
-                     onclick="openDetailModal('objectives')"
+                <div onclick="openDetailModal('objectives')"
                      class="research-mini-card"
                      title="Click to view full Objective">
                     <div class="space-y-2">
@@ -1026,95 +1006,6 @@
                     </div>
                 </div>
 
-            </div>
-
-            {{-- CENTERED EXPAND POPUP MODAL --}}
-            <div x-show="activeDetailModal !== null"
-                 x-cloak
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 @keydown.escape.window="activeDetailModal = null; document.body.style.overflow = ''"
-                 class="expand-modal-backdrop"
-                 id="researchDetailModal"
-                 style="display: none;"
-                 onclick="if(event.target === this) closeDetailModal()">
-
-                <div x-show="activeDetailModal !== null"
-                     x-transition:enter="transition ease-out duration-250"
-                     x-transition:enter-start="opacity-0 scale-95 translate-y-3"
-                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                     x-transition:leave-end="opacity-0 scale-95 translate-y-3"
-                     @click.outside="activeDetailModal = null; document.body.style.overflow = ''"
-                     class="expand-modal-container"
-                     onclick="event.stopPropagation()">
-
-                    <!-- Modal Header -->
-                    <div class="expand-modal-header">
-                        <div class="flex items-center gap-3 min-w-0 pr-2">
-                            <span class="text-2xl shrink-0" id="modal-dyn-icon" x-text="modalIcons[activeDetailModal]">📝</span>
-                            <div class="min-w-0">
-                                <span class="mini-card-badge inline-block mb-1" id="modal-dyn-tag" x-text="modalTags[activeDetailModal]">
-                                    Research Detail
-                                </span>
-                                <h3 class="font-extrabold text-base sm:text-lg truncate" style="color: var(--view-text-headings);" id="modal-dyn-title" x-text="modalTitles[activeDetailModal]">
-                                    Project Details
-                                </h3>
-                            </div>
-                        </div>
-                        <button type="button"
-                                @click="activeDetailModal = null; document.body.style.overflow = ''"
-                                onclick="closeDetailModal()"
-                                class="p-2 rounded-full transition shrink-0 hover:bg-slate-700/30 cursor-pointer"
-                                style="color: var(--view-text-muted);"
-                                title="Close (Esc)">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Modal Scrollable Body -->
-                    <div class="expand-modal-body">
-                        {{-- 1. Abstract Content --}}
-                        <div x-show="activeDetailModal === 'abstract'" id="modal-pane-abstract" class="detail-modal-panel">
-                            <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
-                                {{ $research->abstract ?: 'No abstract available for this research.' }}
-                            </div>
-                        </div>
-
-                        {{-- 2. Project Context Content --}}
-                        <div x-show="activeDetailModal === 'context'" id="modal-pane-context" class="detail-modal-panel" style="display: none;">
-                            <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
-                                {{ $research->project_context ?: 'No project context provided for this research.' }}
-                            </div>
-                        </div>
-
-                        {{-- 3. Objectives Content --}}
-                        <div x-show="activeDetailModal === 'objectives'" id="modal-pane-objectives" class="detail-modal-panel" style="display: none;">
-                            <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
-                                {{ $research->objectives ?: 'No objectives provided for this research.' }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="expand-modal-footer">
-                        <button type="button"
-                                @click="activeDetailModal = null; document.body.style.overflow = ''"
-                                onclick="closeDetailModal()"
-                                class="px-5 py-2 rounded-full text-xs font-extrabold transition shadow-sm hover:brightness-110 cursor-pointer"
-                                style="background: #10b981; color: #ffffff;">
-                            Close
-                        </button>
-                    </div>
-
-                </div>
             </div>
 
         </div>
@@ -1294,6 +1185,76 @@
         @endif
     @endauth
 
+</div>
+
+{{-- CENTERED EXPAND POPUP MODAL (Placed outside .detail-card-cyber so backdrop-filter does not trap position:fixed) --}}
+<div class="expand-modal-backdrop"
+     id="researchDetailModal"
+     style="display: none;"
+     onclick="if(event.target === this) closeDetailModal()">
+
+    <div class="expand-modal-container"
+         onclick="event.stopPropagation()">
+
+        <!-- Modal Header -->
+        <div class="expand-modal-header">
+            <div class="flex items-center gap-3 min-w-0 pr-2">
+                <span class="text-2xl shrink-0" id="modal-dyn-icon">📝</span>
+                <div class="min-w-0">
+                    <span class="mini-card-badge inline-block mb-1" id="modal-dyn-tag">
+                        Research Detail
+                    </span>
+                    <h3 class="font-extrabold text-base sm:text-lg truncate" style="color: var(--view-text-headings);" id="modal-dyn-title">
+                        Project Details
+                    </h3>
+                </div>
+            </div>
+            <button type="button"
+                    onclick="closeDetailModal()"
+                    class="p-2 rounded-full transition shrink-0 hover:bg-slate-700/30 cursor-pointer"
+                    style="color: var(--view-text-muted);"
+                    title="Close (Esc)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Scrollable Body -->
+        <div class="expand-modal-body">
+            {{-- 1. Abstract Content --}}
+            <div id="modal-pane-abstract" class="detail-modal-panel" style="display: none;">
+                <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
+                    {{ $research->abstract ?: 'No abstract available for this research.' }}
+                </div>
+            </div>
+
+            {{-- 2. Project Context Content --}}
+            <div id="modal-pane-context" class="detail-modal-panel" style="display: none;">
+                <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
+                    {{ $research->project_context ?: 'No project context provided for this research.' }}
+                </div>
+            </div>
+
+            {{-- 3. Objectives Content --}}
+            <div id="modal-pane-objectives" class="detail-modal-panel" style="display: none;">
+                <div class="text-sm leading-relaxed whitespace-pre-line select-text" style="color: var(--view-text-main);">
+                    {{ $research->objectives ?: 'No objectives provided for this research.' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="expand-modal-footer">
+            <button type="button"
+                    onclick="closeDetailModal()"
+                    class="px-5 py-2 rounded-full text-xs font-extrabold transition shadow-sm hover:brightness-110 cursor-pointer"
+                    style="background: #10b981; color: #ffffff;">
+                Close
+            </button>
+        </div>
+
+    </div>
 </div>
 
 {{-- CITATION MODAL --}}
