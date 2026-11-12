@@ -16,6 +16,7 @@ use App\Http\Controllers\FileViewController;
 use App\Http\Controllers\DocumentViewController;
 use App\Http\Controllers\DownloadRequestController;
 use App\Http\Controllers\Admin\DownloadRequestController as AdminDownloadRequestController;
+use App\Http\Controllers\Admin\BackupRecoveryController;
 
 Route::get('/', function () {
     session()->forget('current_viewed_research_id');
@@ -112,7 +113,23 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // System Data Wipe / Fresh Start (Keeps Admins Only)
     Route::post('/system/wipe-data', [DashboardController::class, 'wipeData'])->name('system.wipe-data');
 
+    // Backup, Recovery, Recycle Bin & Audit Logs
+    Route::get('/backup-recovery', [BackupRecoveryController::class, 'index'])->name('backup.index');
+    Route::post('/backup-recovery/export', [BackupRecoveryController::class, 'export'])->name('backup.export');
+    Route::post('/backup-recovery/restore', [BackupRecoveryController::class, 'restore'])->name('backup.restore');
+    Route::patch('/backup-recovery/recycle/researches/{id}/restore', [BackupRecoveryController::class, 'restoreResearch'])->name('backup.recycle.researches.restore');
+    Route::delete('/backup-recovery/recycle/researches/{id}', [BackupRecoveryController::class, 'forceDeleteResearch'])->name('backup.recycle.researches.force-delete');
+    Route::patch('/backup-recovery/recycle/users/{id}/restore', [BackupRecoveryController::class, 'restoreUser'])->name('backup.recycle.users.restore');
+    Route::delete('/backup-recovery/recycle/users/{id}', [BackupRecoveryController::class, 'forceDeleteUser'])->name('backup.recycle.users.force-delete');
+    Route::patch('/backup-recovery/recycle/categories/{id}/restore', [BackupRecoveryController::class, 'restoreCategory'])->name('backup.recycle.categories.restore');
+    Route::delete('/backup-recovery/recycle/categories/{id}', [BackupRecoveryController::class, 'forceDeleteCategory'])->name('backup.recycle.categories.force-delete');
+
 });
+
+// Automated Off-Site Backup Pull Endpoint (Bearer Token Authenticated, Rate-Limited)
+Route::get('/system/automated-backup', [BackupRecoveryController::class, 'automatedPull'])
+    ->middleware('throttle:6,60')
+    ->name('system.automated-backup');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();

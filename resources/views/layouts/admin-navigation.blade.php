@@ -112,6 +112,14 @@
     $pendingResCount = \App\Models\Research::where('status', 'pending')->count();
     $pendingRegCount = \App\Models\User::where('role','student')->whereNotNull('email_verified_at')->where('registration_status','pending')->count();
     $pendingDownloadCount = \App\Models\DownloadRequest::where('status','pending')->count();
+    $trashedTotalCount = 0;
+    try {
+        $trashedTotalCount = \App\Models\Research::onlyTrashed()->count()
+            + \App\Models\User::onlyTrashed()->count()
+            + \App\Models\ResearchCategory::onlyTrashed()->count();
+    } catch (\Throwable $e) {
+        $trashedTotalCount = 0;
+    }
 @endphp
 
 {{-- DESKTOP SIDEBAR --}}
@@ -210,6 +218,18 @@
                     @endif
                 </a>
 
+                {{-- Backup & Recovery --}}
+                <a href="{{ route('admin.backup.index') }}" 
+                   class="ecoursie-nav-item {{ request()->routeIs('admin.backup.*') ? 'ecoursie-nav-active' : '' }}">
+                    <svg class="nav-svg-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span class="sidebar-label">Backup &amp; Recovery</span>
+                    @if($trashedTotalCount > 0)
+                        <span class="sidebar-badge-count bg-slate-200 text-slate-800">{{ $trashedTotalCount }}</span>
+                    @endif
+                </a>
+
                 {{-- Repository Catalog --}}
                 <a href="{{ route('repository.index') }}" 
                    class="ecoursie-nav-item {{ request()->routeIs('repository.*') ? 'ecoursie-nav-active' : '' }}">
@@ -283,6 +303,9 @@
     </a>
     <a href="{{ route('admin.download-requests.index') }}" class="ecoursie-nav-item {{ request()->routeIs('admin.download-requests.*') ? 'ecoursie-nav-active' : '' }}">
         <span>Download Requests</span>
+    </a>
+    <a href="{{ route('admin.backup.index') }}" class="ecoursie-nav-item {{ request()->routeIs('admin.backup.*') ? 'ecoursie-nav-active' : '' }}">
+        <span>Backup &amp; Recovery</span>
     </a>
     <a href="{{ route('repository.index') }}" class="ecoursie-nav-item {{ request()->routeIs('repository.*') ? 'ecoursie-nav-active' : '' }}">
         <span>Repository</span>

@@ -655,33 +655,20 @@ class ResearchController extends Controller
     }
 
     /**
-     * Remove the specified research from storage.
+     * Soft-delete the specified research (recoverable via Admin Recycle Bin).
      */
     public function destroy(Research $research)
     {
-        foreach ($research->files as $f) {
-            if ($f->file_path && \Storage::disk('public')->exists($f->file_path)) {
-                \Storage::disk('public')->delete($f->file_path);
-            }
-            $f->delete();
-        }
-
-        // Delete PDF file
-        if ($research->pdf_path && \Storage::disk('public')->exists($research->pdf_path)) {
-            \Storage::disk('public')->delete($research->pdf_path);
-        }
-
-        // Delete embedding if exists
-        if ($research->embedding) {
-            $research->embedding->delete();
-        }
-
         if (session('current_viewed_research_id') == $research->id) {
             session()->forget('current_viewed_research_id');
         }
 
+        $title = $research->title;
+        $researchId = $research->id;
         $research->delete();
 
-        return redirect()->route('admin.researches.index')->with('success', 'Research deleted successfully.');
+        \App\Models\AuditLog::record('research.trashed', 'research', $researchId, $title);
+
+        return redirect()->route('admin.researches.index')->with('success', 'Research moved to Recycle Bin successfully.');
     }
 }

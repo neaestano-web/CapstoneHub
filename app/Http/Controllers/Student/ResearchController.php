@@ -540,18 +540,11 @@ class ResearchController extends Controller
                 ->with('error', 'Cannot delete research that is already approved or approved.');
         }
 
-        foreach ($research->files as $f) {
-            if ($f->file_path && \Storage::disk('public')->exists($f->file_path)) {
-                \Storage::disk('public')->delete($f->file_path);
-            }
-            $f->delete();
-        }
-
-        if ($research->pdf_path && \Storage::disk('public')->exists($research->pdf_path)) {
-            \Storage::disk('public')->delete($research->pdf_path);
-        }
-
+        $title = $research->title;
+        $researchId = $research->id;
         $research->delete();
+
+        \App\Models\AuditLog::record('research.trashed', 'research', $researchId, $title, ['by_student' => true]);
 
         return redirect()->route('student.researches.index')
             ->with('success', 'Research deleted successfully.');

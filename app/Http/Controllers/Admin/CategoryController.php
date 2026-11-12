@@ -141,10 +141,14 @@ class CategoryController extends Controller
                 ->with('error', "Cannot delete category. It has {$researchesCount} associated researches.");
         }
 
+        $catName = $category->name;
+        $catId = $category->id;
         $category->delete();
 
+        \App\Models\AuditLog::record('category.trashed', 'category', $catId, $catName);
+
         return redirect()->route('admin.categories.index')
-            ->with('success', 'Category deleted successfully.');
+            ->with('success', 'Category moved to Recycle Bin successfully.');
     }
 
     /**

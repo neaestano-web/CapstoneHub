@@ -1,0 +1,70 @@
+name: Automated Daily Off-Site Backup
+
+on:
+  schedule:
+    # Runs daily at 02:00 UTC (10:00 AM PHT)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  offsite-backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check backup secrets configuration
+        id: check
+        env:
+          BACKUP_APP_URL: ${{ secrets.BACKUP_APP_URL }}
+          BACKUP_AUTOMATION_TOKEN: ${{ secrets.BACKUP_AUTOMATION_TOKEN }}
+        run: |
+          if [ -z "$BACKUP_APP_URL" ] || [ -z "$BACKUP_AUTOMATION_TOKEN" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "Notice: Set BACKUP_APP_URL and BACKUP_AUTOMATION_TOKEN repository secrets to enable automated off-site backups."
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Wake up Render web service
+        if: steps.check.outputs.configured == 'true'
+        env:
+          BACKUP_APP_URL: ${{ secrets.BACKUP_APP_URL }}
+        run: |
+          BASE_URL="${BACKUP_APP_URL%/}"
+          curl --silent --show-error --retry 4 --retry-delay 15 --max-time 60 "$BASE_URL/up" > /dev/null || true
+
+      - name: Pull encrypted backup snapshot
+        if: steps.check.outputs.configured == 'true'
+        env:
+          BACKUP_APP_URL: ${{ secrets.BACKUP_APP_URL }}
+          BACKUP_AUTOMATION_TOKEN: ${{ secrets.BACKUP_AUTOMATION_TOKEN }}
+        run: |
+          BASE_URL="${BACKUP_APP_URL%/}"
+          mkdir -p backups
+          FILENAME="capstonehub_auto_$(date -u +%Y-%m-%d_%H%M%S).cshub"
+          HTTP_CODE=$(curl --silent --show-error --retry 3 --retry-delay 10 --max-time 180 \
+            -H "Authorization: Bearer $BACKUP_AUTOMATION_TOKEN" \
+            -w "%{http_code}" \
+            -o "backups/$FILENAME" \
+            "$BASE_URL/system/automated-backup")
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "Backup pull failed with HTTP $HTTP_CODE"
+            rm -f "backups/$FILENAME"
+            exit 1
+          fi
+
+          HEADER=$(head -n 1 "backups/$FILENAME" | tr -d '\r\n')
+          if [ "$HEADER" != "CSHUB_BAK_V1" ]; then
+            echo "Invalid backup signature header: $HEADER"
+            exit 1
+          fi
+
+          echo "Encrypted snapshot downloaded: backups/$FILENAME ($(wc -c < "backups/$FILENAME") bytes)"
+
+      - name: Upload encrypted backup artifact
+        if: steps.check.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: capstonehub-backup-${{ github.run_id }}
+          path: backups/*.cshub
+          retention-days: 30
+

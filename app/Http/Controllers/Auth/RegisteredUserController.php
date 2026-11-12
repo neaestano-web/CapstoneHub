@@ -64,7 +64,7 @@ class RegisteredUserController extends Controller
                     Storage::disk('public')->delete($existingStale->id_picture_back);
                 }
                 OtpCode::where('user_id', $existingStale->id)->delete();
-                $existingStale->delete();
+                $existingStale->forceDelete();
                 Log::info("Cleaned up previous stale/rejected registration for email: " . $request->email);
             }
         }

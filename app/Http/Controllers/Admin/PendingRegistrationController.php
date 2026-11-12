@@ -271,10 +271,15 @@ SVG;
             Storage::disk('public')->delete($user->id_picture_back);
         }
 
+        $userName = $user->name;
+        $userEmail = $user->email;
+        $userId = $user->id;
         OtpCode::where('user_id', $user->id)->delete();
-        $user->delete();
+        $user->forceDelete();
+
+        \App\Models\AuditLog::record('user.force_deleted', 'user', $userId, $userEmail, ['context' => 'pending_registration']);
 
         return redirect()->route('admin.pending-registrations.index')
-            ->with('success', "Registration application for {$user->name} has been permanently deleted.");
+            ->with('success', "Registration application for {$userName} has been permanently deleted.");
     }
 }

@@ -62,12 +62,12 @@ class SystemCleanupService
                 DB::table('similarity_logs')->delete();
             }
 
-            // 6. Delete all researches / projects
-            $deletedResearches = Research::count();
-            Research::query()->delete();
+            // 6. Delete all researches / projects (including soft-deleted ones)
+            $deletedResearches = Research::withTrashed()->count();
+            Research::withTrashed()->forceDelete();
 
-            // 7. Delete all users EXCEPT admins
-            $nonAdminUsers = User::where('role', '!=', 'admin')->get();
+            // 7. Delete all users EXCEPT admins (including soft-deleted ones)
+            $nonAdminUsers = User::withTrashed()->where('role', '!=', 'admin')->get();
             $deletedUsers = $nonAdminUsers->count();
 
             // Delete OTP codes for non-admin users if table exists
@@ -76,8 +76,16 @@ class SystemCleanupService
                 DB::table('otp_codes')->whereIn('user_id', $nonAdminIds)->delete();
             }
 
-            User::where('role', '!=', 'admin')->delete();
+            User::withTrashed()->where('role', '!=', 'admin')->forceDelete();
         });
+
+        \App\Models\AuditLog::record('system.wiped', 'system', null, 'wipeDataKeepAdmins', [
+            'researches' => $deletedResearches,
+            'files' => $deletedFiles,
+            'users' => $deletedUsers,
+            'download_requests' => $deletedDownloadRequests,
+            'embeddings' => $deletedEmbeddings,
+        ]);
 
         // 8. Delete all research files and ID pictures from storage
         try {

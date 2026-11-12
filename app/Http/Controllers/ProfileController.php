@@ -50,7 +50,11 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        $user->delete();
+        $userId = $user->id;
+        $userEmail = $user->email;
+        $user->forceDelete();
+
+        \App\Models\AuditLog::record('user.self_deleted', 'user', $userId, $userEmail);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
