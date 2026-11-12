@@ -450,8 +450,9 @@
                             },
                             scales: {
                                 x: {
+                                    beginAtZero: true,
                                     grid: { color: gridColor, drawBorder: false },
-                                    ticks: { color: textMuted, font: { size: 11, weight: '600' } }
+                                    ticks: { precision: 0, color: textMuted, font: { size: 11, weight: '600' } }
                                 },
                                 y: {
                                     grid: { display: false, drawBorder: false },
