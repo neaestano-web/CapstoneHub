@@ -76,7 +76,7 @@
             <form method="POST" action="{{ route('logout') }}" class="mt-4">
                 @csrf
                 <button type="submit" class="auth-btn-submit">
-                    Log Out
+                    Back
                 </button>
             </form>
         </div>
