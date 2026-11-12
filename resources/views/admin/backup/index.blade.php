@@ -245,7 +245,7 @@
                     <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
                         <div class="font-extrabold text-[#2d2b56]">1. Render Environment Variables</div>
                         <p class="text-[11px] text-slate-500">Set a strong random secret in Render Environment:</p>
-                        <code class="block px-3 py-1.5 rounded-lg bg-slate-900 text-emerald-300 text-[11px] font-mono overflow-x-auto">BACKUP_AUTOMATION_TOKEN=your-random-secret-token</code>
+                        <code class="block px-3 py-1.5 rounded-lg bg-slate-900 text-emerald-300 text-[11px] font-mono overflow-x-auto">BACKUP_AUTOMATION_TOKEN</code>
                     </div>
 
                     <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
@@ -255,7 +255,7 @@
                         </p>
                         <ul class="list-disc list-inside text-[11px] text-slate-500 space-y-0.5">
                             <li><code>BACKUP_APP_URL</code> = <code>{{ config('app.url') }}</code></li>
-                            <li><code>BACKUP_AUTOMATION_TOKEN</code> = same token as Render</li>
+                            <li><code>BACKUP_AUTOMATION_TOKEN</code></li>
                         </ul>
                     </div>
 
