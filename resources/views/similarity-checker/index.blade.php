@@ -139,7 +139,7 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div>
                     <h2 class="text-sm font-bold text-slate-900">
-                        Top {{ $results->count() }} Most Relevant Research {{ Str::plural('Project', $results->count()) }}
+                        Most Relevant Research {{ Str::plural('Project', $results->count()) }}
                     </h2>
                     <p class="text-[11px] text-slate-500">
                         Ranked using combined textual keywords and Sentence Transformer semantic embeddings.
